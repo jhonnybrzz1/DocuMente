@@ -54,26 +54,40 @@ export default function HistorySidebar() {
     
     try {
       const response = await fetch(`/api/documents/${document.id}/download`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const blob = await response.blob();
+      
+      if (blob.size === 0) {
+        throw new Error("Arquivo vazio recebido do servidor");
+      }
       
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${document.title}.docx`;
+      a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 100);
       
       toast({
         title: "Download iniciado",
         description: "O documento está sendo baixado.",
         variant: "default",
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Download error:", error);
       toast({
         title: "Erro no download",
-        description: "Falha ao baixar o documento.",
+        description: `Falha ao baixar o documento: ${error.message}`,
         variant: "destructive",
       });
     }

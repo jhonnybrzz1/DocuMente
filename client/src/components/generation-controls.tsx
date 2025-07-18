@@ -59,16 +59,30 @@ export default function GenerationControls({
       // Download the document
       try {
         const downloadResponse = await fetch(`/api/documents/${document.id}/download`);
+        
+        if (!downloadResponse.ok) {
+          throw new Error(`HTTP ${downloadResponse.status}: ${downloadResponse.statusText}`);
+        }
+        
         const blob = await downloadResponse.blob();
+        
+        if (blob.size === 0) {
+          throw new Error("Arquivo vazio recebido do servidor");
+        }
         
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `${document.title}.docx`;
+        a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+        
+        // Wait a bit before cleanup
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
         
         toast({
           title: "Documento gerado",
@@ -79,10 +93,11 @@ export default function GenerationControls({
         // Invalidate documents list to refresh history
         queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
         
-      } catch (error) {
+      } catch (error: any) {
+        console.error("Download error:", error);
         toast({
           title: "Erro no download",
-          description: "O documento foi gerado mas falhou no download.",
+          description: `O documento foi gerado mas falhou no download: ${error.message}`,
           variant: "destructive",
         });
       } finally {

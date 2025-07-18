@@ -362,8 +362,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const wordBuffer = await createWordDocument(document.title, document.content);
       
+      // Sanitize filename for download
+      const sanitizedFilename = document.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_');
+      
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-      res.setHeader('Content-Disposition', `attachment; filename="${document.title}.docx"`);
+      res.setHeader('Content-Disposition', `attachment; filename="${sanitizedFilename}.docx"`);
+      res.setHeader('Content-Length', wordBuffer.length.toString());
       res.send(wordBuffer);
 
     } catch (error) {
