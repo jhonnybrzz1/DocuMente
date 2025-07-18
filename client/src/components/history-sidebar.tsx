@@ -53,30 +53,17 @@ export default function HistorySidebar() {
     e.stopPropagation();
     
     try {
-      const response = await fetch(`/api/documents/${document.id}/download`);
+      const downloadUrl = `/api/documents/${document.id}/download`;
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${document.title}.docx`;
+      link.target = '_blank';
+      link.style.display = 'none';
       
-      const blob = await response.blob();
-      
-      if (blob.size === 0) {
-        throw new Error("Arquivo vazio recebido do servidor");
-      }
-      
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${document.title}.docx`;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      
-      setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }, 100);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
       toast({
         title: "Download iniciado",
@@ -87,7 +74,7 @@ export default function HistorySidebar() {
       console.error("Download error:", error);
       toast({
         title: "Erro no download",
-        description: `Falha ao baixar o documento: ${error.message}`,
+        description: "Falha ao baixar o documento.",
         variant: "destructive",
       });
     }

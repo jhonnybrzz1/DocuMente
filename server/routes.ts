@@ -174,6 +174,14 @@ async function createWordDocument(title: string, content: string): Promise<Buffe
   const lines = content.split('\n').filter(line => line.trim());
   const children: any[] = [];
 
+  // Add document title
+  children.push(new Paragraph({
+    children: [new TextRun({ text: title, bold: true, size: 36 })],
+    heading: HeadingLevel.TITLE,
+  }));
+
+  children.push(new Paragraph({ text: "" })); // Add spacing
+
   for (const line of lines) {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
@@ -182,42 +190,50 @@ async function createWordDocument(title: string, content: string): Promise<Buffe
         trimmedLine.startsWith('🗓️') || trimmedLine.startsWith('🚀') || trimmedLine.startsWith('🎯') ||
         trimmedLine.startsWith('⚙️') || trimmedLine.startsWith('🧪') || trimmedLine.startsWith('📡')) {
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine, bold: true, size: 32 })],
+        children: [new TextRun({ text: trimmedLine, bold: true, size: 28 })],
         heading: HeadingLevel.HEADING_1,
       }));
     } else if (trimmedLine.startsWith('##')) {
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine.replace('##', '').trim(), bold: true, size: 28 })],
+        children: [new TextRun({ text: trimmedLine.replace('##', '').trim(), bold: true, size: 24 })],
         heading: HeadingLevel.HEADING_2,
       }));
     } else if (trimmedLine.startsWith('#')) {
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine.replace('#', '').trim(), bold: true, size: 24 })],
+        children: [new TextRun({ text: trimmedLine.replace('#', '').trim(), bold: true, size: 20 })],
         heading: HeadingLevel.HEADING_3,
       }));
     } else if (trimmedLine.startsWith('-')) {
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine, size: 22 })],
+        children: [new TextRun({ text: trimmedLine.substring(1).trim(), size: 20 })],
         bullet: { level: 0 },
       }));
     } else if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine.replace(/\*\*/g, ''), bold: true, size: 24 })],
+        children: [new TextRun({ text: trimmedLine.replace(/\*\*/g, ''), bold: true, size: 20 })],
       }));
     } else {
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine, size: 22 })],
+        children: [new TextRun({ text: trimmedLine, size: 20 })],
       }));
     }
   }
 
-  const doc = new Document({
-    sections: [{
-      children: children,
-    }],
-  });
+  try {
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: children,
+      }],
+    });
 
-  return await Packer.toBuffer(doc);
+    const buffer = await Packer.toBuffer(doc);
+    console.log(`[docx] Created document with ${buffer.length} bytes`);
+    return buffer;
+  } catch (error) {
+    console.error("[docx] Error creating document:", error);
+    throw new Error("Failed to create Word document");
+  }
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
