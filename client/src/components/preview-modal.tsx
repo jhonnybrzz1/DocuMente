@@ -36,17 +36,7 @@ export default function PreviewModal({
     },
     onSuccess: async (document) => {
       try {
-        const downloadUrl = `/api/documents/${document.id}/download`;
-        
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `${document.title}.docx`;
-        link.target = '_blank';
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        window.location.href = `/api/documents/${document.id}/download`;
         
         toast({
           title: "Documento gerado",
@@ -60,7 +50,7 @@ export default function PreviewModal({
         console.error("Download error:", error);
         toast({
           title: "Erro no download",
-          description: "O documento foi gerado mas falhou no download.",
+          description: "Falha no download do documento.",
           variant: "destructive",
         });
       }

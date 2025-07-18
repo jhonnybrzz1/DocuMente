@@ -53,17 +53,7 @@ export default function HistorySidebar() {
     e.stopPropagation();
     
     try {
-      const downloadUrl = `/api/documents/${document.id}/download`;
-      
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `${document.title}.docx`;
-      link.target = '_blank';
-      link.style.display = 'none';
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      window.location.href = `/api/documents/${document.id}/download`;
       
       toast({
         title: "Download iniciado",
