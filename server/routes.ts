@@ -174,55 +174,136 @@ async function createWordDocument(title: string, content: string): Promise<Buffe
   const lines = content.split('\n').filter(line => line.trim());
   const children: any[] = [];
 
-  // Add document title
+  // Add header with company/project info
   children.push(new Paragraph({
-    children: [new TextRun({ text: title, bold: true, size: 36 })],
+    children: [new TextRun({ text: "DocuMente - Documentação de Produto", size: 18, color: "666666" })],
+    alignment: "right",
+  }));
+
+  children.push(new Paragraph({ text: "" })); // Spacing
+
+  // Add document title with better styling
+  children.push(new Paragraph({
+    children: [new TextRun({ text: title, bold: true, size: 32, color: "1F4E79" })],
     heading: HeadingLevel.TITLE,
+    spacing: { after: 400 },
+  }));
+
+  // Add creation date
+  const currentDate = new Date().toLocaleDateString('pt-BR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  children.push(new Paragraph({
+    children: [new TextRun({ text: `Gerado em: ${currentDate}`, size: 18, color: "666666", italics: true })],
+    spacing: { after: 600 },
   }));
 
   children.push(new Paragraph({ text: "" })); // Add spacing
 
   for (const line of lines) {
     const trimmedLine = line.trim();
-    if (!trimmedLine) continue;
+    if (!trimmedLine) {
+      children.push(new Paragraph({ text: "" })); // Preserve empty lines
+      continue;
+    }
 
     if (trimmedLine.startsWith('📄') || trimmedLine.startsWith('📘') || trimmedLine.startsWith('🧩') || 
         trimmedLine.startsWith('🗓️') || trimmedLine.startsWith('🚀') || trimmedLine.startsWith('🎯') ||
         trimmedLine.startsWith('⚙️') || trimmedLine.startsWith('🧪') || trimmedLine.startsWith('📡')) {
+      // Document type header with better styling
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine, bold: true, size: 28 })],
+        children: [new TextRun({ text: trimmedLine, bold: true, size: 24, color: "1F4E79" })],
         heading: HeadingLevel.HEADING_1,
+        spacing: { before: 400, after: 200 },
+        border: {
+          bottom: {
+            color: "1F4E79",
+            space: 1,
+            style: "single",
+            size: 6,
+          },
+        },
       }));
     } else if (trimmedLine.startsWith('##')) {
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine.replace('##', '').trim(), bold: true, size: 24 })],
+        children: [new TextRun({ text: trimmedLine.replace('##', '').trim(), bold: true, size: 20, color: "2E5D8A" })],
         heading: HeadingLevel.HEADING_2,
+        spacing: { before: 300, after: 150 },
       }));
     } else if (trimmedLine.startsWith('#')) {
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine.replace('#', '').trim(), bold: true, size: 20 })],
+        children: [new TextRun({ text: trimmedLine.replace('#', '').trim(), bold: true, size: 18, color: "2E5D8A" })],
         heading: HeadingLevel.HEADING_3,
+        spacing: { before: 200, after: 100 },
       }));
     } else if (trimmedLine.startsWith('-')) {
+      // Better bullet points
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine.substring(1).trim(), size: 20 })],
+        children: [new TextRun({ text: trimmedLine.substring(1).trim(), size: 22 })],
         bullet: { level: 0 },
+        spacing: { after: 100 },
+        indent: { left: 360 },
       }));
     } else if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
+      // Bold text sections
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine.replace(/\*\*/g, ''), bold: true, size: 20 })],
+        children: [new TextRun({ text: trimmedLine.replace(/\*\*/g, ''), bold: true, size: 22, color: "1F4E79" })],
+        spacing: { before: 200, after: 100 },
       }));
     } else {
+      // Regular text with better spacing
       children.push(new Paragraph({
-        children: [new TextRun({ text: trimmedLine, size: 20 })],
+        children: [new TextRun({ text: trimmedLine, size: 22 })],
+        spacing: { after: 100 },
+        alignment: "both",
       }));
     }
   }
 
+  // Add footer
+  children.push(new Paragraph({ text: "" }));
+  children.push(new Paragraph({ text: "" }));
+  children.push(new Paragraph({
+    children: [new TextRun({ text: "Este documento foi gerado automaticamente pela plataforma DocuMente.", size: 16, color: "999999", italics: true })],
+    alignment: "center",
+    spacing: { before: 400 },
+  }));
+
   try {
     const doc = new Document({
+      styles: {
+        paragraphStyles: [
+          {
+            id: "Normal",
+            name: "Normal",
+            basedOn: "Normal",
+            next: "Normal",
+            run: {
+              font: "Calibri",
+              size: 22,
+            },
+            paragraph: {
+              spacing: {
+                line: 276,
+                after: 100,
+              },
+            },
+          },
+        ],
+      },
       sections: [{
-        properties: {},
+        properties: {
+          page: {
+            margin: {
+              top: 1440, // 1 inch
+              right: 1440,
+              bottom: 1440,
+              left: 1440,
+            },
+          },
+        },
         children: children,
       }],
     });
