@@ -495,6 +495,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/documents/:id/versions", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid document ID" });
+      }
+      
+      const versions = await storage.getDocumentVersions(id);
+      res.json(versions);
+    } catch (error: any) {
+      console.error("[api] Error fetching document versions:", error);
+      res.status(500).json({ error: "Failed to fetch document versions" });
+    }
+  });
+
+  app.post("/api/documents/:id/versions", async (req, res) => {
+    try {
+      const originalId = parseInt(req.params.id);
+      if (isNaN(originalId)) {
+        return res.status(400).json({ error: "Invalid document ID" });
+      }
+
+      const { type, originalDemand, title } = req.body;
+
+      if (!type || !originalDemand || !title) {
+        return res.status(400).json({ message: "Type, demand, and title are required" });
+      }
+
+      const apiKey = await storage.getActiveApiKey();
+      if (!apiKey) {
+        return res.status(400).json({ message: "No API key configured" });
+      }
+
+      const template = documentTemplates[type as keyof typeof documentTemplates];
+      if (!template) {
+        return res.status(400).json({ message: "Invalid document type" });
+      }
+
+      // Generate new content using Mistral AI
+      const content = await callMistralAPI(template, originalDemand, apiKey.mistralKey);
+      
+      const validatedData = insertDocumentSchema.parse({
+        title,
+        type,
+        content,
+        originalDemand,
+      });
+      
+      const newVersion = await storage.createDocumentVersion(originalId, validatedData);
+      res.json(newVersion);
+    } catch (error: any) {
+      console.error("[api] Error creating document version:", error);
+      if (error.message?.includes("not found")) {
+        res.status(404).json({ error: "Original document not found" });
+      } else {
+        res.status(500).json({ error: "Failed to create document version" });
+      }
+    }
+  });
+
   // Get single document
   app.get("/api/documents/:id", async (req, res) => {
     try {

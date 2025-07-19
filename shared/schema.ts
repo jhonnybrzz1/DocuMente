@@ -8,6 +8,9 @@ export const documents = pgTable("documents", {
   type: text("type").notNull(),
   content: text("content").notNull(),
   originalDemand: text("original_demand").notNull(),
+  version: integer("version").default(1).notNull(),
+  parentId: integer("parent_id"), // Reference to original document for versions
+  isLatest: boolean("is_latest").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -21,6 +24,8 @@ export const apiKeys = pgTable("api_keys", {
 export const insertDocumentSchema = createInsertSchema(documents).omit({
   id: true,
   createdAt: true,
+  version: true,
+  isLatest: true,
 });
 
 export const insertApiKeySchema = createInsertSchema(apiKeys).omit({

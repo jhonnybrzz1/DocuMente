@@ -4,11 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Download, MoreVertical } from "lucide-react";
+import { Search, Download, MoreVertical, History, ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { documentTypes, type Document } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import VersionModal from "./version-modal";
 
 const getTypeColor = (type: string) => {
   const docType = documentTypes.find(dt => dt.value === type);
@@ -31,9 +34,153 @@ const getTypeLabel = (type: string) => {
   return docType?.label || type;
 };
 
+interface DocumentItemProps {
+  document: Document;
+  isExpanded: boolean;
+  onToggleVersions: () => void;
+  onDownload: (document: Document, e: React.MouseEvent) => void;
+}
+
+function DocumentItem({ document, isExpanded, onToggleVersions, onDownload }: DocumentItemProps) {
+  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+
+  const { data: versions = [], isLoading: versionsLoading } = useQuery({
+    queryKey: ["/api/documents", document.id, "versions"],
+    queryFn: async () => {
+      const response = await fetch(`/api/documents/${document.id}/versions`);
+      if (!response.ok) throw new Error("Failed to fetch document versions");
+      return response.json();
+    },
+    enabled: isExpanded,
+  });
+
+  const hasMultipleVersions = document.version > 1;
+
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      {/* Main Document */}
+      <div className="p-3 hover:bg-gray-50 transition-colors">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2 mb-1">
+              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTypeColor(document.type)}`}>
+                {getTypeLabel(document.type)}
+              </span>
+              {document.version > 1 && (
+                <Badge variant="secondary" className="text-xs">
+                  v{document.version}
+                </Badge>
+              )}
+              <span className="text-xs text-gray-500">
+                {formatDistanceToNow(new Date(document.createdAt), { 
+                  addSuffix: true, 
+                  locale: ptBR 
+                })}
+              </span>
+            </div>
+            <h4 className="text-sm font-medium text-gray-900 truncate">
+              {document.title}
+            </h4>
+            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+              {document.originalDemand.slice(0, 60)}...
+            </p>
+          </div>
+          <div className="flex items-center space-x-1 ml-2">
+            {hasMultipleVersions && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleVersions();
+                }}
+                className="text-gray-400 hover:text-gray-600 p-1"
+              >
+                {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                <History size={12} className="ml-1" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsVersionModalOpen(true);
+              }}
+              className="text-gray-400 hover:text-gray-600 p-1"
+              title="Criar nova versão"
+            >
+              <Plus size={12} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => onDownload(document, e)}
+              className="text-gray-400 hover:text-gray-600 p-1"
+            >
+              <Download size={12} />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Versions List */}
+      {hasMultipleVersions && (
+        <Collapsible open={isExpanded}>
+          <CollapsibleContent>
+            <div className="border-t border-gray-100 bg-gray-50 p-2">
+              {versionsLoading ? (
+                <div className="text-xs text-gray-500 p-2">Carregando versões...</div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="text-xs font-medium text-gray-600 mb-2">
+                    Histórico de Versões
+                  </div>
+                  {versions.slice(1).map((version: Document) => (
+                    <div key={version.id} className="flex items-center justify-between p-2 hover:bg-white rounded text-xs">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline" className="text-xs">
+                            v{version.version}
+                          </Badge>
+                          <span className="text-gray-500">
+                            {formatDistanceToNow(new Date(version.createdAt), { 
+                              addSuffix: true, 
+                              locale: ptBR 
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => onDownload(version, e)}
+                        className="text-gray-400 hover:text-gray-600 p-1 h-auto"
+                      >
+                        <Download size={10} />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+      
+      <VersionModal
+        isOpen={isVersionModalOpen}
+        onClose={() => setIsVersionModalOpen(false)}
+        document={document}
+      />
+    </div>
+  );
+}
+
 export default function HistorySidebar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("");
+  const [expandedVersions, setExpandedVersions] = useState<Set<number>>(new Set());
   const { toast } = useToast();
 
   const { data: documents = [], isLoading } = useQuery({
@@ -48,6 +195,16 @@ export default function HistorySidebar() {
       return response.json();
     }
   });
+
+  const toggleVersions = (documentId: number) => {
+    const newExpanded = new Set(expandedVersions);
+    if (newExpanded.has(documentId)) {
+      newExpanded.delete(documentId);
+    } else {
+      newExpanded.add(documentId);
+    }
+    setExpandedVersions(newExpanded);
+  };
 
   const handleDownload = async (document: Document, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -127,40 +284,13 @@ export default function HistorySidebar() {
             </div>
           ) : (
             documents.map((document) => (
-              <div
-                key={document.id}
-                className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTypeColor(document.type)}`}>
-                        {getTypeLabel(document.type)}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(document.createdAt), { 
-                          addSuffix: true, 
-                          locale: ptBR 
-                        })}
-                      </span>
-                    </div>
-                    <h4 className="text-sm font-medium text-gray-900 truncate">
-                      {document.title}
-                    </h4>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                      {document.originalDemand.slice(0, 60)}...
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => handleDownload(document, e)}
-                    className="text-gray-400 hover:text-gray-600 ml-2 p-1"
-                  >
-                    <Download size={12} />
-                  </Button>
-                </div>
-              </div>
+              <DocumentItem 
+                key={document.id} 
+                document={document} 
+                isExpanded={expandedVersions.has(document.id)}
+                onToggleVersions={() => toggleVersions(document.id)}
+                onDownload={handleDownload}
+              />
             ))
           )}
         </div>
