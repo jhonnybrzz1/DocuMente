@@ -14,7 +14,7 @@ export default function ApiKeyConfig() {
 
   const testConnectionMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/test-connection", { apiKey: activeApiKey?.mistralKey });
+      const response = await apiRequest("POST", "/api/test-connection");
       return response.json();
     },
     onSuccess: () => {
