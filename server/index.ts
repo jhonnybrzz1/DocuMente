@@ -42,7 +42,7 @@ app.use((req, res, next) => {
   try {
     const existingKey = await storage.getActiveApiKey();
     if (!existingKey) {
-      await storage.createApiKey({ mistralKey: });
+      await storage.createApiKey({ mistralKey:""});
       log("Mistral API key initialized");
     }
   } catch (error) {
