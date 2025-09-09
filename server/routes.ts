@@ -146,7 +146,7 @@ async function callMistralAPI(prompt: string, demandText: string, apiKey: string
       "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "mistral-large-latest",
+      model: "ft:ministral-8b-latest:450092c5:20250909:bf577d70",
       messages: [
         {
           role: "system",
