@@ -335,7 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: "ft:mistral-large-latest:450092c5:20250910:3ac100f8",
+          model: "ft:mistral-small-latest:450092c5:20250910:23569512",
           messages: [
             {
               role: "user",
