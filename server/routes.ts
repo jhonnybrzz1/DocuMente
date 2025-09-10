@@ -146,7 +146,7 @@ async function callMistralAPI(prompt: string, demandText: string, apiKey: string
       "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "ft:ministral-8b-latest:450092c5:20250909:bf577d70",
+      model: "ft:mistral-large-latest:450092c5:20250910:3ac100f8",
       messages: [
         {
           role: "system",
@@ -335,7 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: "mistral-large-latest",
+          model: "ft:mistral-large-latest:450092c5:20250910:3ac100f8",
           messages: [
             {
               role: "user",
