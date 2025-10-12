@@ -36,9 +36,27 @@ export default function GenerationControls({
       onPreview(data.content);
     },
     onError: (error: any) => {
+      let errorMessage = "Falha ao gerar prévia do documento.";
+      let errorDetails = "";
+
+      // Extract error details if available
+      if (error.message) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+          if (errorData.details) {
+            errorDetails = errorData.details;
+          }
+        } catch (e) {
+          errorMessage = error.message;
+        }
+      }
+
       toast({
         title: "Erro na prévia",
-        description: error.message || "Falha ao gerar prévia do documento.",
+        description: errorDetails || errorMessage,
         variant: "destructive",
       });
     },
@@ -82,9 +100,27 @@ export default function GenerationControls({
       }
     },
     onError: (error: any) => {
+      let errorMessage = "Falha ao gerar documento.";
+      let errorDetails = "";
+
+      // Extract error details if available
+      if (error.message) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+          if (errorData.details) {
+            errorDetails = errorData.details;
+          }
+        } catch (e) {
+          errorMessage = error.message;
+        }
+      }
+
       toast({
         title: "Erro na geração",
-        description: error.message || "Falha ao gerar documento.",
+        description: errorDetails || errorMessage,
         variant: "destructive",
       });
       setIsProcessing(false);
