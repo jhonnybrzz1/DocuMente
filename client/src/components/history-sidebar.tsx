@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Download, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Trash2, Download, ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { documentTypes } from "@shared/schema";
 
@@ -22,6 +22,7 @@ interface DocumentItemProps {
   onToggleVersions: (id: number) => void;
   onDownload: (id: number) => void;
   onDelete: (id: number) => void;
+  onCorrect: (id: number) => void;
 }
 
 function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDelete }: DocumentItemProps) {
@@ -36,6 +37,9 @@ function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDe
     },
     enabled: isExpanded,
   });
+
+  const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
+  const [correctionText, setCorrectionText] = useState("");
 
   return (
     <div className="mb-4">
@@ -125,6 +129,10 @@ export default function HistorySidebar() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
+  const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
+  const [correctionText, setCorrectionText] = useState("");
+
   const { data: documents = [], isLoading, refetch } = useQuery({
     queryKey: ["/api/documents", searchQuery, filterType],
     queryFn: async () => {
@@ -184,6 +192,172 @@ export default function HistorySidebar() {
     }
   };
 
+  const handleCorrect = (id: number) => {
+    setSelectedDocumentId(id);
+    setIsCorrectionModalOpen(true);
+  };
+
+  const handleRegenerate = async () => {
+    if (!selectedDocumentId) return;
+
+    try {
+      const response = await fetch(`/api/documents/${selectedDocumentId}/regenerate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ correctionText }),
+      });
+
+      if (!response.ok) throw new Error("Failed to regenerate document");
+
+      toast({
+        title: "Documento regenerado",
+        description: "O documento foi regenerado com sucesso.",
+        variant: "default",
+      });
+
+      setIsCorrectionModalOpen(false);
+      setCorrectionText("");
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erro ao regenerar",
+        description: error instanceof Error ? error.message : "Falha ao regenerar documento.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCloseCorrectionModal = () => {
+    setIsCorrectionModalOpen(false);
+    setCorrectionText("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      handleCloseCorrectionModal();
+    }
+  };
+
+  useEffect(() => {
+    if (isCorrectionModalOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isCorrectionModalOpen]);
+
+  const handleOutsideClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleCloseCorrectionModal();
+    }
+  };
+
+  useEffect(() => {
+    if (isCorrectionModalOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isCorrectionModalOpen]);
+
+  const handleCorrectionTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCorrectionText(e.target.value);
+  };
+
+  const handleCorrectionModalOpen = (id: number) => {
+    setSelectedDocumentId(id);
+    setIsCorrectionModalOpen(true);
+  };
+
+  const handleCorrectionModalClose = () => {
+    setIsCorrectionModalOpen(false);
+    setCorrectionText("");
+  };
+
+  const handleCorrectionSubmit = async () => {
+    if (!selectedDocumentId) return;
+
+    try {
+      const response = await fetch(`/api/documents/${selectedDocumentId}/regenerate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ correctionText }),
+      });
+
+      if (!response.ok) throw new Error("Failed to regenerate document");
+
+      toast({
+        title: "Documento regenerado",
+        description: "O documento foi regenerado com sucesso.",
+        variant: "default",
+      });
+
+      handleCorrectionModalClose();
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erro ao regenerar",
+        description: error instanceof Error ? error.message : "Falha ao regenerar documento.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCorrectionModalKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      handleCorrectionModalClose();
+    }
+  };
+
+  const handleCorrectionModalOutsideClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleCorrectionModalClose();
+    }
+  };
+
+  const handleCorrectionModalSubmit = async () => {
+    if (!selectedDocumentId) return;
+
+    try {
+      const response = await fetch(`/api/documents/${selectedDocumentId}/regenerate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ correctionText }),
+      });
+
+      if (!response.ok) throw new Error("Failed to regenerate document");
+
+      toast({
+        title: "Documento regenerado",
+        description: "O documento foi regenerado com sucesso.",
+        variant: "default",
+      });
+
+      handleCorrectionModalClose();
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erro ao regenerar",
+        description: error instanceof Error ? error.message : "Falha ao regenerar documento.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card className="w-full h-full flex flex-col">
       <CardHeader>
@@ -201,6 +375,34 @@ export default function HistorySidebar() {
               className="flex-1"
             />
             <Select value={filterType} onValueChange={setFilterType}>
+
+          {isCorrectionModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="bg-white p-6 rounded-lg w-1/2">
+                <h3 className="text-lg font-semibold mb-4">Corrigir Documento</h3>
+                <textarea
+                  className="w-full h-40 p-2 border rounded mb-4"
+                  value={correctionText}
+                  onChange={(e) => setCorrectionText(e.target.value)}
+                  maxLength={10000}
+                  placeholder="Insira as correções aqui (máximo 10.000 caracteres)..."
+                />
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    onClick={() => setIsCorrectionModalOpen(false)}
+                    variant="outline"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleRegenerate}
+                  >
+                    Regenerar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Tipo" />
               </SelectTrigger>
