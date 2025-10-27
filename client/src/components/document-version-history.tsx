@@ -4,115 +4,144 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { EditDocumentDialog } from "./EditDocumentDialog";
 
 interface DocumentVersionHistoryProps {
   documentId: number;
   onCreateNewVersion: (versionId: number) => void;
 }
 
-export default function DocumentVersionHistory({ documentId, onCreateNewVersion }: DocumentVersionHistoryProps) {
-  const { toast } = useToast();
-  const [expandedVersions, setExpandedVersions] = useState<Set<number>>(new Set());
+export function DocumentVersionHistory({
+  documentId,
+  onCreateNewVersion,
+}: DocumentVersionHistoryProps) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentVersionId, setCurrentVersionId] = useState<number | null>(null);
 
-  const { data: versions = [], isLoading } = useQuery({
-    queryKey: ["/api/documents", documentId, "versions"],
+  const { data: versions, isLoading } = useQuery({
+    queryKey: ['document-versions', documentId],
     queryFn: async () => {
       const response = await fetch(`/api/documents/${documentId}/versions`);
-      if (!response.ok) throw new Error("Failed to fetch document versions");
+      if (!response.ok) throw new Error('Failed to fetch document versions');
       return response.json();
     },
   });
 
-  const toggleVersion = (versionId: number) => {
-    const newExpanded = new Set(expandedVersions);
-    if (newExpanded.has(versionId)) {
-      newExpanded.delete(versionId);
-    } else {
-      newExpanded.add(versionId);
-    }
-    setExpandedVersions(newExpanded);
-  };
+  const toast = useToast();
 
-  const handleDownload = (versionId: number) => {
-    window.location.href = `/api/documents/versions/${versionId}/download`;
+  const handleSaveNewVersion = async (additionalContent: string) => {
+    try {
+      // Validate additional content
+      if (!additionalContent.trim()) {
+        toast({
+          title: 'Erro',
+          description: 'Por favor, forneça informações adicionais para gerar uma nova versão.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Get the original document content
+      const originalVersion = versions.find(v => v.id === currentVersionId);
+      if (!originalVersion) throw new Error('Original version not found');
+
+      // Combine original content with additional content
+      const combinedContent = `${originalVersion.content}\n\n${additionalContent}`;
+
+      // Set generating state
+      setIsGenerating(true);
+
+      // Show loading state
+      toast({
+        title: 'Gerando nova versão',
+        description: 'Por favor, aguarde enquanto a IA gera a nova versão do documento.',
+      });
+
+      // Call the AI to generate a new version with the combined content
+      const response = await fetch(`/api/generate-document`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: originalVersion.type,
+          demand: combinedContent,
+          title: `Versão ${originalVersion.version + 1} - ${originalVersion.title} (Atualizada)`
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to generate new version');
+
+      const newVersion = await response.json();
+
+      toast({
+        title: 'Nova versão gerada',
+        description: 'A nova versão do documento foi gerada com sucesso.',
+      });
+
+      setIsEditDialogOpen(false);
+      onCreateNewVersion(newVersion.id);
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Falha ao gerar nova versão do documento.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleCreateNewVersion = (versionId: number) => {
-    onCreateNewVersion(versionId);
+    setCurrentVersionId(versionId);
+    setIsEditDialogOpen(true);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Histórico de Versões</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="text-center py-4">
-            <Loader2 className="animate-spin h-4 w-4 inline-block mr-2" />
-            <span>Carregando histórico de versões...</span>
-          </div>
-        ) : versions.length > 0 ? (
-          <div className="space-y-4">
-            {versions.map((version) => (
-              <div key={version.id} className="border rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold text-sm">Versão {version.version}</h4>
-                    <p className="text-xs text-gray-500">
-                      {new Date(version.createdAt).toLocaleString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      onClick={() => handleDownload(version.id)}
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      onClick={() => handleCreateNewVersion(version.id)}
-                      variant="outline"
-                      size="sm"
-                      className="h-6 text-xs"
-                    >
-                      Criar nova versão
-                    </Button>
-                    <Button
-                      onClick={() => toggleVersion(version.id)}
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                    >
-                      {expandedVersions.has(version.id) ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
+    <div>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Histórico de Versões</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {versions?.map((version) => (
+            <div key={version.id} className="mb-4 p-4 border rounded-lg">
+              <div className="flex justify-between items-center">
+                <h3 className="font-medium">{version.title}</h3>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={() => handleCreateNewVersion(version.id)}
+                    variant="outline"
+                  >
+                    Criar nova versão
+                  </Button>
                 </div>
-                {expandedVersions.has(version.id) && (
-                  <div className="mt-2 border-t pt-2">
-                    <h5 className="font-medium text-sm mb-1">Alterações:</h5>
-                    <p className="text-xs whitespace-pre-wrap">{version.changes}</p>
-                  </div>
-                )}
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-gray-500">Nenhuma versão encontrada</p>
-        )}
-      </CardContent>
-    </Card>
+              <p className="text-sm text-gray-500 mt-1">
+                Versão {version.version} - {new Date(version.createdAt).toLocaleString()}
+              </p>
+            </div>
+          ))}
+          <EditDocumentDialog
+            isOpen={isEditDialogOpen}
+            onClose={() => setIsEditDialogOpen(false)}
+            documentId={documentId}
+            versionId={currentVersionId!}
+            initialContent={versions?.find(v => v.id === currentVersionId)?.content || ''}
+            onSave={handleSaveNewVersion}
+            isGenerating={isGenerating}
+          />
+        </CardContent>
+      </Card>
+    </div>
   );
 }
