@@ -65,6 +65,18 @@ describe('Document Routes', () => {
       expect(res.body.error).toBe('Document not found');
     });
 
+    it('should return 404 if version is not found', async () => {
+      Document.findById.mockResolvedValue(mockDocument);
+      DocumentVersion.findOne.mockResolvedValue(null);
+
+      const res = await request(app)
+        .post('/documents/507f1f77bcf86cd799439011/versions/1/edit')
+        .send({ content: 'New content' });
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('Version not found');
+    });
+
     it('should edit a document version successfully', async () => {
       Document.findById.mockResolvedValue(mockDocument);
       DocumentVersion.findOne.mockResolvedValue(mockVersion);

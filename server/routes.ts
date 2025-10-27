@@ -20,12 +20,14 @@ router.post('/documents/:documentId/versions/:versionId/edit', async (req, res) 
     if (!document) {
       return res.status(404).json({ error: 'Document not found' });
     }
+    
 
     const originalVersion = await DocumentVersion.findOne({
       document: documentId,
       version: versionId
     });
 
+    if (!originalVersion) {
       return res.status(404).json({ error: 'Version not found' });
     }
 
