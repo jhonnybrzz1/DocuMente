@@ -657,6 +657,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate AI prompt
+  app.get("/api/documents/:id/generate-prompt", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const document = await storage.getDocument(id);
+
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Generate a simple AI prompt based on document content
+      const prompt = `Você é um assistente de IA. Com base no seguinte documento, gere um prompt para ajudar na criação de conteúdo relacionado:
+
+      Título: ${document.title}
+      Tipo: ${document.type}
+      Conteúdo: ${document.content || "Nenhum conteúdo disponível"}
+
+      Por favor, forneça sugestões de melhorias, expansões ou ideias relacionadas a este documento.`;
+
+      res.json({ prompt });
+    } catch (error) {
+      console.error("Generate AI prompt error:", error);
+      res.status(500).json({ message: "Failed to generate AI prompt" });
+    }
+  });
+
   // Delete document
   app.delete("/api/documents/:id", async (req, res) => {
     try {

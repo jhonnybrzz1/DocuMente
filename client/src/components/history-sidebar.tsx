@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Download, ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react";
+import { Trash2, Download, ChevronDown, ChevronUp, Loader2, Plus, Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { documentTypes, type Document } from "@shared/schema";
 import EditModal from "./edit-modal";
@@ -25,9 +25,10 @@ interface DocumentItemProps {
   onDelete: (id: number) => void;
   onCorrect: (id: number) => void;
   onEdit: (id: number) => void;
+  onGenerateAIPrompt: (id: number) => void;
 }
 
-function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDelete, onEdit }: DocumentItemProps) {
+function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDelete, onEdit, onGenerateAIPrompt }: DocumentItemProps) {
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
 
   const { data: versions = [], isLoading: versionsLoading } = useQuery({
@@ -69,6 +70,15 @@ function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDe
             className="h-6 w-6"
           >
             <Download className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => onGenerateAIPrompt(document.id)}
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            title="Gerar prompt com IA"
+          >
+            <Bot className="h-4 w-4" />
           </Button>
           <Button
             onClick={() => onEdit(document.id)}
@@ -145,6 +155,9 @@ export default function HistorySidebar() {
   const [correctionText, setCorrectionText] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [documentToEdit, setDocumentToEdit] = useState<Document | null>(null);
+  const [isAIPromptModalOpen, setIsAIPromptModalOpen] = useState(false);
+  const [aiPrompt, setAIPrompt] = useState("");
+  const [aiGeneratedContent, setAIGeneratedContent] = useState("");
 
   const { data: documents = [], isLoading, refetch } = useQuery({
     queryKey: ["/api/documents", searchQuery, filterType],
@@ -216,6 +229,24 @@ export default function HistorySidebar() {
       toast({
         title: "Erro ao carregar documento",
         description: error.message || "Falha ao carregar documento para edição.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGenerateAIPrompt = async (id: number) => {
+    try {
+      const response = await fetch(`/api/documents/${id}/generate-prompt`);
+      if (!response.ok) {
+        throw new Error("Failed to generate AI prompt");
+      }
+      const data = await response.json();
+      setAIGeneratedContent(data.prompt);
+      setIsAIPromptModalOpen(true);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha ao gerar prompt de IA",
         variant: "destructive",
       });
     }
@@ -470,6 +501,7 @@ export default function HistorySidebar() {
                   onDownload={handleDownload}
                   onDelete={handleDelete}
                   onEdit={handleEdit}
+                  onGenerateAIPrompt={handleGenerateAIPrompt}
                 />
               ))}
             </div>
@@ -479,6 +511,59 @@ export default function HistorySidebar() {
         </div>
       </CardContent>
     </Card>
+
+    {isAIPromptModalOpen && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-lg w-1/2">
+          <h3 className="text-lg font-semibold mb-4">Prompt de IA Gerado</h3>
+          <textarea
+            className="w-full h-40 p-2 border rounded mb-4"
+            value={aiGeneratedContent}
+            readOnly
+            maxLength={10000}
+          />
+          <div className="flex justify-end space-x-2">
+            <Button
+              onClick={() => {
+                navigator.clipboard.writeText(aiGeneratedContent);
+                toast({
+                  title: "Copiado",
+                  description: "Prompt copiado para a área de transferência",
+                });
+              }}
+              variant="outline"
+            >
+              Copiar
+            </Button>
+            <Button
+              onClick={() => {
+                setAIGeneratedContent("");
+                setIsAIPromptModalOpen(false);
+              }}
+              variant="outline"
+            >
+              Limpar
+            </Button>
+            <Button
+              onClick={() => {
+                handleGenerateAIPrompt(selectedDocumentId!);
+              }}
+              variant="outline"
+            >
+              Refazer
+            </Button>
+            <Button
+              onClick={() => {
+                setIsAIPromptModalOpen(false);
+              }}
+              variant="destructive"
+            >
+              Fechar
+            </Button>
+          </div>
+        </div>
+      </div>
+    )}
   );
 }
 
