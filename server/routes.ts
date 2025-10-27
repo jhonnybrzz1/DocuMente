@@ -12,13 +12,11 @@ router.post('/documents/:documentId/versions/:versionId/edit', async (req, res) 
     const { documentId, versionId } = req.params;
     const { content } = req.body;
 
-    if (!content) {
       return res.status(400).json({ error: 'Content is required' });
     }
 
     // Find the original document and version
     const document = await Document.findById(documentId);
-    if (!document) {
       return res.status(404).json({ error: 'Document not found' });
     }
 
@@ -27,7 +25,6 @@ router.post('/documents/:documentId/versions/:versionId/edit', async (req, res) 
       version: versionId
     });
 
-    if (!originalVersion) {
       return res.status(404).json({ error: 'Version not found' });
     }
 
@@ -38,7 +35,7 @@ router.post('/documents/:documentId/versions/:versionId/edit', async (req, res) 
       content,
       createdAt: new Date(),
       type: originalVersion.type,
-      title: `Versão ${originalVersion.version + 1} - ${originalVersion.title} (Atualizada)`
+      title: 
     });
 
     await newVersion.save();
@@ -59,7 +56,6 @@ router.post('/generate-document', async (req, res) => {
   try {
     const { type, demand, title } = req.body;
 
-    if (!type || !demand || !title) {
       return res.status(400).json({ error: 'Type, demand, and title are required' });
     }
 
