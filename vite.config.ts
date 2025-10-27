@@ -30,6 +30,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         "@testing-library/react",
+        "@testing-library/jest-dom",
       ],
     },
   },
