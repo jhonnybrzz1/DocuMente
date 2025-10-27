@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Download, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Trash2, Download, ChevronDown, ChevronUp, Loader2, Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { documentTypes } from "@shared/schema";
+import PromptGeneratorButton from "./prompt-generator-button";
 
 interface DocumentItemProps {
   document: {
@@ -17,14 +18,16 @@ interface DocumentItemProps {
     title: string;
     type: string;
     createdAt: string;
+    content: string;
   };
   isExpanded: boolean;
   onToggleVersions: (id: number) => void;
   onDownload: (id: number) => void;
   onDelete: (id: number) => void;
+  onGeneratePrompt: (id: number) => void;
 }
 
-function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDelete }: DocumentItemProps) {
+function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDelete, onGeneratePrompt }: DocumentItemProps) {
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
 
   const { data: versions = [], isLoading: versionsLoading } = useQuery({
@@ -134,7 +137,11 @@ export default function HistorySidebar() {
 
       const response = await fetch(`/api/documents?${params}`);
       if (!response.ok) throw new Error("Failed to fetch documents");
-      return response.json();
+      const data = await response.json();
+      return data.map((doc: any) => ({
+        ...doc,
+        content: doc.content || ""
+      }));
     },
   });
 
@@ -178,10 +185,26 @@ export default function HistorySidebar() {
     window.location.href = `/api/documents/${id}/download`;
   };
 
+  const [showPromptGenerator, setShowPromptGenerator] = useState<Set<number>>(new Set());
+
+  const togglePromptGenerator = (documentId: number) => {
+    const newShowPromptGenerator = new Set(showPromptGenerator);
+    if (newShowPromptGenerator.has(documentId)) {
+      newShowPromptGenerator.delete(documentId);
+    } else {
+      newShowPromptGenerator.add(documentId);
+    }
+    setShowPromptGenerator(newShowPromptGenerator);
+  };
+
   const handleDelete = (id: number) => {
     if (confirm("Tem certeza que deseja excluir este documento?")) {
       deleteMutation.mutate(id);
     }
+  };
+
+  const handleGeneratePrompt = (id: number) => {
+    togglePromptGenerator(id);
   };
 
   return (
