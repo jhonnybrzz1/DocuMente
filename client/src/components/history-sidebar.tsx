@@ -11,6 +11,7 @@ import { Trash2, Download, ChevronDown, ChevronUp, Loader2, Bot } from "lucide-r
 import { useToast } from "@/hooks/use-toast";
 import { documentTypes } from "@shared/schema";
 import PromptGeneratorButton from "./prompt-generator-button";
+import PromptCreator from "./prompt-creator";
 
 interface DocumentItemProps {
   document: {
@@ -27,7 +28,7 @@ interface DocumentItemProps {
   onGeneratePrompt: (id: number) => void;
 }
 
-function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDelete, onGeneratePrompt }: DocumentItemProps) {
+function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDelete, onGeneratePrompt, onCreatePrompt }: DocumentItemProps) {
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
 
   const { data: versions = [], isLoading: versionsLoading } = useQuery({
@@ -186,8 +187,31 @@ export default function HistorySidebar() {
   };
 
   const [showPromptGenerator, setShowPromptGenerator] = useState<Set<number>>(new Set());
+  const [showPromptCreator, setShowPromptCreator] = useState<Set<number>>(new Set());
 
   const togglePromptGenerator = (documentId: number) => {
+    const newShowPromptGenerator = new Set(showPromptGenerator);
+    if (newShowPromptGenerator.has(documentId)) {
+      newShowPromptGenerator.delete(documentId);
+    } else {
+      newShowPromptGenerator.add(documentId);
+      // Close prompt creator if open
+      setShowPromptCreator(new Set());
+    }
+    setShowPromptGenerator(newShowPromptGenerator);
+  };
+
+  const togglePromptCreator = (documentId: number) => {
+    const newShowPromptCreator = new Set(showPromptCreator);
+    if (newShowPromptCreator.has(documentId)) {
+      newShowPromptCreator.delete(documentId);
+    } else {
+      newShowPromptCreator.add(documentId);
+      // Close prompt generator if open
+      setShowPromptGenerator(new Set());
+    }
+    setShowPromptCreator(newShowPromptCreator);
+  };
     const newShowPromptGenerator = new Set(showPromptGenerator);
     if (newShowPromptGenerator.has(documentId)) {
       newShowPromptGenerator.delete(documentId);
@@ -204,6 +228,12 @@ export default function HistorySidebar() {
   };
 
   const handleGeneratePrompt = (id: number) => {
+    togglePromptGenerator(id);
+  };
+
+  const handleCreatePrompt = (id: number) => {
+    togglePromptCreator(id);
+  };
     togglePromptGenerator(id);
   };
 
