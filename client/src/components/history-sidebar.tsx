@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Download, ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { documentTypes } from "@shared/schema";
+import { documentTypes, type Document } from "@shared/schema";
+import EditModal from "./edit-modal";
 
 interface DocumentItemProps {
   document: {
@@ -23,9 +24,10 @@ interface DocumentItemProps {
   onDownload: (id: number) => void;
   onDelete: (id: number) => void;
   onCorrect: (id: number) => void;
+  onEdit: (id: number) => void;
 }
 
-function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDelete }: DocumentItemProps) {
+function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDelete, onEdit }: DocumentItemProps) {
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
 
   const { data: versions = [], isLoading: versionsLoading } = useQuery({
@@ -67,6 +69,15 @@ function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDe
             className="h-6 w-6"
           >
             <Download className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => onEdit(document.id)}
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            title="Editar documento"
+          >
+            📝
           </Button>
           <Button
             onClick={() => onDelete(document.id)}
@@ -132,6 +143,8 @@ export default function HistorySidebar() {
   const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
   const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
   const [correctionText, setCorrectionText] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [documentToEdit, setDocumentToEdit] = useState<Document | null>(null);
 
   const { data: documents = [], isLoading, refetch } = useQuery({
     queryKey: ["/api/documents", searchQuery, filterType],
@@ -189,6 +202,22 @@ export default function HistorySidebar() {
   const handleDelete = (id: number) => {
     if (confirm("Tem certeza que deseja excluir este documento?")) {
       deleteMutation.mutate(id);
+    }
+  };
+
+  const handleEdit = async (id: number) => {
+    try {
+      const response = await fetch(`/api/documents/${id}`);
+      if (!response.ok) throw new Error("Failed to fetch document");
+      const document = await response.json();
+      setDocumentToEdit(document);
+      setIsEditModalOpen(true);
+    } catch (error) {
+      toast({
+        title: "Erro ao carregar documento",
+        description: error.message || "Falha ao carregar documento para edição.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -403,18 +432,26 @@ export default function HistorySidebar() {
               </div>
             </div>
           )}
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {Object.entries(documentTypes).map(([key, { label }]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+          <EditModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            document={documentToEdit}
+          />
+
+          <Select value={filterType} onValueChange={setFilterType}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {Object.entries(documentTypes).map(([key, { label }]) => (
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           </div>
 
           {isLoading ? (
@@ -432,6 +469,7 @@ export default function HistorySidebar() {
                   onToggleVersions={toggleVersions}
                   onDownload={handleDownload}
                   onDelete={handleDelete}
+                  onEdit={handleEdit}
                 />
               ))}
             </div>

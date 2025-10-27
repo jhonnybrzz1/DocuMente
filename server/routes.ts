@@ -608,6 +608,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Edit document and create new version
+  app.post("/api/documents/:id/edit", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { content } = req.body;
+
+      if (!content) {
+        return res.status(400).json({ message: "Content is required" });
+      }
+
+      // Get the original document
+      const originalDocument = await storage.getDocument(id);
+      if (!originalDocument) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Create a new version with the edited content
+      const validated = insertDocumentSchema.parse({
+        title: originalDocument.title,
+        type: originalDocument.type,
+        content,
+        originalDemand: originalDocument.originalDemand,
+      });
+
+      const newVersion = await storage.createDocumentVersion(id, validated);
+      res.json(newVersion);
+
+    } catch (error) {
+      console.error("Edit document error:", error);
+      res.status(500).json({ message: "Failed to edit document" });
+    }
+  });
+
   app.get("/api/documents/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
