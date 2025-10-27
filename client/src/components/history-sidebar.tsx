@@ -435,6 +435,18 @@ export default function HistorySidebar() {
               className="flex-1"
             />
             <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {Object.entries(documentTypes).map(([key, { label }]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
           {isCorrectionModalOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -481,11 +493,7 @@ export default function HistorySidebar() {
                   {label}
                 </SelectItem>
               ))}
-            </SelectContent>
-          </Select>
-
-          {isLoading ? (
-            <div className="text-center py-4">
+            </SelectContent>          {isLoading ? (            <div className="text-center py-4">
               <Loader2 className="animate-spin h-4 w-4 inline-block mr-2" />
               <span>Carregando histórico...</span>
             </div>
