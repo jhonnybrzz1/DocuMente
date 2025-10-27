@@ -7,3 +7,5 @@ export const renderWithQueryClient = (component) => {
     <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
   );
 };
+
+export default { queryClient, renderWithQueryClient };
