@@ -483,7 +483,6 @@ export default function HistorySidebar() {
               ))}
             </SelectContent>
           </Select>
-          </div>
 
           {isLoading ? (
             <div className="text-center py-4">
@@ -564,6 +563,8 @@ export default function HistorySidebar() {
         </div>
       </div>
     )}
-  );
+  </CardContent>
+</Card>
+);
 }
 
