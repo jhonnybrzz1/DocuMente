@@ -1,30 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react';
 import HistorySidebar from './history-sidebar';
-import { describe, it, expect, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-// Mock the useToast hook
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({
-    toast: vi.fn(),
-  }),
-}));
-
-// Mock the fetch API
-global.fetch = vi.fn(() =>
-  Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve([
-      {
-        id: 1,
-        title: 'Test Document',
-        type: 'documentation',
-        createdAt: '2023-01-01T00:00:00Z',
-        content: 'This is a test document content.',
-      },
-    ]),
-  })
-);
 
 const queryClient = new QueryClient();
 
