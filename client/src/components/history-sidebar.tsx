@@ -493,7 +493,10 @@ export default function HistorySidebar() {
                   {label}
                 </SelectItem>
               ))}
-            </SelectContent>          {isLoading ? (            <div className="text-center py-4">
+            </SelectContent>
+          </Select>
+          {isLoading ? (
+            <div className="text-center py-4">
               <Loader2 className="animate-spin h-4 w-4 inline-block mr-2" />
               <span>Carregando histórico...</span>
             </div>
@@ -571,8 +574,6 @@ export default function HistorySidebar() {
         </div>
       </div>
     )}
-  </CardContent>
-</Card>
-);
+  );
 }
 
