@@ -667,14 +667,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Document not found" });
       }
 
-      // Generate a simple AI prompt based on document content
-      const prompt = `Você é um assistente de IA. Com base no seguinte documento, gere um prompt para ajudar na criação de conteúdo relacionado:
+      // Generate a more useful AI prompt based on document content
+      const prompt = `Você é um assistente de IA especializado em documentação de produtos. Com base no seguinte documento, forneça sugestões de melhorias, expansões ou ideias relacionadas:
 
-      Título: ${document.title}
-      Tipo: ${document.type}
-      Conteúdo: ${document.content || "Nenhum conteúdo disponível"}
+      **Título:** ${document.title}
+      **Tipo:** ${document.type}
+      **Conteúdo:**
+      ${document.content || "Nenhum conteúdo disponível"}
 
-      Por favor, forneça sugestões de melhorias, expansões ou ideias relacionadas a este documento.`;
+      Por favor, forneça um prompt detalhado que possa ser usado para gerar conteúdo adicional ou melhorar este documento.`;
 
       res.json({ prompt });
     } catch (error) {

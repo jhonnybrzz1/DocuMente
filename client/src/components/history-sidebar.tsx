@@ -152,6 +152,7 @@ export default function HistorySidebar() {
   const [correctionText, setCorrectionText] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [documentToEdit, setDocumentToEdit] = useState<Document | null>(null);
+  const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
 
   const { data: documents = [], isLoading, refetch } = useQuery({
     queryKey: ["/api/documents", searchQuery, filterType],
@@ -235,6 +236,7 @@ export default function HistorySidebar() {
         throw new Error("Failed to generate AI prompt");
       }
       const data = await response.json();
+      setGeneratedPrompt(data.prompt);
       toast({
         title: "Prompt de IA gerado",
         description: "O prompt de IA foi gerado com sucesso.",
@@ -282,68 +284,99 @@ export default function HistorySidebar() {
   };
 
   return (
-    <Card className="w-full h-full flex flex-col">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Histórico de Documentos</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-auto">
-        <div className="space-y-4">
-          <div className="flex space-x-2">
-            <Input
-              placeholder="Buscar documentos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1"
+    <>
+      <Card className="w-full h-full flex flex-col">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Histórico de Documentos</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 overflow-auto">
+          <div className="space-y-4">
+            <div className="flex space-x-2">
+              <Input
+                placeholder="Buscar documentos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1"
+              />
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {Object.entries(documentTypes).map(([key, { label }]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <EditModal
+              isOpen={isEditModalOpen}
+              onClose={() => setIsEditModalOpen(false)}
+              document={documentToEdit}
             />
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {Object.entries(documentTypes).map(([key, { label }]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
+
+            {isLoading ? (
+              <div className="text-center py-4">
+                <Loader2 className="animate-spin h-4 w-4 inline-block mr-2" />
+                <span>Carregando histórico...</span>
+              </div>
+            ) : documents.length > 0 ? (
+              <div className="space-y-4">
+                {documents.map((document) => (
+                  <DocumentItem
+                    key={document.id}
+                    document={document}
+                    isExpanded={expandedVersions.has(document.id)}
+                    onToggleVersions={toggleVersions}
+                    onDownload={handleDownload}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                    onGenerateAIPrompt={handleGenerateAIPrompt}
+                  />
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+            ) : (
+              <p className="text-center text-gray-500">Nenhum documento encontrado</p>
+            )}
           </div>
+        </CardContent>
+      </Card>
 
-          <EditModal
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            document={documentToEdit}
-          />
-
-          {isLoading ? (
-            <div className="text-center py-4">
-              <Loader2 className="animate-spin h-4 w-4 inline-block mr-2" />
-              <span>Carregando histórico...</span>
-            </div>
-          ) : documents.length > 0 ? (
-            <div className="space-y-4">
-              {documents.map((document) => (
-                <DocumentItem
-                  key={document.id}
-                  document={document}
-                  isExpanded={expandedVersions.has(document.id)}
-                  onToggleVersions={toggleVersions}
-                  onDownload={handleDownload}
-                  onDelete={handleDelete}
-                  onEdit={handleEdit}
-                  onGenerateAIPrompt={handleGenerateAIPrompt}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-gray-500">Nenhum documento encontrado</p>
-          )}
+      {/* Display generated prompt below the history */}
+      {generatedPrompt && (
+        <div className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Prompt de IA Gerado</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">{generatedPrompt}</p>
+                <Button
+                  onClick={() => navigator.clipboard.writeText(generatedPrompt)}
+                  className="w-full"
+                >
+                  Copiar Prompt
+                </Button>
+                <Button
+                  onClick={() => setGeneratedPrompt(null)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Fechar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </>
   );
 }
 
