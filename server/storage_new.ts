@@ -34,12 +34,12 @@ export class InMemoryStorage implements IStorage {
   }
 
   async createDocument(document: InsertDocument): Promise<Document> {
-    const newDocument: Document = {
+    const newDocument: Document = { isLatest: true,
       id: this.nextDocumentId++,
       ...document,
       createdAt: new Date(),
       version: 1,
-      parentId: undefined,
+      parentId: null,
     };
     this.documents.set(newDocument.id, newDocument);
     return newDocument;
@@ -51,7 +51,7 @@ export class InMemoryStorage implements IStorage {
       throw new Error("Original document not found");
     }
 
-    const newVersion: Document = {
+    const newVersion: Document = { isLatest: true,
       id: this.nextDocumentId++,
       ...document,
       createdAt: new Date(),
@@ -108,7 +108,7 @@ export class InMemoryStorage implements IStorage {
   }
 
   async createApiKey(apiKey: InsertApiKey): Promise<ApiKey> {
-    const newApiKey: ApiKey = {
+    const newApiKey: ApiKey = { isActive: true,
       id: this.nextApiKeyId++,
       ...apiKey,
       createdAt: new Date(),
