@@ -1,0 +1,103 @@
+
+> rest-express@1.0.0 start /workspace/DocuMente
+> NODE_ENV=production node dist/index.js
+
+8:01:45 PM [express] No Mistral API key configured - some features will be disabled
+8:01:45 PM [express] serving on port 5000
+8:01:55 PM [express] GET /api/api-keys/active 200 in 2ms :: {"isActive":true,"id":1,"mistralKey":"",…
+8:01:55 PM [express] GET /api/documents 304 in 0ms :: []
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:02:23 PM [express] POST /api/preview-document 500 in 350ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:02:27 PM [express] POST /api/preview-document 500 in 254ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:02:34 PM [express] POST /api/preview-document 500 in 331ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:02:38 PM [express] POST /api/preview-document 500 in 316ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:02:43 PM [express] POST /api/preview-document 500 in 309ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:02:47 PM [express] POST /api/preview-document 500 in 223ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:02:50 PM [express] POST /api/preview-document 500 in 240ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:02:54 PM [express] POST /api/preview-document 500 in 267ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:02:58 PM [express] POST /api/preview-document 500 in 225ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:03:01 PM [express] POST /api/preview-document 500 in 213ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:03:05 PM [express] POST /api/preview-document 500 in 346ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:03:09 PM [express] POST /api/preview-document 500 in 337ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:03:13 PM [express] POST /api/preview-document 500 in 252ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:03:17 PM [express] POST /api/preview-document 500 in 211ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:03:25 PM [express] POST /api/preview-document 500 in 440ms :: {"message":"Failed to preview docume…
+Generate document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:521:23
+8:03:29 PM [express] POST /api/generate-document 500 in 349ms :: {"message":"Failed to generate docu…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:03:53 PM [express] POST /api/preview-document 500 in 372ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:04:21 PM [express] POST /api/preview-document 500 in 372ms :: {"message":"Failed to preview docume…
+Preview document error: Error: Mistral API Error: 401 - Bearer token not found
+    at callMistralAPI (file:///workspace/DocuMente/dist/index.js:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/DocuMente/dist/index.js:549:23
+8:04:51 PM [express] POST /api/preview-document 500 in 394ms :: {"message":"Failed to preview docume…

@@ -61,10 +61,22 @@ export default function ApiKeyConfig() {
       });
       return;
     }
+
+    if (!isValidApiKey) {
+      toast({
+        title: "Chave da API inválida",
+        description: "A chave da API está vazia ou inválida. Por favor, configure uma chave válida.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     testConnectionMutation.mutate();
   };
 
-  const isConnected = activeApiKey && !testConnectionMutation.isError;
+  // Check if the API key is valid (not empty)
+  const isValidApiKey = activeApiKey && activeApiKey.mistralKey && activeApiKey.mistralKey.trim();
+  const isConnected = isValidApiKey && !testConnectionMutation.isError;
   const isTesting = testConnectionMutation.isPending;
 
   return (
@@ -100,11 +112,15 @@ export default function ApiKeyConfig() {
                 ? "Testando conexão com a API..."
                 : isConnected
                   ? "API do Mistral configurada e funcionando"
-                  : "Verificando configuração da API..."
+                  : "API não configurada - algumas funcionalidades estarão desativadas"
               }
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Sistema configurado automaticamente
+
+              {isConnected
+                ? "Sistema configurado automaticamente"
+                : "Para ativar todas as funcionalidades, configure uma chave de API válida"}
+
             </p>
           </div>
           <Button
