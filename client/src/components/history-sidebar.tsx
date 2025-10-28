@@ -506,6 +506,7 @@ export default function HistorySidebar() {
           )}
         </div>
       </CardContent>
+    </Card>
 
     {isAIPromptModalOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -561,5 +562,5 @@ export default function HistorySidebar() {
         </div>
       </div>
     )}
-  </Card>
+  );
 
