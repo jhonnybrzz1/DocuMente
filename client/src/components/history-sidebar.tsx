@@ -563,4 +563,5 @@ export default function HistorySidebar() {
       </div>
     )}
   );
+}
 
