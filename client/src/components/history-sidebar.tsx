@@ -481,20 +481,6 @@ export default function HistorySidebar() {
             onClose={() => setIsEditModalOpen(false)}
             document={documentToEdit}
           />
-
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {Object.entries(documentTypes).map(([key, { label }]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           {isLoading ? (
             <div className="text-center py-4">
               <Loader2 className="animate-spin h-4 w-4 inline-block mr-2" />
@@ -556,7 +542,9 @@ export default function HistorySidebar() {
             </Button>
             <Button
               onClick={() => {
-                handleGenerateAIPrompt(selectedDocumentId!);
+                if (selectedDocumentId !== null && selectedDocumentId !== undefined) {
+                  handleGenerateAIPrompt(selectedDocumentId);
+                }
               }}
               variant="outline"
             >
@@ -574,6 +562,5 @@ export default function HistorySidebar() {
         </div>
       </div>
     )}
-  );
 }
 
