@@ -38,17 +38,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize API key on startup
-  try {
-    const existingKey = await storage.getActiveApiKey();
-    if (!existingKey) {
-      await storage.createApiKey({ mistralKey: process.env.MISTRAL_API_KEY || "" });
-      log("Mistral API key initialized");
-    }
-  } catch (error) {
-    console.error("Failed to initialize API key:", error);
-  }
-
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

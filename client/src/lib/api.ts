@@ -2,22 +2,7 @@ import { apiRequest } from "./queryClient";
 import type { InsertDocument, InsertApiKey, Document, ApiKey } from "@shared/schema";
 
 export const api = {
-  // API Keys
-  testConnection: async (apiKey: string) => {
-    const response = await apiRequest("POST", "/api/test-connection", { apiKey });
-    return response.json();
-  },
-
-  saveApiKey: async (data: InsertApiKey) => {
-    const response = await apiRequest("POST", "/api/api-keys", data);
-    return response.json();
-  },
-
-  getActiveApiKey: async (): Promise<ApiKey | null> => {
-    const response = await fetch("/api/api-keys/active");
-    if (!response.ok) return null;
-    return response.json();
-  },
+  
 
   // Documents
   generateDocument: async (data: InsertDocument) => {
