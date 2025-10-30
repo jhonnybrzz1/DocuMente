@@ -12,16 +12,12 @@ export interface IStorage {
   searchDocuments(query: string, type?: string): Promise<Document[]>;
   deleteDocument(id: number): Promise<boolean>;
 
-  // API Keys
-  getActiveApiKey(): Promise<ApiKey | undefined>;
-  createApiKey(apiKey: InsertApiKey): Promise<ApiKey>;
+  
 }
 
 export class InMemoryStorage implements IStorage {
   private documents = new Map<number, Document>();
-  private apiKeys = new Map<number, ApiKey>();
   private nextDocumentId = 1;
-  private nextApiKeyId = 1;
 
   async getDocuments(): Promise<Document[]> {
     return Array.from(this.documents.values())
@@ -104,21 +100,7 @@ export class InMemoryStorage implements IStorage {
     return true;
   }
 
-  async getActiveApiKey(): Promise<ApiKey | undefined> {
-    const keys = Array.from(this.apiKeys.values());
-    return keys[0]; // Return the first API key for now
-  }
-
-  async createApiKey(apiKey: InsertApiKey): Promise<ApiKey> {
-    const newApiKey: ApiKey = {
-      id: this.nextApiKeyId++,
-      ...apiKey,
-      createdAt: new Date(),
-      isActive: true,
-    };
-    this.apiKeys.set(newApiKey.id, newApiKey);
-    return newApiKey;
-  }
+  
 }
 
 export const storage = new InMemoryStorage();

@@ -9,10 +9,6 @@ import { Plug, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 export default function ApiKeyConfig() {
   const { toast } = useToast();
 
-  const { data: activeApiKey } = useQuery({
-    queryKey: ["/api/api-keys/active"],
-  });
-
   const testConnectionMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/test-connection");
@@ -53,18 +49,10 @@ export default function ApiKeyConfig() {
   });
 
   const handleTestConnection = () => {
-    if (!activeApiKey) {
-      toast({
-        title: "API não configurada",
-        description: "Nenhuma chave da API está configurada no sistema.",
-        variant: "destructive",
-      });
-      return;
-    }
     testConnectionMutation.mutate();
   };
 
-  const isConnected = activeApiKey && !testConnectionMutation.isError;
+  const isConnected = !testConnectionMutation.isError;
   const isTesting = testConnectionMutation.isPending;
 
   return (

@@ -14,13 +14,6 @@ export const documents = pgTable("documents", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const apiKeys = pgTable("api_keys", {
-  id: serial("id").primaryKey(),
-  mistralKey: text("mistral_key").notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 export const insertDocumentSchema = createInsertSchema(documents).omit({
   id: true,
   createdAt: true,
@@ -28,16 +21,8 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
   isLatest: true,
 });
 
-export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
-  id: true,
-  createdAt: true,
-  isActive: true,
-});
-
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type Document = typeof documents.$inferSelect;
-export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
-export type ApiKey = typeof apiKeys.$inferSelect;
 
 export const documentTypes = [
   { value: "prd", label: "PRD", description: "Product Requirements", icon: "file-text", color: "blue" },
