@@ -1,22 +1,44 @@
+
 # DocuMente - Product Documentation Platform
+
+## Table of Contents
+
+- [Overview](#overview)
+- [User Preferences](#user-preferences)
+- [Recent Changes](#recent-changes)
+- [System Architecture](#system-architecture)
+  - [Frontend Architecture](#frontend-architecture)
+  - [Backend Architecture](#backend-architecture)
+  - [Key Components](#key-components)
+- [Data Flow](#data-flow)
+- [External Dependencies](#external-dependencies)
+- [Deployment Strategy](#deployment-strategy)
 
 ## Overview
 
 DocuMente is a product documentation platform that uses AI to generate structured business documents from user inputs. The application leverages the Mistral AI API to transform user requirements into various document types including PRDs, Epics, User Stories, and technical specifications. It features a modern React frontend with a Node.js/Express backend and supports document generation and download functionality.
 
+**Key Features:**
+- AI-powered document generation
+- 9+ document types supported
+- Professional Word document output
+- Document history and search
+- Modern React frontend with TypeScript
+- Node.js/Express backend with PostgreSQL
+
 ## User Preferences
 
-Preferred communication style: Simple, everyday language.
+We prefer to communicate using simple, everyday language to make our documentation accessible to everyone.
 
 ## Recent Changes
 
 ### July 18, 2025
 - ✅ Complete DocuMente platform implementation
-- ✅ Mistral AI integration with automatic API key configuration  
+- ✅ Mistral AI integration with automatic API key configuration
 - ✅ 9 document types with structured templates
 - ✅ Professional Word document generation with enhanced formatting
 - ✅ Document history with search and filtering capabilities
-- ✅ Resolved download functionality using window.location.href
+- ✅ Resolved download functionality using `window.location.href`
 - ✅ Enhanced document styling with company branding, colors, and proper spacing
 
 ## System Architecture
@@ -29,6 +51,27 @@ Preferred communication style: Simple, everyday language.
 - **State Management**: React Query (@tanstack/react-query) for server state
 - **Build Tool**: Vite with React plugin
 
+**Example React Component:**
+```typescript
+// Example of a React component with TypeScript
+const DocumentInput: React.FC = () => {
+  const [inputValue, setInputValue] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  return (
+    <textarea
+      value={inputValue}
+      onChange={handleChange}
+      placeholder="Enter your requirements here..."
+      className="w-full h-48 p-4 border rounded-md"
+    />
+  );
+};
+```
+
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ESM modules
@@ -36,6 +79,27 @@ Preferred communication style: Simple, everyday language.
 - **Database Provider**: Neon Database (@neondatabase/serverless)
 - **Document Generation**: docx library for Word document creation
 - **Session Management**: Express sessions with PostgreSQL store
+
+**Example Express Route:**
+```typescript
+// Example Express route with TypeScript
+import express from 'express';
+
+const router = express.Router();
+
+router.post('/generate-document', async (req, res) => {
+  try {
+    const { inputText, documentType } = req.body;
+    // Process document generation
+    const document = await generateDocument(inputText, documentType);
+    res.json({ success: true, document });
+  } catch (error) {
+    res.status(500).json({ error: 'Document generation failed' });
+  }
+});
+
+export default router;
+```
 
 ### Key Components
 
@@ -67,9 +131,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Data Flow
 
+Here's how DocuMente works step-by-step:
+
 1. **User Input**: Users enter requirements and select document type
 2. **API Key Validation**: System validates Mistral API connection
-3. **Document Generation**: 
+3. **Document Generation**:
    - Preview: Generates content using Mistral API
    - Final: Creates and stores document with Word format
 4. **Storage**: Documents stored with metadata (title, type, content, original demand)
