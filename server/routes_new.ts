@@ -435,7 +435,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get active API key
   app.get("/api/api-keys/active", async (req, res) => {
     try {
-      const apiKey = await storage.createApiKey({ mistralKey:process.env.MISTRAL_API_KEY});
+      const apiKey = await storage.createApiKey({ mistralKey: process.env.MISTRAL_API_KEY || "" });
       res.json(apiKey);
     } catch (error) {
       console.error("Get API key error:", error);
