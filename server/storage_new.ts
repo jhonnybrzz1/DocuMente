@@ -39,7 +39,8 @@ export class InMemoryStorage implements IStorage {
       ...document,
       createdAt: new Date(),
       version: 1,
-      parentId: undefined,
+      parentId: null,
+      isLatest: true,
     };
     this.documents.set(newDocument.id, newDocument);
     return newDocument;
@@ -57,6 +58,7 @@ export class InMemoryStorage implements IStorage {
       createdAt: new Date(),
       version: (original.version || 1) + 1,
       parentId: originalId,
+      isLatest: true,
     };
     this.documents.set(newVersion.id, newVersion);
     return newVersion;
@@ -112,6 +114,7 @@ export class InMemoryStorage implements IStorage {
       id: this.nextApiKeyId++,
       ...apiKey,
       createdAt: new Date(),
+      isActive: true,
     };
     this.apiKeys.set(newApiKey.id, newApiKey);
     return newApiKey;

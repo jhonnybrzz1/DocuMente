@@ -54,7 +54,7 @@ function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDe
         </div>
         <div className="flex items-center space-x-2">
           <Badge variant="secondary" className="text-xs">
-            {documentTypes[document.type as keyof typeof documentTypes]?.label || document.type}
+            {documentTypes.find(dt => dt.value === document.type)?.label || document.type}
           </Badge>
           <Button
             onClick={() => onDownload(document.id)}
@@ -89,7 +89,7 @@ function DocumentItem({ document, isExpanded, onToggleVersions, onDownload, onDe
             <p className="text-xs text-gray-500">Carregando versões...</p>
           ) : versions.length > 0 ? (
             <ul className="space-y-1">
-              {versions.map((version) => (
+              {(versions as any[]).map((version: any) => (
                 <li key={version.id} className="text-xs text-gray-600 flex items-center justify-between">
                   <span>Versão {version.version} - {new Date(version.createdAt).toLocaleString('pt-BR', {
                     day: '2-digit',
@@ -222,7 +222,7 @@ export default function HistorySidebar() {
             </div>
           ) : documents.length > 0 ? (
             <div className="space-y-4">
-              {documents.map((document) => (
+              {(documents as any[]).map((document: any) => (
                 <DocumentItem
                   key={document.id}
                   document={document}
