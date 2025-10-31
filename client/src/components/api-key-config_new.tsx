@@ -97,7 +97,7 @@ export default function ApiKeyConfig() {
           </div>
           <Button
             onClick={handleTestConnection}
-            disabled={testConnectionMutation.isPending || !activeApiKey}
+            disabled={testConnectionMutation.isPending}
             variant="outline"
             size="sm"
           >
