@@ -2,7 +2,26 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertDocumentSchema, insertApiKeySchema, documentTypes } from "@shared/schema";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+  Header,
+  Footer,
+  PageNumber,
+  NumberFormat,
+  BorderStyle,
+  convertInchesToTwip,
+  Table,
+  TableCell,
+  TableRow,
+  WidthType,
+  VerticalAlign,
+  ShadingType
+} from "docx";
 
 const MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions";
 
@@ -171,75 +190,294 @@ async function callMistralAPI(prompt: string, demandText: string, apiKey: string
 
 async function createWordDocument(title: string, content: string): Promise<Buffer> {
   try {
-    // Parse content and create structured Word document
-    const lines = content.split('\n').filter(line => line.trim());
+    const lines = content.split('\n');
     const children: any[] = [];
-
-    // Add document title
-    children.push(new Paragraph({
-      children: [new TextRun({ text: title, bold: true, size: 36, color: "1F4E79" })],
-      heading: HeadingLevel.TITLE,
-      spacing: { after: 400 },
-    }));
-
-    // Add creation date
     const currentDate = new Date().toLocaleDateString('pt-BR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
+
+    // === COVER PAGE ===
+    // Logo/Brand area (could be replaced with actual image)
     children.push(new Paragraph({
-      children: [new TextRun({ text: `Gerado em: ${currentDate}`, size: 20, color: "666666", italics: true })],
-      spacing: { after: 600 },
+      children: [new TextRun({
+        text: "DocuMente",
+        size: 48,
+        bold: true,
+        color: "2E86AB",
+        font: "Calibri"
+      })],
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 1440, after: 720 },
     }));
 
-    // Parse content lines
+    // Horizontal line
+    children.push(new Paragraph({
+      border: {
+        bottom: {
+          color: "2E86AB",
+          space: 1,
+          style: BorderStyle.SINGLE,
+          size: 20,
+        },
+      },
+      spacing: { after: 1440 },
+    }));
+
+    // Document Title
+    children.push(new Paragraph({
+      children: [new TextRun({
+        text: title,
+        size: 40,
+        bold: true,
+        color: "1F4E79",
+        font: "Calibri"
+      })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 720 },
+    }));
+
+    // Subtitle/Date info
+    children.push(new Paragraph({
+      children: [new TextRun({
+        text: `Gerado automaticamente em ${currentDate}`,
+        size: 20,
+        color: "666666",
+        italics: true,
+        font: "Calibri"
+      })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 2880 }, // Page break equivalent
+    }));
+
+    // === CONTENT ===
+    let inList = false;
+    let listLevel = 0;
+
     for (const line of lines) {
       const trimmedLine = line.trim();
-      if (!trimmedLine) continue;
+      if (!trimmedLine) {
+        // Add spacing between sections
+        children.push(new Paragraph({
+          text: "",
+          spacing: { after: 200 },
+        }));
+        continue;
+      }
 
-      if (trimmedLine.startsWith('📄') || trimmedLine.startsWith('📘') || trimmedLine.startsWith('🧩') ||
-          trimmedLine.startsWith('🗓️') || trimmedLine.startsWith('🚀') || trimmedLine.startsWith('🎯') ||
-          trimmedLine.startsWith('⚙️') || trimmedLine.startsWith('🧪') || trimmedLine.startsWith('📡')) {
+      // Main document type header (with emoji)
+      if (trimmedLine.match(/^[📄📘🧩🗓️🚀🎯⚙️🧪📡]/)) {
         children.push(new Paragraph({
-          children: [new TextRun({ text: trimmedLine, bold: true, size: 32 })],
+          children: [new TextRun({
+            text: trimmedLine,
+            size: 36,
+            bold: true,
+            color: "2E86AB",
+            font: "Calibri"
+          })],
           heading: HeadingLevel.HEADING_1,
+          spacing: { before: 480, after: 240 },
+          border: {
+            bottom: {
+              color: "2E86AB",
+              space: 1,
+              style: BorderStyle.SINGLE,
+              size: 6,
+            },
+          },
         }));
-      } else if (trimmedLine.startsWith('##')) {
+        inList = false;
+      }
+      // H2 (##)
+      else if (trimmedLine.startsWith('##')) {
+        const text = trimmedLine.replace(/^##\s*/, '');
         children.push(new Paragraph({
-          children: [new TextRun({ text: trimmedLine.replace('##', '').trim(), bold: true, size: 28 })],
+          children: [new TextRun({
+            text: text,
+            size: 28,
+            bold: true,
+            color: "1F4E79",
+            font: "Calibri"
+          })],
           heading: HeadingLevel.HEADING_2,
+          spacing: { before: 360, after: 180 },
         }));
-      } else if (trimmedLine.startsWith('#')) {
+        inList = false;
+      }
+      // H3 (#)
+      else if (trimmedLine.startsWith('#')) {
+        const text = trimmedLine.replace(/^#\s*/, '');
         children.push(new Paragraph({
-          children: [new TextRun({ text: trimmedLine.replace('#', '').trim(), bold: true, size: 24 })],
+          children: [new TextRun({
+            text: text,
+            size: 24,
+            bold: true,
+            color: "404040",
+            font: "Calibri"
+          })],
           heading: HeadingLevel.HEADING_3,
+          spacing: { before: 240, after: 120 },
         }));
-      } else if (trimmedLine.startsWith('-')) {
+        inList = false;
+      }
+      // Bullet points
+      else if (trimmedLine.startsWith('-')) {
+        const text = trimmedLine.substring(1).trim();
+        // Check indent level
+        const indent = line.search(/\S/);
+        const level = Math.floor(indent / 2);
+
         children.push(new Paragraph({
-          children: [new TextRun({ text: trimmedLine.substring(1).trim(), size: 22 })],
-          bullet: { level: 0 },
+          children: [new TextRun({
+            text: text,
+            size: 22,
+            color: "333333",
+            font: "Calibri"
+          })],
+          bullet: { level: Math.min(level, 4) },
+          spacing: { after: 100 },
         }));
-      } else if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
+        inList = true;
+      }
+      // Bold text (**text**)
+      else if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
+        const text = trimmedLine.replace(/\*\*/g, '');
         children.push(new Paragraph({
-          children: [new TextRun({ text: trimmedLine.replace(/\*\*/g, ''), bold: true, size: 24 })],
+          children: [new TextRun({
+            text: text,
+            size: 24,
+            bold: true,
+            color: "1F4E79",
+            font: "Calibri"
+          })],
+          spacing: { before: 180, after: 120 },
         }));
-      } else {
+        inList = false;
+      }
+      // Regular paragraph
+      else {
+        // Parse inline bold (**text**)
+        const parts = trimmedLine.split(/(\*\*[^*]+\*\*)/g);
+        const textRuns: TextRun[] = parts
+          .filter(part => part.length > 0)
+          .map(part => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return new TextRun({
+                text: part.replace(/\*\*/g, ''),
+                bold: true,
+                size: 22,
+                color: "1F4E79",
+                font: "Calibri"
+              });
+            }
+            return new TextRun({
+              text: part,
+              size: 22,
+              color: "333333",
+              font: "Calibri"
+            });
+          });
+
         children.push(new Paragraph({
-          children: [new TextRun({ text: trimmedLine, size: 22 })],
+          children: textRuns.length > 0 ? textRuns : [new TextRun({
+            text: trimmedLine,
+            size: 22,
+            color: "333333",
+            font: "Calibri"
+          })],
+          spacing: { after: inList ? 100 : 180 },
+          alignment: AlignmentType.JUSTIFIED,
         }));
+        inList = false;
       }
     }
 
-    // Ensure we have content
-    if (children.length === 0) {
-      children.push(new Paragraph({
-        children: [new TextRun({ text: "Documento vazio", size: 22 })],
-      }));
-    }
+    // Footer spacing
+    children.push(new Paragraph({
+      text: "",
+      spacing: { before: 480 },
+    }));
 
+    // === DOCUMENT PROPERTIES ===
     const doc = new Document({
+      creator: "DocuMente",
+      description: "Documento gerado automaticamente",
+      title: title,
+
       sections: [{
+        properties: {
+          page: {
+            margin: {
+              top: convertInchesToTwip(1),
+              right: convertInchesToTwip(1),
+              bottom: convertInchesToTwip(1),
+              left: convertInchesToTwip(1),
+            },
+          },
+        },
+        headers: {
+          default: new Header({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "DocuMente",
+                    size: 16,
+                    color: "666666",
+                    font: "Calibri"
+                  }),
+                ],
+                alignment: AlignmentType.RIGHT,
+                border: {
+                  bottom: {
+                    color: "CCCCCC",
+                    space: 1,
+                    style: BorderStyle.SINGLE,
+                    size: 6,
+                  },
+                },
+              }),
+            ],
+          }),
+        },
+        footers: {
+          default: new Footer({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${title} • `,
+                    size: 16,
+                    color: "666666",
+                    font: "Calibri"
+                  }),
+                  new TextRun({
+                    text: "Página ",
+                    size: 16,
+                    color: "666666",
+                    font: "Calibri"
+                  }),
+                  new TextRun({
+                    children: [PageNumber.CURRENT],
+                    size: 16,
+                    color: "666666",
+                    font: "Calibri"
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+                border: {
+                  top: {
+                    color: "CCCCCC",
+                    space: 1,
+                    style: BorderStyle.SINGLE,
+                    size: 6,
+                  },
+                },
+              }),
+            ],
+          }),
+        },
         children: children,
       }],
     });
