@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Download, MoreVertical } from "lucide-react";
+import { Search, Download, MoreVertical, Sparkles } from "lucide-react";
 import { documentTypes, type Document } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import AiPromptModal from "./ai-prompt-modal";
 
 const getTypeColor = (type: string) => {
   const docType = documentTypes.find(dt => dt.value === type);
@@ -34,6 +35,8 @@ const getTypeLabel = (type: string) => {
 export default function HistorySidebar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("");
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: documents = [], isLoading } = useQuery({
@@ -48,6 +51,12 @@ export default function HistorySidebar() {
       return response.json();
     }
   });
+
+  const handleGeneratePrompt = (document: Document, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedDocument(document);
+    setIsPromptModalOpen(true);
+  };
 
   const handleDownload = async (document: Document, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,7 +100,7 @@ export default function HistorySidebar() {
   };
 
   const totalDocuments = documents.length;
-  const documentsThisWeek = documents.filter(doc => {
+  const documentsThisWeek = documents.filter((doc: Document) => {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     return new Date(doc.createdAt) > weekAgo;
@@ -146,7 +155,7 @@ export default function HistorySidebar() {
               {searchQuery || filterType ? "Nenhum documento encontrado" : "Nenhum documento ainda"}
             </div>
           ) : (
-            documents.map((document) => (
+            documents.map((document: Document) => (
               <div
                 key={document.id}
                 className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors"
@@ -171,14 +180,26 @@ export default function HistorySidebar() {
                       {document.originalDemand.slice(0, 60)}...
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => handleDownload(document, e)}
-                    className="text-gray-400 hover:text-gray-600 ml-2 p-1"
-                  >
-                    <Download size={12} />
-                  </Button>
+                  <div className="flex items-center space-x-1 ml-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleGeneratePrompt(document, e)}
+                      className="text-purple-400 hover:text-purple-600 hover:bg-purple-50 p-1"
+                      title="Gerar Prompt para IA"
+                    >
+                      <Sparkles size={14} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleDownload(document, e)}
+                      className="text-gray-400 hover:text-gray-600 p-1"
+                      title="Baixar documento"
+                    >
+                      <Download size={14} />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))
@@ -205,6 +226,13 @@ export default function HistorySidebar() {
           </div>
         )}
       </CardContent>
+
+      {/* AI Prompt Modal */}
+      <AiPromptModal
+        isOpen={isPromptModalOpen}
+        onClose={() => setIsPromptModalOpen(false)}
+        document={selectedDocument}
+      />
     </Card>
   );
 }

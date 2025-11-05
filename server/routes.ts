@@ -461,15 +461,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const document = await storage.getDocument(id);
-      
+
       if (!document) {
         return res.status(404).json({ message: "Document not found" });
       }
-      
+
       res.json(document);
     } catch (error) {
       console.error("Get document error:", error);
       res.status(500).json({ message: "Failed to get document" });
+    }
+  });
+
+  // Generate AI prompt from document
+  app.get("/api/documents/:id/generate-prompt", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid document ID" });
+      }
+
+      const document = await storage.getDocument(id);
+
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Extract document type label
+      const typeLabel = documentTypes.find(dt => dt.value === document.type)?.label || document.type;
+
+      // Extract key sections from content
+      const lines = document.content.split('\n').filter(line => line.trim());
+      const sections: string[] = [];
+      const keywords: string[] = [];
+
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        // Extract section headers (lines starting with emojis or #)
+        if (trimmed.match(/^[📄📘🧩🗓️🚀🎯⚙️🧪📡#]/)) {
+          sections.push(trimmed.replace(/^#+\s*/, ''));
+        }
+      });
+
+      // Generate the AI prompt
+      const prompt = `Contexto: Este é um [${typeLabel}] criado no Documente, intitulado "${document.title}".
+
+Objetivo: Use as informações abaixo para análise, resumo ou geração de conteúdo baseado neste documento.
+
+────────────────────────────────────────────
+
+📋 Dados do Documento:
+
+Título: ${document.title}
+Tipo: ${typeLabel}
+Data de Criação: ${new Date(document.createdAt).toLocaleDateString('pt-BR')}
+
+Demanda Original:
+${document.originalDemand}
+
+Seções Principais:
+${sections.slice(0, 5).map((s, i) => `${i + 1}. ${s}`).join('\n')}
+
+────────────────────────────────────────────
+
+📝 Conteúdo Completo:
+${document.content}
+
+────────────────────────────────────────────
+
+💡 Instruções para a IA:
+1. Analise o documento acima e identifique os pontos-chave
+2. Resuma as principais ideias em tópicos claros
+3. Identifique ações, recomendações ou próximos passos mencionados
+4. Formate a resposta em markdown com títulos e listas
+
+────────────────────────────────────────────
+
+✨ Gerado automaticamente pelo Documente
+`;
+
+      res.json({ prompt });
+
+    } catch (error) {
+      console.error("Generate prompt error:", error);
+      res.status(500).json({ message: "Failed to generate AI prompt" });
     }
   });
 
