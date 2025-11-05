@@ -222,13 +222,13 @@ async function createWordDocument(title: string, content: string): Promise<Buffe
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Test API connection
+  // Test API connection (uses server-side API key)
   app.post("/api/test-connection", async (req, res) => {
     try {
-      const { apiKey } = req.body;
-      
+      const apiKey = process.env.MISTRAL_API_KEY;
+
       if (!apiKey) {
-        return res.status(400).json({ message: "API key is required" });
+        return res.status(400).json({ message: "API key is not configured on the server. Please contact the administrator." });
       }
 
       const response = await fetch(MISTRAL_API_URL, {
@@ -250,8 +250,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!response.ok) {
         const errorText = await response.text();
-        return res.status(400).json({ 
-          message: `API connection failed: ${response.status} - ${errorText}` 
+        return res.status(400).json({
+          message: `API connection failed: ${response.status} - ${errorText}`
         });
       }
 
@@ -274,11 +274,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get active API key
+  // Get active API key (returns status, not the actual key)
   app.get("/api/api-keys/active", async (req, res) => {
     try {
-      const apiKey = await storage.getActiveApiKey();
-      res.json(apiKey);
+      const apiKey = process.env.MISTRAL_API_KEY;
+      if (apiKey) {
+        // Return masked key for security
+        const maskedKey = apiKey.substring(0, 8) + "..." + apiKey.substring(apiKey.length - 4);
+        res.json({
+          configured: true,
+          mistralKey: maskedKey
+        });
+      } else {
+        res.json({
+          configured: false,
+          mistralKey: null
+        });
+      }
     } catch (error) {
       console.error("Get API key error:", error);
       res.status(500).json({ message: "Failed to get API key" });
@@ -294,9 +306,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Type, demand, and title are required" });
       }
 
-      const apiKey = await storage.getActiveApiKey();
+      const apiKey = process.env.MISTRAL_API_KEY;
       if (!apiKey) {
-        return res.status(400).json({ message: "No API key configured" });
+        return res.status(400).json({ message: "API key is not configured on the server. Please contact the administrator." });
       }
 
       const template = documentTemplates[type as keyof typeof documentTemplates];
@@ -304,8 +316,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid document type" });
       }
 
-      const content = await callMistralAPI(template, demand, apiKey.mistralKey);
-      
+      const content = await callMistralAPI(template, demand, apiKey);
+
       const validated = insertDocumentSchema.parse({
         title,
         type,
@@ -331,9 +343,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Type and demand are required" });
       }
 
-      const apiKey = await storage.getActiveApiKey();
+      const apiKey = process.env.MISTRAL_API_KEY;
       if (!apiKey) {
-        return res.status(400).json({ message: "No API key configured" });
+        return res.status(400).json({ message: "API key is not configured on the server. Please contact the administrator." });
       }
 
       const template = documentTemplates[type as keyof typeof documentTemplates];
@@ -341,7 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid document type" });
       }
 
-      const content = await callMistralAPI(template, demand, apiKey.mistralKey);
+      const content = await callMistralAPI(template, demand, apiKey);
       res.json({ content });
 
     } catch (error) {
