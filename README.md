@@ -49,8 +49,10 @@
 - **docx** - Geração de documentos Word
 
 ### IA
-- **Mistral AI** - Modelo de linguagem
+- **Mistral AI** - Modelo de linguagem fine-tuned
+- **Modelo**: `ft:mistral-large-latest:87817515:20250910:33f45a53`
 - **API configurada no servidor** - Maior segurança
+- **Especializado** em documentação de produtos
 
 ---
 
