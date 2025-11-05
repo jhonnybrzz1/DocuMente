@@ -55,34 +55,45 @@ export default function GenerationControls({
     },
     onSuccess: async (document) => {
       setIsProcessing(true);
-      
+
       // Download the document
       try {
         const downloadResponse = await fetch(`/api/documents/${document.id}/download`);
+
+        if (!downloadResponse.ok) {
+          const errorData = await downloadResponse.json().catch(() => ({ message: 'Erro desconhecido' }));
+          throw new Error(errorData.message || `Erro ${downloadResponse.status}`);
+        }
+
         const blob = await downloadResponse.blob();
-        
+
+        if (blob.size === 0) {
+          throw new Error("Documento vazio");
+        }
+
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${document.title}.docx`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        const link = window.document.createElement('a');
+        link.href = url;
+        link.download = `${document.title}.docx`;
+        window.document.body.appendChild(link);
+        link.click();
+        window.document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-        
+
         toast({
           title: "Documento gerado",
           description: "O documento foi gerado e baixado com sucesso.",
           variant: "default",
         });
-        
+
         // Invalidate documents list to refresh history
         queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
-        
+
       } catch (error) {
+        console.error("Download error:", error);
         toast({
           title: "Erro no download",
-          description: "O documento foi gerado mas falhou no download.",
+          description: error instanceof Error ? error.message : "O documento foi gerado mas falhou no download.",
           variant: "destructive",
         });
       } finally {

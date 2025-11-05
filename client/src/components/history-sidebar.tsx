@@ -67,12 +67,12 @@ export default function HistorySidebar() {
       }
 
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${document.title}.docx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = `${document.title}.docx`;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
       toast({
