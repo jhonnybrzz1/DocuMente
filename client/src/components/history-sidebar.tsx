@@ -51,11 +51,21 @@ export default function HistorySidebar() {
 
   const handleDownload = async (document: Document, e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     try {
       const response = await fetch(`/api/documents/${document.id}/download`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido' }));
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      }
+
       const blob = await response.blob();
-      
+
+      if (blob.size === 0) {
+        throw new Error("Documento vazio");
+      }
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -64,16 +74,17 @@ export default function HistorySidebar() {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      
+
       toast({
         title: "Download iniciado",
         description: "O documento está sendo baixado.",
         variant: "default",
       });
     } catch (error) {
+      console.error("Download error:", error);
       toast({
         title: "Erro no download",
-        description: "Falha ao baixar o documento.",
+        description: error instanceof Error ? error.message : "Falha ao baixar o documento.",
         variant: "destructive",
       });
     }
