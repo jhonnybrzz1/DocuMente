@@ -4,7 +4,15 @@ import path from 'path';
 import * as pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 
+/**
+ * Classe responsável por processar arquivos e extrair textos de diferentes formatos
+ */
 class FileProcessor {
+  /**
+   * Extrai texto de um arquivo baseado em seu tipo MIME
+   * @param file - Arquivo a ser processado
+   * @returns Texto extraído do arquivo
+   */
   async extractTextFromFile(file: Express.Multer.File): Promise<string> {
     const { mimetype, path: filePath } = file;
 
