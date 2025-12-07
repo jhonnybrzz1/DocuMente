@@ -14,11 +14,11 @@ interface GenerationControlsProps {
   onPreview: (content: string) => void;
 }
 
-export default function GenerationControls({ 
-  demand, 
-  selectedType, 
-  title, 
-  onPreview 
+export default function GenerationControls({
+  demand,
+  selectedType,
+  title,
+  onPreview
 }: GenerationControlsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -202,7 +202,6 @@ export default function GenerationControls({
     generateMutation.mutate();
   };
 
-
   const validateForm = () => {
     if (!selectedType) {
       toast({
@@ -234,6 +233,9 @@ export default function GenerationControls({
     return true;
   };
 
+  // Verificar se está processando (estado de loading)
+  const isProcessing = generateMutation.isPending;
+
   if (isProcessing) {
     return (
       <Card>
@@ -257,69 +259,43 @@ export default function GenerationControls({
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Gerar Documento</h3>
-            <p className="text-sm text-gray-500 mt-1">
-              Processe sua demanda e baixe o documento em formato Word
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
-            <Button
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-            >
-              {isUploading ? (
-                <Loader2 className="mr-2 animate-spin" size={16} />
-              ) : (
-                <Paperclip className="mr-2" size={16} />
-              )}
-              Anexar Documentos
-            </Button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              multiple
-              className="hidden"
-              onChange={(e) => handleFileChange(e.target.files)}
-              accept=".pdf,.docx,.txt"
-            />
-            <Button
-              variant="outline"
-              onClick={handlePreview}
-              disabled={previewMutation.isPending}
-              className="flex items-center justify-center"
-            >
-              {previewMutation.isPending ? (
-                <Loader2 className="mr-2 animate-spin" size={16} />
-              ) : (
-                <Eye className="mr-2" size={16} />
-              )}
-              Visualizar Prévia
-            </Button>
-            <Button
-              onClick={handleGenerate}
-              disabled={generateMutation.isPending}
-              className="flex items-center justify-center"
-            >
-              {generateMutation.isPending ? (
-                <Loader2 className="mr-2 animate-spin" size={16} />
-              ) : (
-                <Wand2 className="mr-2" size={16} />
-              )}
-              Gerar e Baixar
-            </Button>
-          </div>
+        {/* Botão de anexo de documentos - posicionar logo abaixo da área de texto */}
+        <div className="mb-4">
+          <Button
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="w-full"
+          >
+            {isUploading ? (
+              <Loader2 className="mr-2 animate-spin" size={16} />
+            ) : (
+              <Paperclip className="mr-2" size={16} />
+            )}
+            Anexar Documentos
+          </Button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            multiple
+            className="hidden"
+            onChange={(e) => handleFileChange(e.target.files)}
+            accept=".pdf,.docx,.txt"
+          />
         </div>
+
         {uploadedFiles.length > 0 && (
-          <div className="mt-4">
+          <div className="mb-4">
             <h4 className="text-sm font-semibold text-gray-700">Arquivos Anexados:</h4>
             <ul className="mt-2 space-y-2">
               {uploadedFiles.map((file, index) => (
                 <li key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
                   <span className="text-sm text-gray-800">{file.name}</span>
-                  <Button variant="ghost" size="sm" onClick={() => removeFile(index)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeFile(index)}
+                  >
                     <X className="h-4 w-4" />
                   </Button>
                 </li>
@@ -327,6 +303,35 @@ export default function GenerationControls({
             </ul>
           </div>
         )}
+
+        {/* Botões de ação organizados horizontalmente */}
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full">
+          <Button
+            variant="outline"
+            onClick={handlePreview}
+            disabled={previewMutation.isPending}
+            className="flex-1 flex items-center justify-center"
+          >
+            {previewMutation.isPending ? (
+              <Loader2 className="mr-2 animate-spin" size={16} />
+            ) : (
+              <Eye className="mr-2" size={16} />
+            )}
+            Visualizar Prévia
+          </Button>
+          <Button
+            onClick={handleGenerate}
+            disabled={generateMutation.isPending}
+            className="flex-1 flex items-center justify-center"
+          >
+            {generateMutation.isPending ? (
+              <Loader2 className="mr-2 animate-spin" size={16} />
+            ) : (
+              <Wand2 className="mr-2" size={16} />
+            )}
+            Gerar e Baixar
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
