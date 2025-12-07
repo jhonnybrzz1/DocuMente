@@ -1,7 +1,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import * as pdf from 'pdf-parse';
+import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 
 /**
