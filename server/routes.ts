@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import uploadRouter from "./routes/upload";
 import { storage } from "./storage";
 import { insertDocumentSchema, insertApiKeySchema, documentTypes } from "@shared/schema";
 import {
@@ -497,6 +498,8 @@ async function createWordDocument(title: string, content: string): Promise<Buffe
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  app.use("/api", uploadRouter);
+
   // Test API connection (uses server-side API key)
   app.post("/api/test-connection", async (req, res) => {
     try {
@@ -575,11 +578,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate document
   app.post("/api/generate-document", async (req, res) => {
     try {
-      const { type, demand, title } = req.body;
+      const { type, demand, title, extractedText } = req.body;
 
       if (!type || !demand || !title) {
         return res.status(400).json({ message: "Type, demand, and title are required" });
       }
+
+      const combinedDemand = extractedText ? `${demand}\n\n--- Documentos Anexados ---\n\n${extractedText}` : demand;
 
       const apiKey = process.env.MISTRAL_API_KEY;
       if (!apiKey) {
@@ -591,13 +596,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid document type" });
       }
 
-      const content = await callMistralAPI(template, demand, apiKey);
+      const content = await callMistralAPI(template, combinedDemand, apiKey);
 
       const validated = insertDocumentSchema.parse({
         title,
         type,
         content,
-        originalDemand: demand,
+        originalDemand: combinedDemand,
       });
 
       const document = await storage.createDocument(validated);

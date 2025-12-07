@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Eye, Wand2, Loader2 } from "lucide-react";
+import { Eye, Wand2, Loader2, Paperclip, X } from "lucide-react";
 import type { DocumentType } from "@shared/schema";
 
 interface GenerationControlsProps {
@@ -21,6 +21,10 @@ export default function GenerationControls({
   onPreview 
 }: GenerationControlsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [extractedText, setExtractedText] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -50,6 +54,7 @@ export default function GenerationControls({
         type: selectedType,
         demand,
         title,
+        extractedText,
       });
       return response.json();
     },
@@ -110,6 +115,83 @@ export default function GenerationControls({
     },
   });
 
+  const handleFileChange = (files: FileList | null) => {
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+    const validFiles = newFiles.filter(file => {
+      const allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Tipo de arquivo inválido",
+          description: `O arquivo ${file.name} não é suportado.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      if (file.size > 10 * 1024 * 1024) { // 10MB
+        toast({
+          title: "Arquivo muito grande",
+          description: `O arquivo ${file.name} excede o limite de 10MB.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    });
+
+    const updatedFiles = [...uploadedFiles, ...validFiles];
+    setUploadedFiles(updatedFiles);
+    uploadFiles(updatedFiles);
+  };
+
+  const removeFile = (index: number) => {
+    const updatedFiles = uploadedFiles.filter((_, i) => i !== index);
+    setUploadedFiles(updatedFiles);
+    if (updatedFiles.length > 0) {
+      uploadFiles(updatedFiles);
+    } else {
+      setExtractedText("");
+    }
+  };
+
+  const uploadFiles = async (files: File[]) => {
+    if (files.length === 0) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append("files", file);
+    });
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha no upload dos arquivos.");
+      }
+
+      const data = await response.json();
+      setExtractedText(data.extractedText);
+      toast({
+        title: "Arquivos processados",
+        description: "O conteúdo dos arquivos foi extraído com sucesso.",
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({
+        title: "Erro no upload",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao processar os arquivos.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handlePreview = () => {
     if (!validateForm()) return;
     previewMutation.mutate();
@@ -119,6 +201,7 @@ export default function GenerationControls({
     if (!validateForm()) return;
     generateMutation.mutate();
   };
+
 
   const validateForm = () => {
     if (!selectedType) {
@@ -184,6 +267,26 @@ export default function GenerationControls({
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
             <Button
               variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+            >
+              {isUploading ? (
+                <Loader2 className="mr-2 animate-spin" size={16} />
+              ) : (
+                <Paperclip className="mr-2" size={16} />
+              )}
+              Anexar Documentos
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              multiple
+              className="hidden"
+              onChange={(e) => handleFileChange(e.target.files)}
+              accept=".pdf,.docx,.txt"
+            />
+            <Button
+              variant="outline"
               onClick={handlePreview}
               disabled={previewMutation.isPending}
               className="flex items-center justify-center"
@@ -209,6 +312,21 @@ export default function GenerationControls({
             </Button>
           </div>
         </div>
+        {uploadedFiles.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-semibold text-gray-700">Arquivos Anexados:</h4>
+            <ul className="mt-2 space-y-2">
+              {uploadedFiles.map((file, index) => (
+                <li key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                  <span className="text-sm text-gray-800">{file.name}</span>
+                  <Button variant="ghost" size="sm" onClick={() => removeFile(index)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
