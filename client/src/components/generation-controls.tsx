@@ -233,10 +233,9 @@ export default function GenerationControls({
     return true;
   };
 
-  // Verificar se está processando (estado de loading)
-  const isProcessing = generateMutation.isPending;
+  const isLoading = generateMutation.isPending;
 
-  if (isProcessing) {
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="p-6">

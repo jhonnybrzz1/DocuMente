@@ -5,8 +5,8 @@ import * as pdfLib from 'pdf-parse';
 import mammoth from 'mammoth';
 import { logger } from '../utils/logger';
 
-// Alias para manter a compatibilidade
-const pdf = pdfLib.default || pdfLib;
+// Correção para compatibilidade ES Module/CommonJS
+const pdf: any = (pdfLib as any).default || pdfLib;
 
 /**
  * Classe responsável por processar arquivos e extrair textos de diferentes formatos
