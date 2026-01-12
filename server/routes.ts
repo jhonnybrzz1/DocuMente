@@ -792,6 +792,105 @@ ${document.content}
     }
   });
 
+  // Update document content
+  app.put("/api/documents/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { content } = req.body;
+
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid document ID" });
+      }
+
+      if (!content) {
+        return res.status(400).json({ message: "Content is required" });
+      }
+
+      const existingDocument = await storage.getDocument(id);
+
+      if (!existingDocument) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Update the document content
+      const updatedDocument = {
+        ...existingDocument,
+        content,
+      };
+
+      // Update the document using the storage method
+      const result = await storage.updateDocument(id, { content });
+
+      if (!result) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("Update document error:", error);
+      res.status(500).json({ message: "Failed to update document" });
+    }
+  });
+
+  // Download document as Markdown
+  app.get("/api/documents/:id/download/markdown", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid document ID" });
+      }
+
+      const document = await storage.getDocument(id);
+
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Convert document content to markdown format
+      const markdownContent = `# ${document.title}\n\n${document.content}`;
+
+      // Sanitize filename to remove invalid characters
+      const safeFilename = document.title.replace(/[^a-zA-Z0-9\s\-_.áéíóúâêôãõçÁÉÍÓÚÂÊÔÃÕÇ]/g, '_');
+
+      res.setHeader('Content-Type', 'text/markdown');
+      res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.md"`);
+      res.send(markdownContent);
+
+    } catch (error) {
+      console.error("Download markdown error:", error);
+      res.status(500).json({ message: "Failed to download markdown" });
+    }
+  });
+
+  // Download document as plain text
+  app.get("/api/documents/:id/download/text", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid document ID" });
+      }
+
+      const document = await storage.getDocument(id);
+
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Sanitize filename to remove invalid characters
+      const safeFilename = document.title.replace(/[^a-zA-Z0-9\s\-_.áéíóúâêôãõçÁÉÍÓÚÂÊÔÃÕÇ]/g, '_');
+
+      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.txt"`);
+      res.send(document.content);
+
+    } catch (error) {
+      console.error("Download text error:", error);
+      res.status(500).json({ message: "Failed to download text" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

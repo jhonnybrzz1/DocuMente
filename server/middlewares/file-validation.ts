@@ -5,11 +5,17 @@ const ALLOWED_TYPES = [
   'application/pdf',
   'image/png',
   'image/jpeg',
+  'image/jpg',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'text/plain'
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'text/plain',
+  'text/csv',
+  'application/vnd.ms-excel',
+  'application/vnd.ms-powerpoint'
 ];
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_SIZE = 15 * 1024 * 1024; // 15MB
 
 export const validateFile = (req: Request, res: Response, next: NextFunction) => {
   const files = req.files as Express.Multer.File[] | undefined;
@@ -35,7 +41,7 @@ export const validateFile = (req: Request, res: Response, next: NextFunction) =>
 
     // Validar extensão do arquivo (segurança adicional)
     const fileExtension = path.extname(file.originalname).toLowerCase();
-    const validExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx', '.txt'];
+    const validExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx', '.xlsx', '.xls', '.pptx', '.ppt', '.txt', '.csv'];
     
     if (!validExtensions.includes(fileExtension)) {
       return res.status(400).json({ 

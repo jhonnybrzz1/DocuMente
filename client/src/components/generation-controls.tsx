@@ -120,7 +120,16 @@ export default function GenerationControls({
 
     const newFiles = Array.from(files);
     const validFiles = newFiles.filter(file => {
-      const allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"];
+      const allowedTypes = [
+        "application/pdf", 
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "text/plain",
+        "text/csv",
+        "application/vnd.ms-excel",
+        "application/vnd.ms-powerpoint"
+      ];
       if (!allowedTypes.includes(file.type)) {
         toast({
           title: "Tipo de arquivo inválido",
@@ -129,10 +138,10 @@ export default function GenerationControls({
         });
         return false;
       }
-      if (file.size > 10 * 1024 * 1024) { // 10MB
+      if (file.size > 15 * 1024 * 1024) { // 15MB
         toast({
           title: "Arquivo muito grande",
-          description: `O arquivo ${file.name} excede o limite de 10MB.`,
+          description: `O arquivo ${file.name} excede o limite de 15MB.`,
           variant: "destructive",
         });
         return false;
@@ -279,7 +288,7 @@ export default function GenerationControls({
             multiple
             className="hidden"
             onChange={(e) => handleFileChange(e.target.files)}
-            accept=".pdf,.docx,.txt"
+            accept=".pdf,.docx,.txt,.xlsx,.xls,.pptx,.ppt,.csv"
           />
         </div>
 

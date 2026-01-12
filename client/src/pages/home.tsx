@@ -1,11 +1,12 @@
 import { useState } from "react";
 import AppHeader from "@/components/app-header";
 import ApiKeyConfig from "@/components/api-key-config";
-import DocumentInput from "@/components/document-input";
+import EnhancedDocumentInput from "@/components/enhanced-document-input";
 import DocumentTypeSelector from "@/components/document-type-selector";
 import GenerationControls from "@/components/generation-controls";
 import HistorySidebar from "@/components/history-sidebar";
 import PreviewModal from "@/components/preview-modal";
+import TemplateSelector from "@/components/template-selector";
 import type { DocumentType } from "@shared/schema";
 
 export default function Home() {
@@ -14,9 +15,20 @@ export default function Home() {
   const [title, setTitle] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [previewContent, setPreviewContent] = useState("");
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+
+  const handleUseTemplate = () => {
+    setShowTemplateSelector(true);
+  };
+
+  const handleSelectTemplate = (template: any) => {
+    // Apply template content to demand
+    setDemand(template.content);
+    setShowTemplateSelector(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <AppHeader />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -24,11 +36,12 @@ export default function Home() {
           <div className="lg:col-span-3 space-y-6">
             <ApiKeyConfig />
             
-            <DocumentInput 
+            <EnhancedDocumentInput 
               demand={demand}
               setDemand={setDemand}
               title={title}
               setTitle={setTitle}
+              onUseTemplate={handleUseTemplate}
             />
             
             <DocumentTypeSelector 
@@ -60,6 +73,13 @@ export default function Home() {
         demand={demand}
         selectedType={selectedType}
         title={title}
+      />
+
+      <TemplateSelector
+        isOpen={showTemplateSelector}
+        onClose={() => setShowTemplateSelector(false)}
+        onSelect={handleSelectTemplate}
+        documentType={selectedType}
       />
     </div>
   );

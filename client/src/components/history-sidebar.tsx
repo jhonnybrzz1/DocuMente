@@ -1,15 +1,19 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Download, MoreVertical, Sparkles } from "lucide-react";
+import { Search, Download, MoreVertical, Sparkles, Edit2, Clock, Star } from "lucide-react";
 import { documentTypes, type Document } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import AiPromptModal from "./ai-prompt-modal";
+import DocumentEditorModal from "./document-editor-modal";
+import VersionHistoryModal from "./version-history-modal";
+import ExportMenu from "./export-menu";
+import FavoritesManager from "./favorites-manager";
 
 const getTypeColor = (type: string) => {
   const docType = documentTypes.find(dt => dt.value === type);
@@ -37,7 +41,51 @@ export default function HistorySidebar() {
   const [filterType, setFilterType] = useState<string>("");
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+  const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
+  const [documentToEdit, setDocumentToEdit] = useState<Document | null>(null);
+  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+  const [documentForVersions, setDocumentForVersions] = useState<Document | null>(null);
+  const [favorites, setFavorites] = useState<number[]>(() => {
+    const saved = localStorage.getItem("documente-favorites");
+    return saved ? JSON.parse(saved) : [];
+  });
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const updateDocumentMutation = useMutation({
+    mutationFn: async ({ id, content }: { id: number; content: string }) => {
+      const response = await fetch(`/api/documents/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content }),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to update document");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Documento atualizado",
+        description: "O documento foi atualizado com sucesso.",
+        variant: "default",
+      });
+      
+      // Invalidate documents list to refresh history
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao atualizar",
+        description: error.message || "Falha ao atualizar o documento.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ["/api/documents", searchQuery, filterType],
@@ -56,6 +104,43 @@ export default function HistorySidebar() {
     e.stopPropagation();
     setSelectedDocument(document);
     setIsPromptModalOpen(true);
+  };
+
+  const handleEditDocument = (document: Document, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDocumentToEdit(document);
+    setIsEditorModalOpen(true);
+  };
+
+  const handleViewVersions = (document: Document, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDocumentForVersions(document);
+    setIsVersionModalOpen(true);
+  };
+
+  const handleToggleFavorite = (documentId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const isCurrentlyFavorite = favorites.includes(documentId);
+    
+    let updatedFavorites;
+    if (isCurrentlyFavorite) {
+      updatedFavorites = favorites.filter(id => id !== documentId);
+      toast({
+        title: "Removido dos favoritos",
+        description: "O documento foi removido dos seus favoritos.",
+        variant: "default",
+      });
+    } else {
+      updatedFavorites = [...favorites, documentId];
+      toast({
+        title: "Adicionado aos favoritos",
+        description: "O documento foi adicionado aos seus favoritos.",
+        variant: "default",
+      });
+    }
+
+    setFavorites(updatedFavorites);
+    localStorage.setItem("documente-favorites", JSON.stringify(updatedFavorites));
   };
 
   const handleDownload = async (document: Document, e: React.MouseEvent) => {
@@ -184,6 +269,24 @@ export default function HistorySidebar() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={(e) => handleViewVersions(document, e)}
+                      className="text-green-400 hover:text-green-600 hover:bg-green-50 p-1"
+                      title="Ver histórico de versões"
+                    >
+                      <Clock size={14} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleEditDocument(document, e)}
+                      className="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-1"
+                      title="Editar documento"
+                    >
+                      <Edit2 size={14} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={(e) => handleGeneratePrompt(document, e)}
                       className="text-purple-400 hover:text-purple-600 hover:bg-purple-50 p-1"
                       title="Gerar Prompt para IA"
@@ -193,12 +296,32 @@ export default function HistorySidebar() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => handleDownload(document, e)}
-                      className="text-gray-400 hover:text-gray-600 p-1"
-                      title="Baixar documento"
+                      onClick={(e) => handleToggleFavorite(document.id, e)}
+                      className={`p-1 ${
+                        favorites.includes(document.id)
+                          ? "text-yellow-500 hover:text-yellow-600"
+                          : "text-gray-400 hover:text-yellow-500"
+                      }`}
+                      title={favorites.includes(document.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                     >
-                      <Download size={14} />
+                      <Star 
+                        className={`h-4 w-4 ${
+                          favorites.includes(document.id) ? "fill-current" : ""
+                        }`}
+                        size={14}
+                      />
                     </Button>
+                    <ExportMenu
+                      documentId={document.id}
+                      documentTitle={document.title}
+                      onExportSuccess={() => {
+                        toast({
+                          title: "Exportação concluída",
+                          description: `Documento ${document.title} exportado com sucesso.`,
+                          variant: "default",
+                        });
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -232,6 +355,47 @@ export default function HistorySidebar() {
         isOpen={isPromptModalOpen}
         onClose={() => setIsPromptModalOpen(false)}
         document={selectedDocument}
+      />
+
+      {/* Document Editor Modal */}
+      <DocumentEditorModal
+        isOpen={isEditorModalOpen}
+        onClose={() => setIsEditorModalOpen(false)}
+        onSave={async (editedContent) => {
+          if (documentToEdit) {
+            await updateDocumentMutation.mutateAsync({
+              id: documentToEdit.id,
+              content: editedContent,
+            });
+          }
+        }}
+        documentId={documentToEdit?.id || null}
+        title={documentToEdit?.title || ""}
+        content={documentToEdit?.content || ""}
+        type={documentToEdit?.type || ""}
+      />
+
+      {/* Version History Modal */}
+      <VersionHistoryModal
+        isOpen={isVersionModalOpen}
+        onClose={() => setIsVersionModalOpen(false)}
+        onRestore={async (version) => {
+          if (documentForVersions) {
+            await updateDocumentMutation.mutateAsync({
+              id: documentForVersions.id,
+              content: version.content,
+            });
+          }
+        }}
+        documentId={documentForVersions?.id || null}
+        documentTitle={documentForVersions?.title || ""}
+        versions={[]} // TODO: Implement version tracking in backend
+      />
+
+      {/* Favorites Manager Modal */}
+      <FavoritesManager
+        documents={documents}
+        onToggleFavorite={handleToggleFavorite}
       />
     </Card>
   );

@@ -6,6 +6,7 @@ export interface IStorage {
   getDocument(id: number): Promise<Document | undefined>;
   createDocument(document: InsertDocument): Promise<Document>;
   searchDocuments(query: string, type?: string): Promise<Document[]>;
+  updateDocument(id: number, updates: Partial<Document>): Promise<Document | undefined>;
   
   // API Keys
   getActiveApiKey(): Promise<ApiKey | undefined>;
@@ -59,6 +60,15 @@ export class MemStorage implements IStorage {
       
       return matchesQuery && matchesType;
     });
+  }
+
+  async updateDocument(id: number, updates: Partial<Document>): Promise<Document | undefined> {
+    const existing = this.documents.get(id);
+    if (!existing) return undefined;
+
+    const updated = { ...existing, ...updates };
+    this.documents.set(id, updated);
+    return updated;
   }
 
   async getActiveApiKey(): Promise<ApiKey | undefined> {

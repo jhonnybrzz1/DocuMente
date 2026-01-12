@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dark Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'var(--background)',
+                        foreground: 'var(--foreground)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">Test Dark Mode</h1>
+        <p class="mb-4">This is a test page for dark mode.</p>
+        <div class="bg-card p-4 rounded-lg shadow">
+            <p>Card content here</p>
+        </div>
+        <button class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded">
+            Test Button
+        </button>
+    </div>
+</body>
+</html>
