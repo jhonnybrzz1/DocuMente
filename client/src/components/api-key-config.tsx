@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Plug, CheckCircle, AlertCircle } from "lucide-react";
+import type { ApiKey } from "@shared/schema";
 
 export default function ApiKeyConfig() {
   const { toast } = useToast();
 
-  const { data: activeApiKey } = useQuery({
+  const { data: activeApiKey } = useQuery<ApiKey>({
     queryKey: ["/api/api-keys/active"],
   });
 

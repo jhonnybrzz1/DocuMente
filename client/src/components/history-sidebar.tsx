@@ -118,8 +118,8 @@ export default function HistorySidebar() {
     setIsVersionModalOpen(true);
   };
 
-  const handleToggleFavorite = (documentId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggleFavorite = (documentId: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     const isCurrentlyFavorite = favorites.includes(documentId);
     
     let updatedFavorites;
@@ -372,7 +372,7 @@ export default function HistorySidebar() {
         documentId={documentToEdit?.id || null}
         title={documentToEdit?.title || ""}
         content={documentToEdit?.content || ""}
-        type={documentToEdit?.type || ""}
+        type={(documentToEdit?.type as any) || ""}
       />
 
       {/* Version History Modal */}
@@ -395,7 +395,7 @@ export default function HistorySidebar() {
       {/* Favorites Manager Modal */}
       <FavoritesManager
         documents={documents}
-        onToggleFavorite={handleToggleFavorite}
+        onToggleFavorite={(id) => handleToggleFavorite(id)}
       />
     </Card>
   );

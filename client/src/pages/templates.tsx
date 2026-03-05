@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Save, Trash2, FileText, Search } from "lucide-react";
+import { Plus, Save, Trash2, FileText, Search, X, Edit2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { DocumentType } from "@shared/schema";
 

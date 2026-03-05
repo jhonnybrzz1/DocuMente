@@ -1,6 +1,7 @@
 import { FileText, Settings, User, Library } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { Link } from "wouter";
+import { Button } from "./ui/button";
 
 export default function AppHeader() {
   return (

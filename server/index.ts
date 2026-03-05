@@ -41,9 +41,9 @@ app.use((req, res, next) => {
   // Initialize API key on startup
   try {
     const existingKey = await storage.getActiveApiKey();
-    if (!existingKey) {
-      await storage.createApiKey({ mistralKey: "***REMOVED***" });
-      log("Mistral API key initialized");
+    if (!existingKey && process.env.MISTRAL_API_KEY) {
+      await storage.createApiKey({ mistralKey: process.env.MISTRAL_API_KEY });
+      log("Mistral API key initialized from environment");
     }
   } catch (error) {
     console.error("Failed to initialize API key:", error);

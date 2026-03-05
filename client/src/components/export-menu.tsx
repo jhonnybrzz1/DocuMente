@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { Download, FileText, FileType, Markdown, MoreHorizontal } from "lucide-react";
+import { Download, FileText, FileType, FileCode, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ExportMenuProps {
@@ -65,7 +65,7 @@ export default function ExportMenu({ documentId, documentTitle, onExportSuccess 
 
       onExportSuccess();
     } catch (error) {
-      console.error(`Export ${format} error:", error);
+      console.error(`Export ${format} error:`, error);
       toast({
         title: "Erro na exportação",
         description: error instanceof Error ? error.message : `Falha ao exportar como ${format}.`,
@@ -101,13 +101,10 @@ export default function ExportMenu({ documentId, documentTitle, onExportSuccess 
           <FileText className="mr-2 h-4 w-4" />
           <span>Exportar como Word (.docx)</span>
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => handleExport("markdown")}
-          className="cursor-pointer"
-        >
-          <Markdown className="mr-2 h-4 w-4" />
-          <span>Exportar como Markdown (.md)</span>
-        </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleExport("markdown")} disabled={isExporting}>
+            <FileCode className="mr-2 h-4 w-4" />
+            <span>Exportar como Markdown (.md)</span>
+          </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleExport("text")}
           className="cursor-pointer"

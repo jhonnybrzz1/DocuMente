@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Clock, Eye, Restore, X } from "lucide-react";
+import { Clock, Eye, RotateCcw, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -146,7 +146,7 @@ export default function VersionHistoryModal({
                     </>
                   ) : (
                     <>
-                      <Restore className="mr-2" size={16} />
+                      <RotateCcw className="mr-2" size={16} />
                       Restaurar Esta Versão
                     </>
                   )}

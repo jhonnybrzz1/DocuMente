@@ -9,6 +9,8 @@ interface LogEntry {
   action?: string;
   fileType?: string;
   fileSize?: number;
+  fileName?: string;
+  rowCount?: number;
   status?: string;
   userId?: string;
   error?: string;

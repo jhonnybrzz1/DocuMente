@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Edit, Template } from "lucide-react";
+import { Edit, LayoutTemplate } from "lucide-react";
 
 interface EnhancedDocumentInputProps {
   demand: string;
@@ -30,15 +30,10 @@ export default function EnhancedDocumentInput({
             <Edit className="text-primary mr-2" size={20} />
             Inserir Demanda ou Documentos
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onUseTemplate}
-            className="flex items-center"
-          >
-            <Template className="mr-2" size={16} />
-            Usar Template
-          </Button>
+            <Button variant="outline" size="sm" onClick={onUseTemplate}>
+              <LayoutTemplate className="mr-2" size={16} />
+              Usar Template
+            </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

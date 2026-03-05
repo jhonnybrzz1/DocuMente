@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
-import { Input } from "./input";
+import { Input } from "./ui/input";
 import { Plus, Save, X, Edit2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { DocumentType } from "@shared/schema";
@@ -149,7 +149,7 @@ export default function TemplateSelector({
               <Input
                 id="template-name"
                 value={newTemplate.name}
-                onChange={(e) => 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
                   setNewTemplate({ ...newTemplate, name: e.target.value })
                 }
                 placeholder="Ex: Meu Template de PRD"
