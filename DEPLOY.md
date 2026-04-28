@@ -38,19 +38,19 @@ Na seção **Environment Variables**, adicione:
 
 | Key | Value | Descrição |
 |-----|-------|-----------|
-| `MISTRAL_API_KEY` | `sua_chave_completa_aqui` | **OBRIGATÓRIO** - Chave da API Mistral |
+| `OPENAI_API_KEY` | `sua_chave_completa_aqui` | **OBRIGATÓRIO** - Chave da API OpenAI |
 | `NODE_ENV` | `production` | Ambiente de produção |
 | `PORT` | `5000` | Porta (opcional, Render usa 10000 por padrão) |
 | `DATABASE_URL` | `postgresql://...` | Opcional - Para persistência de dados |
 
-#### Como obter a chave da Mistral AI:
+#### Como obter a chave da OpenAI:
 
-1. Acesse [console.mistral.ai](https://console.mistral.ai)
+1. Acesse [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 2. Faça login ou crie uma conta
 3. Vá em **API Keys**
 4. Clique em **"Create new key"**
-5. Copie a chave COMPLETA (geralmente tem 40+ caracteres)
-6. Cole no campo `MISTRAL_API_KEY` no Render
+5. Copie a chave COMPLETA
+6. Cole no campo `OPENAI_API_KEY` no Render
 
 **IMPORTANTE**:
 - A chave deve ser colada COMPLETA, sem truncar
@@ -77,8 +77,8 @@ No painel do Render, vá em **Logs** e procure por:
 ```
 
 ```
-❌ RUIM: WARNING: MISTRAL_API_KEY is not set
-❌ RUIM: Error: Mistral API Error: 401 - {"detail":"Unauthorized"}
+❌ RUIM: WARNING: OPENAI_API_KEY is not set
+❌ RUIM: Error: OpenAI API Error: 401 - {"error": ...}
 ```
 
 ### 2. Testar API Key
@@ -92,6 +92,8 @@ https://seu-app.onrender.com/api/api-keys/active
 ```json
 {
   "configured": true,
+  "provider": "OpenAI",
+  "model": "gpt-5.4-nano",
   "mistralKey": "abc12345...xyz9"
 }
 ```
@@ -114,20 +116,20 @@ Se `configured: false`, a chave não está configurada!
 
 **Sintoma**:
 ```
-Generate document error: Error: Mistral API Error: 401 - {"detail":"Unauthorized"}
+Generate document error: Error: OpenAI API Error: 401 - {"error": ...}
 ```
 
 **Causas Possíveis**:
 
 1. ❌ **Chave não configurada**
-   - Solução: Adicione `MISTRAL_API_KEY` nas variáveis de ambiente
+   - Solução: Adicione `OPENAI_API_KEY` nas variáveis de ambiente
 
 2. ❌ **Chave truncada/incompleta**
    - Solução: Verifique se a chave completa foi copiada
-   - A chave deve ter 40+ caracteres
+   - A chave deve estar completa, exatamente como gerada
 
 3. ❌ **Chave inválida ou expirada**
-   - Solução: Gere uma nova chave no console da Mistral
+   - Solução: Gere uma nova chave no dashboard da OpenAI
 
 4. ❌ **Build antigo sendo usado**
    - Solução: Force um novo deploy
@@ -137,7 +139,7 @@ Generate document error: Error: Mistral API Error: 401 - {"detail":"Unauthorized
 
 No Render, vá em:
 1. **Environment** (menu lateral)
-2. Procure por `MISTRAL_API_KEY`
+2. Procure por `OPENAI_API_KEY`
 3. Clique em "👁️" para revelar o valor
 4. Verifique se está completo (não deve terminar em "...")
 
@@ -209,7 +211,7 @@ No painel do Render:
 
 ### Checklist de Segurança
 
-- [ ] `MISTRAL_API_KEY` configurada como variável de ambiente
+- [ ] `OPENAI_API_KEY` configurada como variável de ambiente
 - [ ] Arquivo `.env` está no `.gitignore`
 - [ ] Nunca commitar chaves no código
 - [ ] HTTPS ativado (automático no Render)
@@ -261,7 +263,7 @@ Você saberá que funcionou quando:
 ## 📚 Recursos Adicionais
 
 - [Documentação do Render](https://render.com/docs)
-- [Mistral AI Docs](https://docs.mistral.ai)
+- [OpenAI API Docs](https://platform.openai.com/docs)
 - [Troubleshooting Render](https://render.com/docs/troubleshooting)
 
 ---

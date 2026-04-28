@@ -6,7 +6,7 @@ import DocumentTypeSelector from "@/components/document-type-selector";
 import GenerationControls from "@/components/generation-controls";
 import HistorySidebar from "@/components/history-sidebar";
 import PreviewModal from "@/components/preview-modal";
-import TemplateSelector from "@/components/template-selector";
+import TemplateSelector, { type Template } from "@/components/template-selector";
 import type { DocumentType } from "@shared/schema";
 
 export default function Home() {
@@ -21,17 +21,17 @@ export default function Home() {
     setShowTemplateSelector(true);
   };
 
-  const handleSelectTemplate = (template: any) => {
+  const handleSelectTemplate = (template: Template) => {
     // Apply template content to demand
     setDemand(template.content);
     setShowTemplateSelector(false);
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3 space-y-6">
             <ApiKeyConfig />
@@ -64,7 +64,7 @@ export default function Home() {
             <HistorySidebar />
           </div>
         </div>
-      </div>
+      </main>
 
       <PreviewModal 
         isOpen={showPreview}

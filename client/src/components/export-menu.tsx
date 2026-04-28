@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { Download, FileText, FileType, FileCode, MoreHorizontal } from "lucide-react";
+import { Download, FileText, FileType, FileCode, MoreHorizontal, FileImage } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ExportMenuProps {
@@ -14,7 +14,7 @@ export default function ExportMenu({ documentId, documentTitle, onExportSuccess 
   const { toast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = async (format: "word" | "markdown" | "text") => {
+  const handleExport = async (format: "word" | "markdown" | "text" | "pdf") => {
     setIsExporting(true);
     try {
       let url = "";
@@ -32,6 +32,10 @@ export default function ExportMenu({ documentId, documentTitle, onExportSuccess 
         case "text":
           url = `/api/documents/${documentId}/download/text`;
           filename = `${documentTitle}.txt`;
+          break;
+        case "pdf":
+          url = `/api/documents/${documentId}/download/pdf`;
+          filename = `${documentTitle}.pdf`;
           break;
       }
 
@@ -81,36 +85,50 @@ export default function ExportMenu({ documentId, documentTitle, onExportSuccess 
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size="sm"
-          className="text-gray-400 hover:text-gray-600 p-1"
-          title="Exportar documento"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          aria-label="Exportar documento"
           disabled={isExporting}
         >
           {isExporting ? (
-            <span className="animate-pulse">Exportando...</span>
+            <span className="animate-pulse text-xs">...</span>
           ) : (
-            <MoreHorizontal size={14} />
+            <MoreHorizontal size={16} />
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={() => handleExport("word")}
-          className="cursor-pointer"
+          className="cursor-pointer min-h-[44px]"
+          disabled={isExporting}
         >
-          <FileText className="mr-2 h-4 w-4" />
+          <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
           <span>Exportar como Word (.docx)</span>
         </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleExport("markdown")} disabled={isExporting}>
-            <FileCode className="mr-2 h-4 w-4" />
-            <span>Exportar como Markdown (.md)</span>
-          </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => handleExport("markdown")}
+          className="cursor-pointer min-h-[44px]"
+          disabled={isExporting}
+        >
+          <FileCode className="mr-2 h-4 w-4" aria-hidden="true" />
+          <span>Exportar como Markdown (.md)</span>
+        </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleExport("text")}
-          className="cursor-pointer"
+          className="cursor-pointer min-h-[44px]"
+          disabled={isExporting}
         >
-          <FileType className="mr-2 h-4 w-4" />
+          <FileType className="mr-2 h-4 w-4" aria-hidden="true" />
           <span>Exportar como Texto (.txt)</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => handleExport("pdf")}
+          className="cursor-pointer min-h-[44px]"
+          disabled={isExporting}
+        >
+          <FileImage className="mr-2 h-4 w-4" aria-hidden="true" />
+          <span>Exportar como PDF (.pdf)</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

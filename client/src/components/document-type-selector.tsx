@@ -68,21 +68,23 @@ export default function DocumentTypeSelector({ selectedType, onTypeSelect }: Doc
                   checked={isSelected}
                   onChange={() => onTypeSelect(type.value)}
                   className="peer sr-only"
+                  aria-describedby={`${type.value}-description`}
                 />
                 <label
                   htmlFor={type.value}
-                  className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all
-                    ${isSelected 
-                      ? 'border-primary bg-blue-50' 
-                      : 'border-gray-200 hover:border-primary'
+                  className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all min-h-[68px]
+                    focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2
+                    ${isSelected
+                      ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                      : 'border-border hover:border-primary'
                     }`}
                 >
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${colorClass}`}>
-                    <IconComponent size={20} />
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 shrink-0 ${colorClass}`}>
+                    <IconComponent size={20} aria-hidden="true" />
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">{type.label}</div>
-                    <div className="text-sm text-gray-500">{type.description}</div>
+                    <div className="font-medium text-foreground">{type.label}</div>
+                    <div id={`${type.value}-description`} className="text-sm text-muted-foreground">{type.description}</div>
                   </div>
                 </label>
               </div>

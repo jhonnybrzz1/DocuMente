@@ -9,7 +9,7 @@ import { Plus, Save, X, Edit2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { DocumentType } from "@shared/schema";
 
-interface Template {
+export interface Template {
   id: string;
   name: string;
   type: DocumentType;

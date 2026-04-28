@@ -38,30 +38,36 @@ export default function EnhancedDocumentInput({
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Título do Documento
+          <label htmlFor="document-title" className="block text-sm font-medium text-foreground mb-2">
+            Título do Documento <span className="text-destructive" aria-hidden="true">*</span>
+            <span className="sr-only">(obrigatório)</span>
           </label>
           <Input
+            id="document-title"
             placeholder="Ex: Login Social Mobile, Dashboard Analytics, etc."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            aria-required="true"
           />
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Descrição da Demanda
+          <label htmlFor="document-demand" className="block text-sm font-medium text-foreground mb-2">
+            Descrição da Demanda <span className="text-destructive" aria-hidden="true">*</span>
+            <span className="sr-only">(obrigatório)</span>
           </label>
           <Textarea
+            id="document-demand"
             placeholder="Descreva sua demanda ou cole documentos existentes aqui para refinamento...\n\nExemplo: 'Preciso criar uma funcionalidade de login social para o aplicativo móvel que permita aos usuários fazer login usando Google e Facebook, com autenticação segura e sincronização de dados do perfil.'"
             rows={8}
             value={demand}
             onChange={(e) => setDemand(e.target.value)}
             className="resize-none"
             maxLength={maxCharacters}
+            aria-required="true"
           />
           
-          <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
+          <div className="flex items-center justify-between text-sm text-muted-foreground mt-2">
             <span>{characterCount} caracteres</span>
             <span>Máximo: {maxCharacters.toLocaleString()} caracteres</span>
           </div>

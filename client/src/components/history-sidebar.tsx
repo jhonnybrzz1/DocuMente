@@ -1,11 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Download, MoreVertical, Sparkles, Edit2, Clock, Star } from "lucide-react";
+
+// Hook de debounce para otimizar performance da busca
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 import { documentTypes, type Document } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -38,6 +56,7 @@ const getTypeLabel = (type: string) => {
 
 export default function HistorySidebar() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300); // Debounce de 300ms
   const [filterType, setFilterType] = useState<string>("");
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
@@ -78,7 +97,7 @@ export default function HistorySidebar() {
       // Invalidate documents list to refresh history
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Erro ao atualizar",
         description: error.message || "Falha ao atualizar o documento.",
@@ -88,12 +107,12 @@ export default function HistorySidebar() {
   });
 
   const { data: documents = [], isLoading } = useQuery({
-    queryKey: ["/api/documents", searchQuery, filterType],
+    queryKey: ["/api/documents", debouncedSearchQuery, filterType],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchQuery) params.append("search", searchQuery);
+      if (debouncedSearchQuery) params.append("search", debouncedSearchQuery);
       if (filterType && filterType !== "all") params.append("type", filterType);
-      
+
       const response = await fetch(`/api/documents?${params}`);
       if (!response.ok) throw new Error("Failed to fetch documents");
       return response.json();
@@ -230,120 +249,144 @@ export default function HistorySidebar() {
         </div>
 
         {/* Document History List */}
-        <div className="space-y-3">
+        <div className="space-y-3" role="list" aria-label="Lista de documentos">
           {isLoading ? (
-            <div className="text-center text-gray-500 text-sm">
+            <div className="text-center text-muted-foreground text-sm" role="status">
               Carregando...
             </div>
           ) : documents.length === 0 ? (
-            <div className="text-center text-gray-500 text-sm">
-              {searchQuery || filterType ? "Nenhum documento encontrado" : "Nenhum documento ainda"}
+            <div className="text-center text-muted-foreground text-sm">
+              {debouncedSearchQuery || filterType ? "Nenhum documento encontrado" : "Nenhum documento ainda"}
             </div>
           ) : (
             documents.map((document: Document) => (
-              <div
+              <article
                 key={document.id}
-                className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                className="border border-border rounded-lg p-3 hover:bg-muted/50 cursor-pointer transition-colors"
+                role="listitem"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTypeColor(document.type)}`}>
+                {/* Content section */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium shrink-0 ${getTypeColor(document.type)}`}>
                         {getTypeLabel(document.type)}
                       </span>
-                      <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(document.createdAt), { 
-                          addSuffix: true, 
-                          locale: ptBR 
+                      <span className="text-xs text-muted-foreground truncate">
+                        {formatDistanceToNow(new Date(document.createdAt), {
+                          addSuffix: true,
+                          locale: ptBR
                         })}
                       </span>
                     </div>
-                    <h4 className="text-sm font-medium text-gray-900 truncate">
-                      {document.title}
-                    </h4>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                      {document.originalDemand.slice(0, 60)}...
-                    </p>
                   </div>
-                  <div className="flex items-center space-x-1 ml-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => handleViewVersions(document, e)}
-                      className="text-green-400 hover:text-green-600 hover:bg-green-50 p-1"
-                      title="Ver histórico de versões"
-                    >
-                      <Clock size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => handleEditDocument(document, e)}
-                      className="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-1"
-                      title="Editar documento"
-                    >
-                      <Edit2 size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => handleGeneratePrompt(document, e)}
-                      className="text-purple-400 hover:text-purple-600 hover:bg-purple-50 p-1"
-                      title="Gerar Prompt para IA"
-                    >
-                      <Sparkles size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => handleToggleFavorite(document.id, e)}
-                      className={`p-1 ${
-                        favorites.includes(document.id)
-                          ? "text-yellow-500 hover:text-yellow-600"
-                          : "text-gray-400 hover:text-yellow-500"
-                      }`}
-                      title={favorites.includes(document.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                    >
-                      <Star 
-                        className={`h-4 w-4 ${
-                          favorites.includes(document.id) ? "fill-current" : ""
-                        }`}
-                        size={14}
-                      />
-                    </Button>
-                    <ExportMenu
-                      documentId={document.id}
-                      documentTitle={document.title}
-                      onExportSuccess={() => {
-                        toast({
-                          title: "Exportação concluída",
-                          description: `Documento ${document.title} exportado com sucesso.`,
-                          variant: "default",
-                        });
-                      }}
-                    />
-                  </div>
+                  <h4 className="text-sm font-medium text-foreground truncate">
+                    {document.title}
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                    {document.originalDemand.slice(0, 50)}...
+                  </p>
                 </div>
-              </div>
+                {/* Action buttons - below content */}
+                <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-border/50" role="group" aria-label="Ações do documento">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleViewVersions(document, e)}
+                        className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
+                        aria-label="Ver histórico de versões"
+                      >
+                        <Clock size={14} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Versões</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleEditDocument(document, e)}
+                        className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                        aria-label="Editar documento"
+                      >
+                        <Edit2 size={14} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Editar</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleGeneratePrompt(document, e)}
+                        className="h-8 w-8 text-purple-500 hover:text-purple-600 hover:bg-purple-500/10"
+                        aria-label="Gerar Prompt para IA"
+                      >
+                        <Sparkles size={14} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Prompt IA</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleToggleFavorite(document.id, e)}
+                        className={`h-8 w-8 ${
+                          favorites.includes(document.id)
+                            ? "text-yellow-500 hover:text-yellow-600"
+                            : "text-muted-foreground hover:text-yellow-500"
+                        }`}
+                        aria-label={favorites.includes(document.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                        aria-pressed={favorites.includes(document.id)}
+                      >
+                        <Star
+                          className={favorites.includes(document.id) ? "fill-current" : ""}
+                          size={14}
+                        />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {favorites.includes(document.id) ? "Remover favorito" : "Favoritar"}
+                    </TooltipContent>
+                  </Tooltip>
+                  <ExportMenu
+                    documentId={document.id}
+                    documentTitle={document.title}
+                    onExportSuccess={() => {
+                      toast({
+                        title: "Exportação concluída",
+                        description: `Documento ${document.title} exportado com sucesso.`,
+                        variant: "default",
+                      });
+                    }}
+                  />
+                </div>
+              </article>
             ))
           )}
         </div>
 
         {/* Statistics */}
         {documents.length > 0 && (
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border-border">
             <div className="grid grid-cols-2 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-primary">
                   {totalDocuments}
                 </div>
-                <div className="text-xs text-gray-500">Documentos</div>
+                <div className="text-xs text-muted-foreground">Documentos</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-success">
                   {documentsThisWeek}
                 </div>
-                <div className="text-xs text-gray-500">Esta semana</div>
+                <div className="text-xs text-muted-foreground">Esta semana</div>
               </div>
             </div>
           </div>

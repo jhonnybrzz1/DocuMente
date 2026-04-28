@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { X, Download, Loader2 } from "lucide-react";
 import type { DocumentType } from "@shared/schema";
+import DOMPurify from "dompurify";
 
 interface PreviewModalProps {
   isOpen: boolean;
@@ -64,7 +65,7 @@ export default function PreviewModal({
         });
       }
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Erro na geração",
         description: error.message || "Falha ao gerar documento.",
@@ -103,10 +104,13 @@ export default function PreviewModal({
         </DialogHeader>
         
         <div className="overflow-y-auto max-h-[calc(90vh-8rem)] p-6 border rounded-lg bg-gray-50">
-          <div 
+          <div
             className="prose max-w-none text-gray-900"
-            dangerouslySetInnerHTML={{ 
-              __html: `<p class="mb-4">${formatContentForDisplay(content)}</p>` 
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(`<p class="mb-4">${formatContentForDisplay(content)}</p>`, {
+                ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'strong', 'em', 'li', 'ul', 'ol', 'br', 'span'],
+                ALLOWED_ATTR: ['class']
+              })
             }}
           />
         </div>

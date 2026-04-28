@@ -39,7 +39,7 @@ export default function GenerationControls({
     onSuccess: (data) => {
       onPreview(data.content);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Erro na prévia",
         description: error.message || "Falha ao gerar prévia do documento.",
@@ -105,7 +105,7 @@ export default function GenerationControls({
         setIsProcessing(false);
       }
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Erro na geração",
         description: error.message || "Falha ao gerar documento.",
@@ -248,13 +248,13 @@ export default function GenerationControls({
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center space-x-4">
-            <Loader2 className="animate-spin h-8 w-8 text-primary" />
+          <div className="flex items-center space-x-4" role="status" aria-live="polite">
+            <Loader2 className="animate-spin h-8 w-8 text-primary" aria-hidden="true" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-foreground">
                 Processando documento...
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Aguarde enquanto criamos seu documento estruturado
               </p>
             </div>
@@ -294,15 +294,17 @@ export default function GenerationControls({
 
         {uploadedFiles.length > 0 && (
           <div className="mb-4">
-            <h4 className="text-sm font-semibold text-gray-700">Arquivos Anexados:</h4>
-            <ul className="mt-2 space-y-2">
+            <h4 className="text-sm font-semibold text-foreground">Arquivos Anexados:</h4>
+            <ul className="mt-2 space-y-2" role="list">
               {uploadedFiles.map((file, index) => (
-                <li key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
-                  <span className="text-sm text-gray-800">{file.name}</span>
+                <li key={index} className="flex items-center justify-between bg-muted p-2 rounded-md">
+                  <span className="text-sm text-foreground">{file.name}</span>
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     onClick={() => removeFile(index)}
+                    className="h-9 w-9"
+                    aria-label={`Remover arquivo ${file.name}`}
                   >
                     <X className="h-4 w-4" />
                   </Button>

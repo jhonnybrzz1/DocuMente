@@ -6,39 +6,46 @@ import { apiRequest } from "@/lib/queryClient";
 import { Plug, CheckCircle, AlertCircle } from "lucide-react";
 import type { ApiKey } from "@shared/schema";
 
+type ActiveApiKeyStatus = Partial<ApiKey> & {
+  configured: boolean;
+  provider?: string;
+  model?: string;
+  mistralKey: string | null;
+};
+
 export default function ApiKeyConfig() {
   const { toast } = useToast();
 
-  const { data: activeApiKey } = useQuery<ApiKey>({
+  const { data: activeApiKey } = useQuery<ActiveApiKeyStatus>({
     queryKey: ["/api/api-keys/active"],
   });
 
   const testConnectionMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/test-connection", { apiKey: activeApiKey?.mistralKey });
+      const response = await apiRequest("POST", "/api/test-connection", {});
       return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Conexão verificada",
-        description: "A API do Mistral está funcionando corretamente.",
+        description: "A API da OpenAI está funcionando corretamente.",
         variant: "default",
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Erro na conexão",
-        description: error.message || "Falha ao conectar com a API do Mistral.",
+        description: error.message || "Falha ao conectar com a API da OpenAI.",
         variant: "destructive",
       });
     },
   });
 
   const handleTestConnection = () => {
-    if (!activeApiKey) {
+    if (!activeApiKey?.configured) {
       toast({
         title: "API não configurada",
-        description: "Nenhuma chave da API está configurada no sistema.",
+        description: "OPENAI_API_KEY não está configurada no servidor.",
         variant: "destructive",
       });
       return;
@@ -46,7 +53,7 @@ export default function ApiKeyConfig() {
     testConnectionMutation.mutate();
   };
 
-  const isConnected = activeApiKey && !testConnectionMutation.isError;
+  const isConnected = Boolean(activeApiKey?.configured) && !testConnectionMutation.isError;
 
   return (
     <Card>
@@ -73,17 +80,17 @@ export default function ApiKeyConfig() {
           <div>
             <p className="text-sm text-gray-600">
               {isConnected 
-                ? "API do Mistral configurada e funcionando" 
+                ? "API da OpenAI configurada e funcionando" 
                 : "Verificando configuração da API..."
               }
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Sistema configurado automaticamente
+              Modelo: {activeApiKey?.model ?? "gpt-5.4-nano"}
             </p>
           </div>
           <Button
             onClick={handleTestConnection}
-            disabled={testConnectionMutation.isPending || !activeApiKey}
+            disabled={testConnectionMutation.isPending || !activeApiKey?.configured}
             variant="outline"
             size="sm"
           >

@@ -1,14 +1,12 @@
 
 import fs from 'fs';
 import path from 'path';
-import * as pdfLib from 'pdf-parse';
+import { PDFParse, VerbosityLevel } from 'pdf-parse';
 import mammoth from 'mammoth';
 import xlsx from 'xlsx';
 import csv from 'csv-parser';
+import { OfficeParser } from 'officeparser';
 import { logger } from '../utils/logger';
-
-// Correção para compatibilidade ES Module/CommonJS
-const pdf: any = (pdfLib as any).default || pdfLib;
 
 /**
  * Classe responsável por processar arquivos e extrair textos de diferentes formatos
@@ -91,20 +89,7 @@ class FileProcessor {
   private async extractTextFromPDF(filePath: string, fileName?: string): Promise<string> {
     const dataBuffer = fs.readFileSync(filePath);
 
-    // Verificar se o arquivo PDF está corrompido ou é um PDF inválido
     try {
-      // Verificando se é um PDF válido pelo cabeçalho
-      const header = dataBuffer.subarray(0, 5).toString();
-      if (header !== '%PDF-') {
-        logger.error('Arquivo PDF inválido: cabeçalho não encontrado', {
-          action: 'pdf_processing',
-          fileType: 'pdf',
-          fileSize: dataBuffer.length,
-          fileName: fileName
-        });
-        throw new Error('Arquivo PDF inválido: cabeçalho não encontrado');
-      }
-
       logger.info('Iniciando processamento de PDF', {
         action: 'pdf_processing',
         fileType: 'pdf',
@@ -112,7 +97,16 @@ class FileProcessor {
         fileName: fileName
       });
 
-      const data = await pdf(dataBuffer);
+      // Usando a nova API do pdf-parse v2 - passar dados no construtor
+      const pdfParser = new PDFParse({
+        data: new Uint8Array(dataBuffer),
+        verbosity: VerbosityLevel.ERRORS
+      });
+      const textResult = await pdfParser.getText();
+      const text = textResult.text || '';
+
+      // Limpar recursos
+      await pdfParser.destroy();
 
       logger.info('PDF processado com sucesso', {
         action: 'pdf_processing',
@@ -122,8 +116,9 @@ class FileProcessor {
         status: 'success'
       });
 
-      return data.text;
+      return text;
     } catch (error) {
+      console.error('PDF Processing Error:', error);
       logger.error(`Falha ao processar PDF: ${error instanceof Error ? error.message : 'Erro desconhecido'}`, {
         action: 'pdf_processing',
         fileType: 'pdf',
@@ -254,10 +249,12 @@ class FileProcessor {
     });
 
     try {
-      // Note: PowerPoint extraction requires a more complex approach
-      // For now, we'll return a placeholder message
-      // In a production environment, you would use a library like 'pptxgenjs' or 'officeparser'
-      
+      // Usar officeparser v6 para extrair texto do PowerPoint
+      const ast = await OfficeParser.parseOffice(filePath);
+      const extractedText = ast.toText();
+
+      const formattedText = `=== PowerPoint: ${fileName} ===\n\n${extractedText}`;
+
       logger.info('PowerPoint processado com sucesso', {
         action: 'ppt_processing',
         fileType: 'ppt',
@@ -265,7 +262,7 @@ class FileProcessor {
         status: 'success'
       });
 
-      return `=== PowerPoint File: ${fileName} ===\n\nPowerPoint extraction is not fully implemented yet.\nThis feature would require additional libraries like pptxgenjs or officeparser.\n\nFile size: ${fs.statSync(filePath).size} bytes`;
+      return formattedText;
     } catch (error) {
       logger.error(`Falha ao processar PowerPoint: ${error instanceof Error ? error.message : 'Erro desconhecido'}`, {
         action: 'ppt_processing',

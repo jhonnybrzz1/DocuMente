@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
@@ -6,6 +7,39 @@ import { storage } from "./storage";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Rate limiting geral para API
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 requests por IP
+  message: { message: "Muitas requisições. Tente novamente em alguns minutos." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting mais restritivo para geração de documentos (usa API OpenAI)
+const generationLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minuto
+  max: 10, // máximo 10 gerações por minuto
+  message: { message: "Limite de geração atingido. Aguarde um minuto." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting para upload de arquivos
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minuto
+  max: 20, // máximo 20 uploads por minuto
+  message: { message: "Muitos uploads. Aguarde um minuto." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Aplicar rate limiting
+app.use("/api/", generalLimiter);
+app.use("/api/generate-document", generationLimiter);
+app.use("/api/preview-document", generationLimiter);
+app.use("/api/upload", uploadLimiter);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -41,9 +75,9 @@ app.use((req, res, next) => {
   // Initialize API key on startup
   try {
     const existingKey = await storage.getActiveApiKey();
-    if (!existingKey && process.env.MISTRAL_API_KEY) {
-      await storage.createApiKey({ mistralKey: process.env.MISTRAL_API_KEY });
-      log("Mistral API key initialized from environment");
+    if (!existingKey && process.env.OPENAI_API_KEY) {
+      await storage.createApiKey({ mistralKey: process.env.OPENAI_API_KEY });
+      log("OpenAI API key initialized from environment");
     }
   } catch (error) {
     console.error("Failed to initialize API key:", error);
@@ -51,12 +85,12 @@ app.use((req, res, next) => {
 
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: Error & { status?: number; statusCode?: number }, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    console.error(`[ERROR] ${status}: ${message}`);
   });
 
   // importantly only setup vite in development and after

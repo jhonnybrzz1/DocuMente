@@ -47,3 +47,39 @@ export const documentTypes = [
 ] as const;
 
 export type DocumentType = typeof documentTypes[number]["value"];
+
+// Validação de tipos de documento
+const documentTypeValues = documentTypes.map(dt => dt.value) as [string, ...string[]];
+
+// Schemas de validação de input para API
+export const generateDocumentInputSchema = z.object({
+  type: z.enum(documentTypeValues, {
+    errorMap: () => ({ message: "Tipo de documento inválido" })
+  }),
+  demand: z.string()
+    .min(10, "A demanda deve ter pelo menos 10 caracteres")
+    .max(50000, "A demanda não pode exceder 50.000 caracteres"),
+  title: z.string()
+    .min(3, "O título deve ter pelo menos 3 caracteres")
+    .max(200, "O título não pode exceder 200 caracteres"),
+  extractedText: z.string().max(100000, "Texto extraído muito grande").optional(),
+});
+
+export const previewDocumentInputSchema = z.object({
+  type: z.enum(documentTypeValues, {
+    errorMap: () => ({ message: "Tipo de documento inválido" })
+  }),
+  demand: z.string()
+    .min(10, "A demanda deve ter pelo menos 10 caracteres")
+    .max(50000, "A demanda não pode exceder 50.000 caracteres"),
+});
+
+export const updateDocumentInputSchema = z.object({
+  content: z.string()
+    .min(1, "O conteúdo não pode estar vazio")
+    .max(500000, "O conteúdo não pode exceder 500.000 caracteres"),
+});
+
+export type GenerateDocumentInput = z.infer<typeof generateDocumentInputSchema>;
+export type PreviewDocumentInput = z.infer<typeof previewDocumentInputSchema>;
+export type UpdateDocumentInput = z.infer<typeof updateDocumentInputSchema>;

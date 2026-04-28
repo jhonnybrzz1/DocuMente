@@ -2,13 +2,13 @@
 
 ## 🎯 Visão Geral
 
-**DocuMente** é uma plataforma de geração automática de documentação de produtos usando Inteligência Artificial. Transforme suas ideias e requisitos em documentos profissionais e estruturados em segundos, utilizando a poderosa API da Mistral AI.
+**DocuMente** é uma plataforma de geração automática de documentação de produtos usando Inteligência Artificial. Transforme suas ideias e requisitos em documentos profissionais e estruturados em segundos, utilizando a API da OpenAI.
 
 ### Por que usar o DocuMente?
 
 - ⚡ **Rápido**: Gere documentos completos em segundos
 - 🎨 **Profissional**: Documentos formatados em Word (.docx) prontos para uso
-- 🤖 **Inteligente**: Utiliza IA avançada da Mistral para criar conteúdo estruturado
+- 🤖 **Inteligente**: Utiliza IA avançada da OpenAI para criar conteúdo estruturado
 - 📚 **Versátil**: 9 tipos de documentos diferentes
 - 🔒 **Seguro**: API key configurada apenas no servidor (não exposta no frontend)
 - 💾 **Histórico**: Acompanhe todos os documentos gerados
@@ -17,7 +17,7 @@
 
 ## ✨ Funcionalidades
 
-- ✅ Geração de documentos com IA (Mistral AI)
+- ✅ Geração de documentos com IA (OpenAI)
 - ✅ 9 tipos de documentos suportados
 - ✅ Export em formato Word (.docx) profissional
 - ✅ Histórico de documentos com busca
@@ -49,8 +49,8 @@
 - **docx** - Geração de documentos Word
 
 ### IA
-- **Mistral AI** - Modelo de linguagem fine-tuned
-- **Modelo**: `ft:mistral-large-latest:87817515:20250910:33f45a53`
+- **OpenAI** - Modelo de linguagem
+- **Modelo**: `gpt-5.4-nano`
 - **API configurada no servidor** - Maior segurança
 - **Especializado** em documentação de produtos
 
@@ -62,7 +62,7 @@
 
 - Node.js 18+
 - npm ou yarn
-- Conta na [Mistral AI](https://mistral.ai) (para chave API)
+- Conta na [OpenAI Platform](https://platform.openai.com) (para chave API)
 - Conta no [Neon Database](https://neon.tech) (opcional, para produção)
 
 ### Clone o repositório
@@ -87,8 +87,8 @@ npm install
 Crie um arquivo `.env` na raiz do projeto:
 
 ```env
-# Mistral AI API Key (obrigatório)
-MISTRAL_API_KEY=sua_chave_mistral_aqui
+# OpenAI API Key (obrigatório)
+OPENAI_API_KEY=sua_chave_openai_aqui
 
 # Database (opcional - usa in-memory se não configurado)
 DATABASE_URL=postgresql://usuario:senha@host/database
@@ -100,9 +100,9 @@ PORT=5000
 NODE_ENV=development
 ```
 
-### 2. Obter Chave da Mistral AI
+### 2. Obter Chave da OpenAI
 
-1. Acesse [console.mistral.ai](https://console.mistral.ai)
+1. Acesse [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 2. Crie uma conta ou faça login
 3. Vá em **API Keys**
 4. Crie uma nova chave
@@ -153,13 +153,13 @@ npm run check
 
 ### Como funciona
 
-**IMPORTANTE**: A chave da API Mistral **NÃO é solicitada no frontend**. Esta é uma medida de segurança importante.
+**IMPORTANTE**: A chave da API OpenAI **NÃO é solicitada no frontend**. Esta é uma medida de segurança importante.
 
 #### Configuração Segura
 
-1. **Servidor**: A API key é configurada via variável de ambiente `MISTRAL_API_KEY`
+1. **Servidor**: A API key é configurada via variável de ambiente `OPENAI_API_KEY`
 2. **Frontend**: Não tem acesso direto à chave
-3. **Requisições**: Todas as chamadas à Mistral AI são feitas pelo backend
+3. **Requisições**: Todas as chamadas à OpenAI são feitas pelo backend
 4. **Proteção**: A chave nunca é exposta ao navegador do usuário
 
 #### Fluxo de Segurança
@@ -178,10 +178,10 @@ npm run check
 │   Express   │
 └──────┬──────┘
        │
-       │ Usa MISTRAL_API_KEY
+       │ Usa OPENAI_API_KEY
        │
 ┌──────▼──────┐
-│ Mistral AI  │
+│   OpenAI    │
 │     API     │
 └─────────────┘
 ```
@@ -249,14 +249,14 @@ DocuMente/
        │ POST /api/generate-document
        │
 ┌──────▼──────┐
-│   Express   │ ← MISTRAL_API_KEY (env)
+│   Express   │ ← OPENAI_API_KEY (env)
 │   Routes    │
 └──────┬──────┘
        │
        │ Valida e processa
        │
 ┌──────▼──────┐
-│  Mistral AI │
+│   OpenAI    │
 │     API     │
 └──────┬──────┘
        │
@@ -284,7 +284,7 @@ DocuMente/
 Em **qualquer plataforma de deploy**, configure:
 
 ```env
-MISTRAL_API_KEY=sua_chave_aqui
+OPENAI_API_KEY=sua_chave_aqui
 NODE_ENV=production
 DATABASE_URL=sua_url_do_banco (opcional)
 ```
@@ -313,7 +313,7 @@ railway up
 
 ```bash
 docker build -t documente .
-docker run -p 5000:5000 -e MISTRAL_API_KEY=sua_chave documente
+docker run -p 5000:5000 -e OPENAI_API_KEY=sua_chave documente
 ```
 
 ---
@@ -380,7 +380,7 @@ Lista todos os documentos gerados
 
 **Sintoma**: Erro "API key is not configured"
 
-**Solução**: Verifique se `MISTRAL_API_KEY` está no arquivo `.env` ou nas variáveis de ambiente do servidor
+**Solução**: Verifique se `OPENAI_API_KEY` está no arquivo `.env` ou nas variáveis de ambiente do servidor
 
 ### Documentos não persistem
 
@@ -437,7 +437,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 🙏 Agradecimentos
 
-- [Mistral AI](https://mistral.ai) - API de IA
+- [OpenAI](https://platform.openai.com) - API de IA
 - [shadcn/ui](https://ui.shadcn.com) - Componentes UI
 - [Neon](https://neon.tech) - Database PostgreSQL
 
@@ -448,7 +448,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ### Segurança
 
 - ❌ **NUNCA** commite o arquivo `.env`
-- ❌ **NUNCA** exponha a `MISTRAL_API_KEY` no frontend
+- ❌ **NUNCA** exponha a `OPENAI_API_KEY` no frontend
 - ✅ **SEMPRE** configure a chave via variável de ambiente
 - ✅ **SEMPRE** valide entradas do usuário no backend
 
@@ -457,7 +457,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 - Configure `DATABASE_URL` para persistência
 - Use HTTPS
 - Configure rate limiting
-- Monitore custos da API Mistral
+- Monitore custos da API OpenAI
 - Faça backup regular do banco de dados
 
 ---
