@@ -2,13 +2,13 @@
 
 ## 🎯 Visão Geral
 
-**DocuMente** é uma plataforma de geração automática de documentação de produtos usando Inteligência Artificial. Transforme suas ideias e requisitos em documentos profissionais e estruturados em segundos, utilizando a API da OpenAI.
+**DocuMente** é uma plataforma de geração automática de documentação de produtos usando Inteligência Artificial. Transforme suas ideias e requisitos em documentos profissionais e estruturados em segundos, utilizando a API da OpenRouter.
 
 ### Por que usar o DocuMente?
 
 - ⚡ **Rápido**: Gere documentos completos em segundos
 - 🎨 **Profissional**: Documentos formatados em Word (.docx) prontos para uso
-- 🤖 **Inteligente**: Utiliza IA avançada da OpenAI para criar conteúdo estruturado
+- 🤖 **Inteligente**: Utiliza IA avançada via OpenRouter para criar conteúdo estruturado
 - 📚 **Versátil**: 9 tipos de documentos diferentes
 - 🔒 **Seguro**: API key configurada apenas no servidor (não exposta no frontend)
 - 💾 **Histórico**: Acompanhe todos os documentos gerados
@@ -17,7 +17,7 @@
 
 ## ✨ Funcionalidades
 
-- ✅ Geração de documentos com IA (OpenAI)
+- ✅ Geração de documentos com IA (OpenRouter)
 - ✅ 9 tipos de documentos suportados
 - ✅ Export em formato Word (.docx) profissional
 - ✅ Histórico de documentos com busca
@@ -49,8 +49,8 @@
 - **docx** - Geração de documentos Word
 
 ### IA
-- **OpenAI** - Modelo de linguagem
-- **Modelo**: `gpt-5.4-nano`
+- **OpenRouter** - Roteamento de modelo de linguagem
+- **Modelo**: `google/gemma-4-31b-it`
 - **API configurada no servidor** - Maior segurança
 - **Especializado** em documentação de produtos
 
@@ -62,7 +62,7 @@
 
 - Node.js 18+
 - npm ou yarn
-- Conta na [OpenAI Platform](https://platform.openai.com) (para chave API)
+- Conta na [OpenRouter](https://openrouter.ai) (para chave API)
 - Conta no [Neon Database](https://neon.tech) (opcional, para produção)
 
 ### Clone o repositório
@@ -87,8 +87,11 @@ npm install
 Crie um arquivo `.env` na raiz do projeto:
 
 ```env
-# OpenAI API Key (obrigatório)
-OPENAI_API_KEY=sua_chave_openai_aqui
+# OpenRouter API Key (obrigatório)
+OPENROUTER_API_KEY=sua_chave_openrouter_aqui
+
+# Modelo OpenRouter (opcional)
+OPENROUTER_MODEL=google/gemma-4-31b-it
 
 # Database (opcional - usa in-memory se não configurado)
 DATABASE_URL=postgresql://usuario:senha@host/database
@@ -100,11 +103,11 @@ PORT=5000
 NODE_ENV=development
 ```
 
-### 2. Obter Chave da OpenAI
+### 2. Obter Chave da OpenRouter
 
-1. Acesse [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+1. Acesse [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys)
 2. Crie uma conta ou faça login
-3. Vá em **API Keys**
+3. Vá em **Keys**
 4. Crie uma nova chave
 5. Copie e cole no arquivo `.env`
 
@@ -153,13 +156,13 @@ npm run check
 
 ### Como funciona
 
-**IMPORTANTE**: A chave da API OpenAI **NÃO é solicitada no frontend**. Esta é uma medida de segurança importante.
+**IMPORTANTE**: A chave da API OpenRouter **NÃO é solicitada no frontend**. Esta é uma medida de segurança importante.
 
 #### Configuração Segura
 
-1. **Servidor**: A API key é configurada via variável de ambiente `OPENAI_API_KEY`
+1. **Servidor**: A API key é configurada via variável de ambiente `OPENROUTER_API_KEY`
 2. **Frontend**: Não tem acesso direto à chave
-3. **Requisições**: Todas as chamadas à OpenAI são feitas pelo backend
+3. **Requisições**: Todas as chamadas à OpenRouter são feitas pelo backend
 4. **Proteção**: A chave nunca é exposta ao navegador do usuário
 
 #### Fluxo de Segurança
@@ -178,10 +181,10 @@ npm run check
 │   Express   │
 └──────┬──────┘
        │
-       │ Usa OPENAI_API_KEY
+       │ Usa OPENROUTER_API_KEY
        │
 ┌──────▼──────┐
-│   OpenAI    │
+│ OpenRouter  │
 │     API     │
 └─────────────┘
 ```
@@ -249,14 +252,14 @@ DocuMente/
        │ POST /api/generate-document
        │
 ┌──────▼──────┐
-│   Express   │ ← OPENAI_API_KEY (env)
+│   Express   │ ← OPENROUTER_API_KEY (env)
 │   Routes    │
 └──────┬──────┘
        │
        │ Valida e processa
        │
 ┌──────▼──────┐
-│   OpenAI    │
+│ OpenRouter  │
 │     API     │
 └──────┬──────┘
        │
@@ -284,7 +287,8 @@ DocuMente/
 Em **qualquer plataforma de deploy**, configure:
 
 ```env
-OPENAI_API_KEY=sua_chave_aqui
+OPENROUTER_API_KEY=sua_chave_aqui
+OPENROUTER_MODEL=google/gemma-4-31b-it
 NODE_ENV=production
 DATABASE_URL=sua_url_do_banco (opcional)
 ```
@@ -313,7 +317,7 @@ railway up
 
 ```bash
 docker build -t documente .
-docker run -p 5000:5000 -e OPENAI_API_KEY=sua_chave documente
+docker run -p 5000:5000 -e OPENROUTER_API_KEY=sua_chave documente
 ```
 
 ---
@@ -380,7 +384,7 @@ Lista todos os documentos gerados
 
 **Sintoma**: Erro "API key is not configured"
 
-**Solução**: Verifique se `OPENAI_API_KEY` está no arquivo `.env` ou nas variáveis de ambiente do servidor
+**Solução**: Verifique se `OPENROUTER_API_KEY` está no arquivo `.env` ou nas variáveis de ambiente do servidor
 
 ### Documentos não persistem
 
@@ -437,7 +441,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 🙏 Agradecimentos
 
-- [OpenAI](https://platform.openai.com) - API de IA
+- [OpenRouter](https://openrouter.ai) - API de IA
 - [shadcn/ui](https://ui.shadcn.com) - Componentes UI
 - [Neon](https://neon.tech) - Database PostgreSQL
 
@@ -448,7 +452,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ### Segurança
 
 - ❌ **NUNCA** commite o arquivo `.env`
-- ❌ **NUNCA** exponha a `OPENAI_API_KEY` no frontend
+- ❌ **NUNCA** exponha a `OPENROUTER_API_KEY` no frontend
 - ✅ **SEMPRE** configure a chave via variável de ambiente
 - ✅ **SEMPRE** valide entradas do usuário no backend
 
@@ -457,7 +461,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 - Configure `DATABASE_URL` para persistência
 - Use HTTPS
 - Configure rate limiting
-- Monitore custos da API OpenAI
+- Monitore custos da API OpenRouter
 - Faça backup regular do banco de dados
 
 ---

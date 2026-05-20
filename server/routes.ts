@@ -34,8 +34,9 @@ import {
   ShadingType
 } from "docx";
 
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_MODEL = "gpt-5.4-nano";
+const OPENROUTER_API_URL = process.env.OPENROUTER_API_URL ?? "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL ?? "google/gemma-4-31b-it";
+const OPENROUTER_APP_URL = process.env.APP_URL ?? "http://localhost:5001";
 
 const documentTemplates = {
   prd: `Você é um especialista em criar documentos de requisitos de produto claros e acessíveis. Sua função é criar um PRD (Documento de Requisitos de Produto) que qualquer pessoa da equipe consiga entender.
@@ -1225,22 +1226,24 @@ REGRAS:
 - Mantenha consistência de nomenclatura (snake_case ou camelCase)`
 };
 
-function getOpenAIApiKey(): string | undefined {
-  return process.env.OPENAI_API_KEY;
+function getOpenRouterApiKey(): string | undefined {
+  return process.env.OPENROUTER_API_KEY;
 }
 
-async function callOpenAIAPI(prompt: string, demandText: string, apiKey: string): Promise<string> {
-  const response = await fetch(OPENAI_API_URL, {
+async function callOpenRouterAPI(prompt: string, demandText: string, apiKey: string): Promise<string> {
+  const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
+      "HTTP-Referer": OPENROUTER_APP_URL,
+      "X-Title": "DocuMente",
     },
     body: JSON.stringify({
-      model: OPENAI_MODEL,
+      model: OPENROUTER_MODEL,
       messages: [
         {
-          role: "developer",
+          role: "system",
           content: prompt,
         },
         {
@@ -1253,14 +1256,14 @@ async function callOpenAIAPI(prompt: string, demandText: string, apiKey: string)
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`OpenAI API Error: ${response.status} - ${errorText}`);
+    throw new Error(`OpenRouter API Error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
   const content = data.choices?.[0]?.message?.content;
 
   if (!content) {
-    throw new Error("OpenAI API returned an empty response");
+    throw new Error("OpenRouter API returned an empty response");
   }
 
   return content;
@@ -1580,20 +1583,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test API connection (uses server-side API key)
   app.post("/api/test-connection", async (req, res) => {
     try {
-      const apiKey = getOpenAIApiKey();
+      const apiKey = getOpenRouterApiKey();
 
       if (!apiKey) {
-        return res.status(400).json({ message: "OPENAI_API_KEY is not configured on the server. Please contact the administrator." });
+        return res.status(400).json({ message: "OPENROUTER_API_KEY is not configured on the server. Please contact the administrator." });
       }
 
-      const response = await fetch(OPENAI_API_URL, {
+      const response = await fetch(OPENROUTER_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${apiKey}`,
+          "HTTP-Referer": OPENROUTER_APP_URL,
+          "X-Title": "DocuMente",
         },
         body: JSON.stringify({
-          model: OPENAI_MODEL,
+          model: OPENROUTER_MODEL,
           messages: [
             {
               role: "user",
@@ -1632,21 +1637,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get active API key (returns status, not the actual key)
   app.get("/api/api-keys/active", async (req, res) => {
     try {
-      const apiKey = getOpenAIApiKey();
+      const apiKey = getOpenRouterApiKey();
       if (apiKey) {
         // Return masked key for security
         const maskedKey = apiKey.substring(0, 8) + "..." + apiKey.substring(apiKey.length - 4);
         res.json({
           configured: true,
-          provider: "OpenAI",
-          model: OPENAI_MODEL,
+          provider: "OpenRouter",
+          model: OPENROUTER_MODEL,
           mistralKey: maskedKey
         });
       } else {
         res.json({
           configured: false,
-          provider: "OpenAI",
-          model: OPENAI_MODEL,
+          provider: "OpenRouter",
+          model: OPENROUTER_MODEL,
           mistralKey: null
         });
       }
@@ -1665,9 +1670,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const combinedDemand = extractedText ? `${demand}\n\n--- Documentos Anexados ---\n\n${extractedText}` : demand;
 
-      const apiKey = getOpenAIApiKey();
+      const apiKey = getOpenRouterApiKey();
       if (!apiKey) {
-        return res.status(400).json({ message: "OPENAI_API_KEY is not configured on the server. Please contact the administrator." });
+        return res.status(400).json({ message: "OPENROUTER_API_KEY is not configured on the server. Please contact the administrator." });
       }
 
       const template = documentTemplates[type as keyof typeof documentTemplates];
@@ -1675,7 +1680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid document type" });
       }
 
-      const content = await callOpenAIAPI(template, combinedDemand, apiKey);
+      const content = await callOpenRouterAPI(template, combinedDemand, apiKey);
 
       const validated = insertDocumentSchema.parse({
         title,
@@ -1704,9 +1709,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const input = previewDocumentInputSchema.parse(req.body);
       const { type, demand } = input;
 
-      const apiKey = getOpenAIApiKey();
+      const apiKey = getOpenRouterApiKey();
       if (!apiKey) {
-        return res.status(400).json({ message: "OPENAI_API_KEY is not configured on the server. Please contact the administrator." });
+        return res.status(400).json({ message: "OPENROUTER_API_KEY is not configured on the server. Please contact the administrator." });
       }
 
       const template = documentTemplates[type as keyof typeof documentTemplates];
@@ -1714,7 +1719,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid document type" });
       }
 
-      const content = await callOpenAIAPI(template, demand, apiKey);
+      const content = await callOpenRouterAPI(template, demand, apiKey);
       res.json({ content });
 
     } catch (error) {

@@ -17,7 +17,7 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Rate limiting mais restritivo para geração de documentos (usa API OpenAI)
+// Rate limiting mais restritivo para geração de documentos (usa API OpenRouter)
 const generationLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minuto
   max: 10, // máximo 10 gerações por minuto
@@ -75,9 +75,9 @@ app.use((req, res, next) => {
   // Initialize API key on startup
   try {
     const existingKey = await storage.getActiveApiKey();
-    if (!existingKey && process.env.OPENAI_API_KEY) {
-      await storage.createApiKey({ mistralKey: process.env.OPENAI_API_KEY });
-      log("OpenAI API key initialized from environment");
+    if (!existingKey && process.env.OPENROUTER_API_KEY) {
+      await storage.createApiKey({ mistralKey: process.env.OPENROUTER_API_KEY });
+      log("OpenRouter API key initialized from environment");
     }
   } catch (error) {
     console.error("Failed to initialize API key:", error);

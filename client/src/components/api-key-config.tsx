@@ -28,14 +28,14 @@ export default function ApiKeyConfig() {
     onSuccess: () => {
       toast({
         title: "Conexão verificada",
-        description: "A API da OpenAI está funcionando corretamente.",
+        description: "A API da OpenRouter está funcionando corretamente.",
         variant: "default",
       });
     },
     onError: (error: Error) => {
       toast({
         title: "Erro na conexão",
-        description: error.message || "Falha ao conectar com a API da OpenAI.",
+        description: error.message || "Falha ao conectar com a API da OpenRouter.",
         variant: "destructive",
       });
     },
@@ -45,7 +45,7 @@ export default function ApiKeyConfig() {
     if (!activeApiKey?.configured) {
       toast({
         title: "API não configurada",
-        description: "OPENAI_API_KEY não está configurada no servidor.",
+        description: "OPENROUTER_API_KEY não está configurada no servidor.",
         variant: "destructive",
       });
       return;
@@ -80,12 +80,12 @@ export default function ApiKeyConfig() {
           <div>
             <p className="text-sm text-gray-600">
               {isConnected 
-                ? "API da OpenAI configurada e funcionando" 
+                ? "API da OpenRouter configurada e funcionando" 
                 : "Verificando configuração da API..."
               }
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Modelo: {activeApiKey?.model ?? "gpt-5.4-nano"}
+              Modelo: {activeApiKey?.model ?? "google/gemma-4-31b-it"}
             </p>
           </div>
           <Button

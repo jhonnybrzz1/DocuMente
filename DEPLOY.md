@@ -38,19 +38,20 @@ Na seção **Environment Variables**, adicione:
 
 | Key | Value | Descrição |
 |-----|-------|-----------|
-| `OPENAI_API_KEY` | `sua_chave_completa_aqui` | **OBRIGATÓRIO** - Chave da API OpenAI |
+| `OPENROUTER_API_KEY` | `sua_chave_completa_aqui` | **OBRIGATÓRIO** - Chave da API OpenRouter |
+| `OPENROUTER_MODEL` | `google/gemma-4-31b-it` | Modelo Gemma usado via OpenRouter |
 | `NODE_ENV` | `production` | Ambiente de produção |
 | `PORT` | `5000` | Porta (opcional, Render usa 10000 por padrão) |
 | `DATABASE_URL` | `postgresql://...` | Opcional - Para persistência de dados |
 
-#### Como obter a chave da OpenAI:
+#### Como obter a chave da OpenRouter:
 
-1. Acesse [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+1. Acesse [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys)
 2. Faça login ou crie uma conta
-3. Vá em **API Keys**
-4. Clique em **"Create new key"**
+3. Vá em **Keys**
+4. Clique em **"Create key"**
 5. Copie a chave COMPLETA
-6. Cole no campo `OPENAI_API_KEY` no Render
+6. Cole no campo `OPENROUTER_API_KEY` no Render
 
 **IMPORTANTE**:
 - A chave deve ser colada COMPLETA, sem truncar
@@ -77,8 +78,8 @@ No painel do Render, vá em **Logs** e procure por:
 ```
 
 ```
-❌ RUIM: WARNING: OPENAI_API_KEY is not set
-❌ RUIM: Error: OpenAI API Error: 401 - {"error": ...}
+❌ RUIM: WARNING: OPENROUTER_API_KEY is not set
+❌ RUIM: Error: OpenRouter API Error: 401 - {"error": ...}
 ```
 
 ### 2. Testar API Key
@@ -92,8 +93,8 @@ https://seu-app.onrender.com/api/api-keys/active
 ```json
 {
   "configured": true,
-  "provider": "OpenAI",
-  "model": "gpt-5.4-nano",
+  "provider": "OpenRouter",
+  "model": "google/gemma-4-31b-it",
   "mistralKey": "abc12345...xyz9"
 }
 ```
@@ -116,20 +117,20 @@ Se `configured: false`, a chave não está configurada!
 
 **Sintoma**:
 ```
-Generate document error: Error: OpenAI API Error: 401 - {"error": ...}
+Generate document error: Error: OpenRouter API Error: 401 - {"error": ...}
 ```
 
 **Causas Possíveis**:
 
 1. ❌ **Chave não configurada**
-   - Solução: Adicione `OPENAI_API_KEY` nas variáveis de ambiente
+   - Solução: Adicione `OPENROUTER_API_KEY` nas variáveis de ambiente
 
 2. ❌ **Chave truncada/incompleta**
    - Solução: Verifique se a chave completa foi copiada
    - A chave deve estar completa, exatamente como gerada
 
 3. ❌ **Chave inválida ou expirada**
-   - Solução: Gere uma nova chave no dashboard da OpenAI
+   - Solução: Gere uma nova chave no dashboard da OpenRouter
 
 4. ❌ **Build antigo sendo usado**
    - Solução: Force um novo deploy
@@ -139,7 +140,7 @@ Generate document error: Error: OpenAI API Error: 401 - {"error": ...}
 
 No Render, vá em:
 1. **Environment** (menu lateral)
-2. Procure por `OPENAI_API_KEY`
+2. Procure por `OPENROUTER_API_KEY`
 3. Clique em "👁️" para revelar o valor
 4. Verifique se está completo (não deve terminar em "...")
 
@@ -211,7 +212,7 @@ No painel do Render:
 
 ### Checklist de Segurança
 
-- [ ] `OPENAI_API_KEY` configurada como variável de ambiente
+- [ ] `OPENROUTER_API_KEY` configurada como variável de ambiente
 - [ ] Arquivo `.env` está no `.gitignore`
 - [ ] Nunca commitar chaves no código
 - [ ] HTTPS ativado (automático no Render)
@@ -263,7 +264,7 @@ Você saberá que funcionou quando:
 ## 📚 Recursos Adicionais
 
 - [Documentação do Render](https://render.com/docs)
-- [OpenAI API Docs](https://platform.openai.com/docs)
+- [OpenRouter Docs](https://openrouter.ai/docs)
 - [Troubleshooting Render](https://render.com/docs/troubleshooting)
 
 ---
