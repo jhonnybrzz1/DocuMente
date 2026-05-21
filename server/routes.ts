@@ -14,6 +14,13 @@ import { ZodError } from "zod";
 import puppeteer from "puppeteer";
 import { marked } from "marked";
 import {
+  detectDocumentType,
+  documentThemes,
+  escapeHtml,
+  generatePdfHtml,
+  preprocessContent,
+} from "./pdfTemplate";
+import {
   Document,
   Packer,
   Paragraph,
@@ -2050,6 +2057,7 @@ ${document.content}
 }
 
 // Função auxiliar para converter markdown para HTML estilizado usando marked
+// e o template profissional definido em ./pdfTemplate
 function convertMarkdownToHtml(content: string, title: string): string {
   const currentDate = new Date().toLocaleDateString('pt-BR', {
     year: 'numeric',
@@ -2063,171 +2071,15 @@ function convertMarkdownToHtml(content: string, title: string): string {
     breaks: true
   });
 
-  // Pré-processar checkboxes antes do marked
-  let processedContent = content
-    .replace(/- \[x\]/gi, '- ✅')
-    .replace(/- \[ \]/g, '- ☐');
+  // Detecta o tipo do documento e seleciona o tema correspondente
+  const docType = detectDocumentType(content);
+  const theme = documentThemes[docType] ?? documentThemes.prd;
+
+  // Pré-processa o markdown para badges, checkboxes e status dots
+  const processedContent = preprocessContent(content);
 
   // Converter markdown para HTML usando marked
   const html = marked.parse(processedContent) as string;
 
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          line-height: 1.7;
-          color: #333;
-          padding: 40px;
-          font-size: 11pt;
-          max-width: 210mm;
-          margin: 0 auto;
-        }
-        .header {
-          text-align: center;
-          margin-bottom: 30px;
-          padding-bottom: 20px;
-          border-bottom: 2px solid #2E86AB;
-        }
-        .logo { font-size: 20px; color: #2E86AB; font-weight: bold; letter-spacing: 1px; }
-        .doc-title { font-size: 24px; color: #1F4E79; margin: 15px 0 8px; font-weight: 600; }
-        .date { color: #666; font-style: italic; font-size: 10px; }
-
-        h1 { font-size: 20px; color: #2E86AB; margin: 28px 0 14px; border-bottom: 2px solid #2E86AB; padding-bottom: 8px; }
-        h2 { font-size: 17px; color: #1F4E79; margin: 24px 0 12px; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
-        h3 { font-size: 14px; color: #404040; margin: 20px 0 10px; font-weight: 600; }
-        h4 { font-size: 12px; color: #555; margin: 16px 0 8px; font-weight: 600; }
-
-        p { margin: 12px 0; text-align: justify; }
-
-        ul, ol { margin: 12px 0 12px 28px; }
-        li { margin: 6px 0; }
-        li > ul, li > ol { margin: 6px 0 6px 20px; }
-
-        strong { color: #1F4E79; }
-        em { font-style: italic; }
-
-        a { color: #2E86AB; text-decoration: underline; }
-
-        /* Tabelas */
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 20px 0;
-          font-size: 10pt;
-          page-break-inside: avoid;
-        }
-        thead { background-color: #2E86AB; }
-        th {
-          border: 1px solid #2E86AB;
-          padding: 10px 12px;
-          text-align: left;
-          color: white;
-          font-weight: 600;
-        }
-        td {
-          border: 1px solid #ddd;
-          padding: 8px 12px;
-          text-align: left;
-        }
-        tbody tr:nth-child(even) { background-color: #f8f9fa; }
-        tbody tr:hover { background-color: #e9ecef; }
-
-        /* Código */
-        pre {
-          background-color: #f4f4f4;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          padding: 14px;
-          margin: 16px 0;
-          overflow-x: auto;
-          font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-          font-size: 9pt;
-          line-height: 1.5;
-          page-break-inside: avoid;
-        }
-        code {
-          background-color: #f0f0f0;
-          padding: 2px 6px;
-          border-radius: 3px;
-          font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-          font-size: 10pt;
-          color: #c7254e;
-        }
-        pre code {
-          background-color: transparent;
-          padding: 0;
-          color: #333;
-        }
-
-        /* Citações */
-        blockquote {
-          border-left: 4px solid #2E86AB;
-          margin: 16px 0;
-          padding: 12px 20px;
-          color: #555;
-          background-color: #f9f9f9;
-          font-style: italic;
-        }
-        blockquote p { margin: 0; }
-
-        /* Linha horizontal */
-        hr {
-          border: none;
-          border-top: 2px solid #eee;
-          margin: 24px 0;
-        }
-
-        .content { margin-top: 20px; }
-
-        .footer {
-          margin-top: 50px;
-          padding-top: 15px;
-          border-top: 1px solid #ddd;
-          text-align: center;
-          color: #888;
-          font-size: 9px;
-        }
-
-        /* Page breaks para PDF */
-        h1, h2, h3 { page-break-after: avoid; }
-        table, pre, blockquote { page-break-inside: avoid; }
-
-        /* Imagens */
-        img { max-width: 100%; height: auto; margin: 16px 0; }
-
-        /* Task list checkboxes */
-        .task-list-item { list-style: none; margin-left: -20px; }
-        input[type="checkbox"] { margin-right: 8px; }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="logo">📄 DocuMente</div>
-        <div class="doc-title">${escapeHtml(title)}</div>
-        <div class="date">Gerado em ${currentDate}</div>
-      </div>
-      <div class="content">
-        ${html}
-      </div>
-      <div class="footer">
-        Documento gerado automaticamente pelo DocuMente • ${currentDate}
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-// Função para escapar HTML
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  return generatePdfHtml(title, html, currentDate, theme);
 }
