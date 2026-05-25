@@ -6,6 +6,35 @@ const OPENROUTER_API_URL =
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL ?? "google/gemma-4-31b-it";
 const OPENROUTER_APP_URL = process.env.APP_URL ?? "http://localhost:5001";
 
+// Provider routing - prefer providers de baixa latência e ignora os instáveis.
+// Defaults baseados em análise via openrouter-models skill (DeepInfra: 493ms p50,
+// 99.5% uptime; SiliconFlow estava degradado a ~37% durante a análise).
+// Pode ser sobrescrito via env: OPENROUTER_PREFERRED_PROVIDERS, OPENROUTER_IGNORED_PROVIDERS
+function parseProviderList(envValue: string | undefined): string[] | undefined {
+  if (envValue === undefined) return undefined;
+  if (envValue.trim() === "" || envValue.toLowerCase() === "none") return [];
+  return envValue.split(",").map(p => p.trim()).filter(Boolean);
+}
+
+const PREFERRED_PROVIDERS =
+  parseProviderList(process.env.OPENROUTER_PREFERRED_PROVIDERS) ?? ["DeepInfra"];
+const IGNORED_PROVIDERS =
+  parseProviderList(process.env.OPENROUTER_IGNORED_PROVIDERS) ?? ["SiliconFlow"];
+const ALLOW_FALLBACKS = process.env.OPENROUTER_ALLOW_FALLBACKS !== "false";
+
+/** Retorna o objeto `provider` a ser injetado no body da OpenRouter, ou undefined. */
+export function buildProviderRouting(): Record<string, unknown> | undefined {
+  const provider: Record<string, unknown> = {};
+  if (PREFERRED_PROVIDERS.length > 0) {
+    provider.order = PREFERRED_PROVIDERS;
+    provider.allow_fallbacks = ALLOW_FALLBACKS;
+  }
+  if (IGNORED_PROVIDERS.length > 0) {
+    provider.ignore = IGNORED_PROVIDERS;
+  }
+  return Object.keys(provider).length > 0 ? provider : undefined;
+}
+
 export type ChatMessage = {
   role: "system" | "user" | "assistant";
   content: string;
@@ -32,6 +61,9 @@ export async function chatCompletion(
   if (options.temperature !== undefined) body.temperature = options.temperature;
   if (options.maxTokens !== undefined) body.max_tokens = options.maxTokens;
   if (options.jsonMode) body.response_format = { type: "json_object" };
+
+  const providerRouting = buildProviderRouting();
+  if (providerRouting) body.provider = providerRouting;
 
   const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",

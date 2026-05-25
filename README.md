@@ -111,6 +111,14 @@ OPENROUTER_API_KEY=sua_chave_openrouter_aqui
 # Modelo (opcional)
 OPENROUTER_MODEL=google/gemma-4-31b-it
 
+# Provider routing (opcional - defaults otimizados via análise da skill openrouter-models)
+# DeepInfra: 493ms p50 latência · 99.5% uptime
+# SiliconFlow estava degradado (37% uptime) durante a análise
+OPENROUTER_PREFERRED_PROVIDERS=DeepInfra
+OPENROUTER_IGNORED_PROVIDERS=SiliconFlow
+OPENROUTER_ALLOW_FALLBACKS=true
+# Use "none" pra desabilitar cada lista. Ex: OPENROUTER_PREFERRED_PROVIDERS=none
+
 # URL pública (usada nos headers da OpenRouter)
 APP_URL=http://localhost:3000
 

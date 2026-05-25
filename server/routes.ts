@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import uploadRouter from "./routes/upload";
 import aiRouter from "./routes/ai";
 import documentsExtraRouter from "./routes/documents-extra";
+import { buildProviderRouting } from "./services/openrouter";
 import { storage } from "./storage";
 import {
   insertDocumentSchema,
@@ -1240,6 +1241,18 @@ function getOpenRouterApiKey(): string | undefined {
 }
 
 async function callOpenRouterAPI(prompt: string, demandText: string, apiKey: string): Promise<string> {
+  const body: Record<string, unknown> = {
+    model: OPENROUTER_MODEL,
+    messages: [
+      { role: "system", content: prompt },
+      { role: "user", content: `Descrição da demanda: ${demandText}` },
+    ],
+  };
+
+  // Aplica routing de provider (preferir DeepInfra, ignorar SiliconFlow por default)
+  const providerRouting = buildProviderRouting();
+  if (providerRouting) body.provider = providerRouting;
+
   const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
     headers: {
@@ -1248,19 +1261,7 @@ async function callOpenRouterAPI(prompt: string, demandText: string, apiKey: str
       "HTTP-Referer": OPENROUTER_APP_URL,
       "X-Title": "DocuMente",
     },
-    body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      messages: [
-        {
-          role: "system",
-          content: prompt,
-        },
-        {
-          role: "user",
-          content: `Descrição da demanda: ${demandText}`,
-        },
-      ],
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
