@@ -11,6 +11,7 @@ interface GenerationControlsProps {
   demand: string;
   selectedType: DocumentType | "";
   title: string;
+  tags?: string[];
   onPreview: (content: string) => void;
 }
 
@@ -18,6 +19,7 @@ export default function GenerationControls({
   demand,
   selectedType,
   title,
+  tags = [],
   onPreview
 }: GenerationControlsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -55,6 +57,7 @@ export default function GenerationControls({
         demand,
         title,
         extractedText,
+        tags,
       });
       return response.json();
     },

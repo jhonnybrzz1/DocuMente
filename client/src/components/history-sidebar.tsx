@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Download, MoreVertical, Sparkles, Edit2, Clock, Star } from "lucide-react";
+import { Search, MoreVertical, Sparkles, Edit2, Clock, Star, Link2, Filter, X } from "lucide-react";
 
 // Hook de debounce para otimizar performance da busca
 function useDebounce<T>(value: T, delay: number): T {
@@ -24,7 +25,7 @@ function useDebounce<T>(value: T, delay: number): T {
 
   return debouncedValue;
 }
-import { documentTypes, type Document } from "@shared/schema";
+import { documentTypes, type Document, type DocumentVersion } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import AiPromptModal from "./ai-prompt-modal";
@@ -32,6 +33,8 @@ import DocumentEditorModal from "./document-editor-modal";
 import VersionHistoryModal from "./version-history-modal";
 import ExportMenu from "./export-menu";
 import FavoritesManager from "./favorites-manager";
+import ShareDialog from "./share-dialog";
+import { apiRequest } from "@/lib/queryClient";
 
 const getTypeColor = (type: string) => {
   const docType = documentTypes.find(dt => dt.value === type);
@@ -56,14 +59,18 @@ const getTypeLabel = (type: string) => {
 
 export default function HistorySidebar() {
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 300); // Debounce de 300ms
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [filterType, setFilterType] = useState<string>("");
+  const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
   const [documentToEdit, setDocumentToEdit] = useState<Document | null>(null);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [documentForVersions, setDocumentForVersions] = useState<Document | null>(null);
+  const [versionsForDoc, setVersionsForDoc] = useState<DocumentVersion[]>([]);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [documentToShare, setDocumentToShare] = useState<Document | null>(null);
   const [favorites, setFavorites] = useState<number[]>(() => {
     const saved = localStorage.getItem("documente-favorites");
     return saved ? JSON.parse(saved) : [];
@@ -72,30 +79,22 @@ export default function HistorySidebar() {
   const queryClient = useQueryClient();
 
   const updateDocumentMutation = useMutation({
-    mutationFn: async ({ id, content }: { id: number; content: string }) => {
+    mutationFn: async ({ id, content, changeDescription }: { id: number; content: string; changeDescription?: string }) => {
       const response = await fetch(`/api/documents/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content, changeDescription }),
       });
-      
-      if (!response.ok) {
-        throw new Error("Failed to update document");
-      }
-      
+      if (!response.ok) throw new Error("Failed to update document");
       return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Documento atualizado",
         description: "O documento foi atualizado com sucesso.",
-        variant: "default",
       });
-      
-      // Invalidate documents list to refresh history
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
     },
     onError: (error: Error) => {
       toast({
@@ -106,18 +105,39 @@ export default function HistorySidebar() {
     },
   });
 
-  const { data: documents = [], isLoading } = useQuery({
-    queryKey: ["/api/documents", debouncedSearchQuery, filterType],
+  const { data: documents = [], isLoading } = useQuery<Document[]>({
+    queryKey: ["/api/documents", debouncedSearchQuery, filterType, activeTagFilters],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (debouncedSearchQuery) params.append("search", debouncedSearchQuery);
       if (filterType && filterType !== "all") params.append("type", filterType);
+      if (activeTagFilters.length > 0) params.append("tags", activeTagFilters.join(","));
 
       const response = await fetch(`/api/documents?${params}`);
       if (!response.ok) throw new Error("Failed to fetch documents");
       return response.json();
     }
   });
+
+  // Coleta todas as tags únicas dos documentos para sugestão de filtro
+  const allTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    documents.forEach((d: Document) => {
+      (d.tags ?? []).forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1));
+    });
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([tag]) => tag);
+  }, [documents]);
+
+  const toggleTagFilter = (tag: string) => {
+    setActiveTagFilters((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const clearTagFilters = () => setActiveTagFilters([]);
 
   const handleGeneratePrompt = (document: Document, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -131,10 +151,25 @@ export default function HistorySidebar() {
     setIsEditorModalOpen(true);
   };
 
-  const handleViewVersions = (document: Document, e: React.MouseEvent) => {
+  const handleViewVersions = async (document: Document, e: React.MouseEvent) => {
     e.stopPropagation();
     setDocumentForVersions(document);
     setIsVersionModalOpen(true);
+
+    // Carrega versões da API
+    try {
+      const res = await apiRequest("GET", `/api/documents/${document.id}/versions`);
+      const data = await res.json();
+      setVersionsForDoc(data);
+    } catch (err) {
+      setVersionsForDoc([]);
+    }
+  };
+
+  const handleShareDocument = (document: Document, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDocumentToShare(document);
+    setIsShareOpen(true);
   };
 
   const handleToggleFavorite = (documentId: number, e?: React.MouseEvent) => {
@@ -144,63 +179,14 @@ export default function HistorySidebar() {
     let updatedFavorites;
     if (isCurrentlyFavorite) {
       updatedFavorites = favorites.filter(id => id !== documentId);
-      toast({
-        title: "Removido dos favoritos",
-        description: "O documento foi removido dos seus favoritos.",
-        variant: "default",
-      });
+      toast({ title: "Removido dos favoritos" });
     } else {
       updatedFavorites = [...favorites, documentId];
-      toast({
-        title: "Adicionado aos favoritos",
-        description: "O documento foi adicionado aos seus favoritos.",
-        variant: "default",
-      });
+      toast({ title: "Adicionado aos favoritos" });
     }
 
     setFavorites(updatedFavorites);
     localStorage.setItem("documente-favorites", JSON.stringify(updatedFavorites));
-  };
-
-  const handleDownload = async (document: Document, e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    try {
-      const response = await fetch(`/api/documents/${document.id}/download`);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido' }));
-        throw new Error(errorData.message || `Erro ${response.status}`);
-      }
-
-      const blob = await response.blob();
-
-      if (blob.size === 0) {
-        throw new Error("Documento vazio");
-      }
-
-      const url = window.URL.createObjectURL(blob);
-      const link = window.document.createElement('a');
-      link.href = url;
-      link.download = `${document.title}.docx`;
-      window.document.body.appendChild(link);
-      link.click();
-      window.document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast({
-        title: "Download iniciado",
-        description: "O documento está sendo baixado.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error("Download error:", error);
-      toast({
-        title: "Erro no download",
-        description: error instanceof Error ? error.message : "Falha ao baixar o documento.",
-        variant: "destructive",
-      });
-    }
   };
 
   const totalDocuments = documents.length;
@@ -209,6 +195,8 @@ export default function HistorySidebar() {
     weekAgo.setDate(weekAgo.getDate() - 7);
     return new Date(doc.createdAt) > weekAgo;
   }).length;
+
+  const hasActiveFilters = !!debouncedSearchQuery || !!filterType || activeTagFilters.length > 0;
 
   return (
     <Card className="sticky top-24">
@@ -220,7 +208,7 @@ export default function HistorySidebar() {
           </button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
         {/* Search and Filter */}
         <div className="space-y-3">
           <div className="relative">
@@ -246,6 +234,45 @@ export default function HistorySidebar() {
               ))}
             </SelectContent>
           </Select>
+
+          {/* Filtro de tags */}
+          {allTags.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Filter size={11} />
+                  Tags
+                </span>
+                {activeTagFilters.length > 0 && (
+                  <button
+                    onClick={clearTagFilters}
+                    className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                  >
+                    <X size={10} />
+                    Limpar
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {allTags.map((tag) => {
+                  const active = activeTagFilters.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      onClick={() => toggleTagFilter(tag)}
+                      className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
+                        active
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted hover:bg-accent"
+                      }`}
+                    >
+                      #{tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Document History List */}
@@ -255,8 +282,8 @@ export default function HistorySidebar() {
               Carregando...
             </div>
           ) : documents.length === 0 ? (
-            <div className="text-center text-muted-foreground text-sm">
-              {debouncedSearchQuery || filterType ? "Nenhum documento encontrado" : "Nenhum documento ainda"}
+            <div className="text-center text-muted-foreground text-sm py-4">
+              {hasActiveFilters ? "Nenhum documento encontrado com esses filtros" : "Nenhum documento ainda"}
             </div>
           ) : (
             documents.map((document: Document) => (
@@ -279,6 +306,14 @@ export default function HistorySidebar() {
                         })}
                       </span>
                     </div>
+                    {document.shareToken && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Link2 size={12} className="text-primary shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent>Documento compartilhado publicamente</TooltipContent>
+                      </Tooltip>
+                    )}
                   </div>
                   <h4 className="text-sm font-medium text-foreground truncate">
                     {document.title}
@@ -286,6 +321,29 @@ export default function HistorySidebar() {
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
                     {document.originalDemand.slice(0, 50)}...
                   </p>
+                  {/* Tags do documento */}
+                  {document.tags && document.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {document.tags.slice(0, 4).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0 h-4 cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!activeTagFilters.includes(tag)) toggleTagFilter(tag);
+                          }}
+                        >
+                          #{tag}
+                        </Badge>
+                      ))}
+                      {document.tags.length > 4 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          +{document.tags.length - 4}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 {/* Action buttons - below content */}
                 <div className="flex items-center justify-end gap-0.5 pt-2 border-t border-border/50" role="group" aria-label="Ações do documento">
@@ -316,6 +374,26 @@ export default function HistorySidebar() {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Editar</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleShareDocument(document, e)}
+                        className={`h-8 w-8 ${
+                          document.shareToken
+                            ? "text-primary hover:text-primary/80 hover:bg-primary/10"
+                            : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                        }`}
+                        aria-label="Compartilhar"
+                      >
+                        <Link2 size={14} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {document.shareToken ? "Gerenciar link público" : "Compartilhar"}
+                    </TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -362,7 +440,6 @@ export default function HistorySidebar() {
                       toast({
                         title: "Exportação concluída",
                         description: `Documento ${document.title} exportado com sucesso.`,
-                        variant: "default",
                       });
                     }}
                   />
@@ -409,6 +486,7 @@ export default function HistorySidebar() {
             await updateDocumentMutation.mutateAsync({
               id: documentToEdit.id,
               content: editedContent,
+              changeDescription: "Edição manual",
             });
           }
         }}
@@ -427,12 +505,26 @@ export default function HistorySidebar() {
             await updateDocumentMutation.mutateAsync({
               id: documentForVersions.id,
               content: version.content,
+              changeDescription: `Restaurado da versão ${version.version}`,
             });
           }
         }}
         documentId={documentForVersions?.id || null}
         documentTitle={documentForVersions?.title || ""}
-        versions={[]} // TODO: Implement version tracking in backend
+        versions={versionsForDoc}
+      />
+
+      {/* Share Dialog */}
+      <ShareDialog
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        documentId={documentToShare?.id || null}
+        documentTitle={documentToShare?.title || ""}
+        initialShareToken={documentToShare?.shareToken ?? null}
+        onUpdate={() => {
+          queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+        }}
       />
 
       {/* Favorites Manager Modal */}

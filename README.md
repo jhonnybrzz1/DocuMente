@@ -2,57 +2,80 @@
 
 ## 🎯 Visão Geral
 
-**DocuMente** é uma plataforma de geração automática de documentação de produtos usando Inteligência Artificial. Transforme suas ideias e requisitos em documentos profissionais e estruturados em segundos, utilizando a API da OpenRouter.
+**DocuMente** é uma plataforma de geração automática de documentação de produtos usando Inteligência Artificial. Transforme suas ideias e requisitos em documentos profissionais e estruturados em segundos, refine com IA conversacional, avalie a qualidade automaticamente e compartilhe via link público — tudo em um só lugar.
 
 ### Por que usar o DocuMente?
 
 - ⚡ **Rápido**: Gere documentos completos em segundos
-- 🎨 **Profissional**: Documentos formatados em Word (.docx) prontos para uso
-- 🤖 **Inteligente**: Utiliza IA avançada via OpenRouter para criar conteúdo estruturado
-- 📚 **Versátil**: 9 tipos de documentos diferentes
+- 🎨 **Profissional**: Documentos formatados em Word (.docx), PDF, Markdown e texto
+- 🤖 **Inteligente**: IA via OpenRouter pra gerar, refinar, resumir, expandir, traduzir e validar
+- 📚 **Versátil**: 9 tipos de documentos (PRD, Épico, User Stories, Roadmap, etc.)
 - 🔒 **Seguro**: API key configurada apenas no servidor (não exposta no frontend)
-- 💾 **Histórico**: Acompanhe todos os documentos gerados
+- 💾 **Histórico + versões**: Toda edição cria uma versão; compare diffs e restaure
+- 🔗 **Compartilhável**: Link público read-only, revogável a qualquer momento
+- 📊 **Métricas**: Dashboard de estatísticas com tempo economizado e top tags
 
 ---
 
 ## ✨ Funcionalidades
 
-- ✅ Geração de documentos com IA (OpenRouter)
-- ✅ 9 tipos de documentos suportados
-- ✅ Export em formato Word (.docx) profissional
-- ✅ Histórico de documentos com busca
-- ✅ Preview antes de gerar
-- ✅ Interface moderna e responsiva
-- ✅ API key gerenciada no servidor (segurança)
-- ✅ Formatação automática com estilos profissionais
+### Geração de documentos
+- ✅ 9 tipos de documentos profissionais com templates especializados
+- ✅ Auto-sugestão de título com IA (5 sugestões clicáveis)
+- ✅ Tags customizadas com filtro rápido na sidebar
+- ✅ Upload de arquivos (PDF, DOCX, XLSX, PPTX, CSV, TXT) como contexto
+- ✅ Preview interativo antes de gerar
+- ✅ Export em Word (.docx), PDF, Markdown e texto
+
+### Refinamento com IA
+- ✅ **Ações rápidas no editor**: Resumir, Expandir, Reescrever, Corrigir gramática, Traduzir EN, Validar INVEST
+  - Funciona em trecho selecionado ou no documento inteiro
+  - Botão de **Desfazer** pra reverter ações
+- ✅ **Chat de refinamento**: conversa iterativa pra ajustar o doc ("encurte", "adicione exemplos", "mude o tom")
+  - IA propõe novo conteúdo; você aplica com 1 clique
+- ✅ **Score de qualidade**: avaliação 0-100 com dimensões específicas por tipo de documento + sugestões concretas
+
+### Histórico e colaboração
+- ✅ Histórico com busca, filtro por tipo e por tags
+- ✅ **Versionamento automático**: cada edição cria uma versão
+- ✅ **Diff visual** entre versões com markup verde/vermelho (LCS line-by-line)
+- ✅ **Compartilhamento via link público**: gere/revogue token único, página read-only em `/share/:token`
+- ✅ Favoritos persistidos no navegador
+
+### Insights
+- ✅ **Dashboard `/stats`**: KPIs (total, semana, mês, compartilhados, tempo economizado), gráfico pizza por tipo, evolução mensal, top tags
+- ✅ Frequência semanal estimada e tamanho médio dos documentos
+
+### Plataforma
+- ✅ Dark mode (next-themes)
+- ✅ Interface responsiva mobile-first
+- ✅ Rate limiting nas APIs sensíveis
+- ✅ API key gerenciada apenas no servidor
 
 ---
 
 ## 🛠️ Tecnologias
 
 ### Frontend
-- **React 18** - Framework UI
-- **TypeScript** - Tipagem estática
-- **Vite** - Build tool e dev server
-- **TailwindCSS** - Estilização
-- **shadcn/ui** - Componentes UI
-- **Radix UI** - Primitivas acessíveis
-- **React Query** - Gerenciamento de estado servidor
-- **Wouter** - Roteamento leve
+- **React 18** + **TypeScript** + **Vite**
+- **TailwindCSS** + **shadcn/ui** + **Radix UI**
+- **TanStack Query** — gerenciamento de estado servidor
+- **Wouter** — roteamento leve
+- **Recharts** — gráficos do dashboard
+- **DOMPurify** + **marked** — render seguro de markdown
 
 ### Backend
-- **Node.js** - Runtime
-- **Express** - Framework web
-- **TypeScript** - Tipagem estática
-- **Drizzle ORM** - ORM type-safe
-- **Neon Database** - PostgreSQL serverless
-- **docx** - Geração de documentos Word
+- **Node.js** + **Express** + **TypeScript**
+- **Drizzle ORM** sobre PostgreSQL (Neon ou local)
+- **Fallback em memória** quando `DATABASE_URL` não está configurado
+- **docx** — geração de Word
+- **puppeteer** — geração de PDF com template profissional
+- **express-rate-limit** — proteção de endpoints
 
 ### IA
-- **OpenRouter** - Roteamento de modelo de linguagem
-- **Modelo**: `google/gemma-4-31b-it`
-- **API configurada no servidor** - Maior segurança
-- **Especializado** em documentação de produtos
+- **OpenRouter** com modelo padrão `google/gemma-4-31b-it`
+- API key apenas no servidor (`OPENROUTER_API_KEY`)
+- Endpoints especializados: `/api/ai/suggest-title`, `/quick-action`, `/chat`, `/quality-score`
 
 ---
 
@@ -62,19 +85,14 @@
 
 - Node.js 18+
 - npm ou yarn
-- Conta na [OpenRouter](https://openrouter.ai) (para chave API)
-- Conta no [Neon Database](https://neon.tech) (opcional, para produção)
+- Conta na [OpenRouter](https://openrouter.ai) (chave API)
+- (Opcional) PostgreSQL local ou conta no [Neon](https://neon.tech)
 
-### Clone o repositório
+### Clonar e instalar
 
 ```bash
 git clone https://github.com/jhonnybrzz1/DocuMente.git
 cd DocuMente
-```
-
-### Instale as dependências
-
-```bash
 npm install
 ```
 
@@ -82,137 +100,80 @@ npm install
 
 ## ⚙️ Configuração
 
-### 1. Variáveis de Ambiente
+### 1. Variáveis de ambiente
 
-Crie um arquivo `.env` na raiz do projeto:
+Crie um `.env` na raiz:
 
 ```env
-# OpenRouter API Key (obrigatório)
+# OpenRouter (obrigatório)
 OPENROUTER_API_KEY=sua_chave_openrouter_aqui
 
-# Modelo OpenRouter (opcional)
+# Modelo (opcional)
 OPENROUTER_MODEL=google/gemma-4-31b-it
+
+# URL pública (usada nos headers da OpenRouter)
+APP_URL=http://localhost:3000
 
 # Database (opcional - usa in-memory se não configurado)
 DATABASE_URL=postgresql://usuario:senha@host/database
 
-# Porta do servidor (opcional)
-PORT=5000
+# Porta do servidor (opcional, default 3000)
+PORT=3000
 
 # Ambiente
 NODE_ENV=development
 ```
 
-### 2. Obter Chave da OpenRouter
+### 2. Obter chave da OpenRouter
 
 1. Acesse [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys)
 2. Crie uma conta ou faça login
-3. Vá em **Keys**
-4. Crie uma nova chave
-5. Copie e cole no arquivo `.env`
+3. Gere uma nova chave e cole no `.env`
 
-### 3. Database (Opcional)
+### 3. Database (opcional, mas recomendado)
 
-Por padrão, o projeto usa armazenamento em memória. Para persistência:
+Por padrão usa armazenamento em memória (dados perdidos ao reiniciar). Pra persistência:
 
 ```bash
 # Configure DATABASE_URL no .env
-# Execute as migrações
 npm run db:push
 ```
+
+A migração cria as tabelas `documents`, `document_versions` e `api_keys`.
 
 ---
 
 ## 🚀 Uso
 
-### Desenvolvimento
-
 ```bash
-# Inicia o servidor de desenvolvimento
+# Desenvolvimento
 npm run dev
-```
 
-Acesse: `http://localhost:5000`
-
-### Produção
-
-```bash
-# Build do projeto
+# Produção
 npm run build
-
-# Inicia o servidor de produção
 npm start
-```
 
-### Verificar tipos
-
-```bash
+# Verificar tipos
 npm run check
 ```
 
----
-
-## 🔐 Segurança da API Key
-
-### Como funciona
-
-**IMPORTANTE**: A chave da API OpenRouter **NÃO é solicitada no frontend**. Esta é uma medida de segurança importante.
-
-#### Configuração Segura
-
-1. **Servidor**: A API key é configurada via variável de ambiente `OPENROUTER_API_KEY`
-2. **Frontend**: Não tem acesso direto à chave
-3. **Requisições**: Todas as chamadas à OpenRouter são feitas pelo backend
-4. **Proteção**: A chave nunca é exposta ao navegador do usuário
-
-#### Fluxo de Segurança
-
-```
-┌─────────────┐
-│  Frontend   │  (Não possui API key)
-│   React     │
-└──────┬──────┘
-       │
-       │ POST /api/preview-document
-       │ POST /api/generate-document
-       │
-┌──────▼──────┐
-│   Backend   │  (Possui API key no .env)
-│   Express   │
-└──────┬──────┘
-       │
-       │ Usa OPENROUTER_API_KEY
-       │
-┌──────▼──────┐
-│ OpenRouter  │
-│     API     │
-└─────────────┘
-```
-
-### Benefícios desta Abordagem
-
-✅ **Segurança**: API key nunca exposta no código do cliente
-✅ **Controle**: Todas as requisições passam pelo seu servidor
-✅ **Custo**: Você controla o uso da API
-✅ **Auditoria**: Logs centralizados no servidor
+Acesse `http://localhost:3000`
 
 ---
 
 ## 📄 Tipos de Documentos
 
-O DocuMente suporta 9 tipos de documentos profissionais:
-
-| Tipo | Descrição | Uso |
-|------|-----------|-----|
-| 📄 **PRD** | Product Requirements Document | Especificação completa de produto |
-| 📘 **Epic** | Documentação de Épico | Grandes funcionalidades e objetivos |
-| 🧩 **User Stories** | Histórias de Usuário | Requisitos do ponto de vista do usuário |
-| 🗓️ **Roadmap** | Cronograma de Produto | Planejamento de entregas |
-| 🚀 **Release Notes** | Notas de Versão | Comunicação de novas features |
-| 🎯 **Pitch** | Pitch de Produto | Apresentação executiva (1 slide) |
-| ⚙️ **Tech Spec** | Especificação Técnica | Detalhes de implementação |
-| 🧪 **Test Plan** | Plano de Testes | Estratégia de qualidade |
-| 📡 **API Doc** | Documentação de API | Especificação de APIs |
+| Tipo | Descrição |
+|------|-----------|
+| 📄 **PRD** | Product Requirements Document |
+| 📘 **Épico** | Hipótese testável + story map |
+| 🧩 **User Stories** | Mike Cohn + Gherkin + INVEST |
+| 🗓️ **Roadmap** | Now / Next / Later orientado a outcomes |
+| 🚀 **Release Note** | Notas de versão |
+| 🎯 **Pitch** | Pitch executivo de produto |
+| ⚙️ **Tech Spec** | Especificação técnica |
+| 🧪 **Test Plan** | Plano de testes |
+| 📡 **API Doc** | Documentação de API |
 
 ---
 
@@ -220,249 +181,207 @@ O DocuMente suporta 9 tipos de documentos profissionais:
 
 ```
 DocuMente/
-├── client/                 # Frontend React
-│   ├── src/
-│   │   ├── components/    # Componentes React
-│   │   ├── pages/         # Páginas
-│   │   ├── hooks/         # Custom hooks
-│   │   ├── lib/           # Utilitários
-│   │   └── main.tsx       # Entry point
-│   └── index.html         # HTML template
-├── server/                 # Backend Node.js
-│   ├── index.ts           # Servidor Express
-│   ├── routes.ts          # Rotas da API
-│   └── storage.ts         # Camada de dados
-├── shared/                 # Código compartilhado
-│   └── schema.ts          # Schemas Zod
-├── .env                    # Variáveis de ambiente (não commitar!)
-├── package.json
-├── vite.config.ts
-└── tsconfig.json
-```
-
-### Fluxo de Dados
-
-```
-┌─────────────┐
-│   Cliente   │
-│   (React)   │
-└──────┬──────┘
-       │
-       │ POST /api/preview-document
-       │ POST /api/generate-document
-       │
-┌──────▼──────┐
-│   Express   │ ← OPENROUTER_API_KEY (env)
-│   Routes    │
-└──────┬──────┘
-       │
-       │ Valida e processa
-       │
-┌──────▼──────┐
-│ OpenRouter  │
-│     API     │
-└──────┬──────┘
-       │
-       │ Gera conteúdo
-       │
-┌──────▼──────┐
-│   Storage   │
-│  (Memory/DB)│
-└──────┬──────┘
-       │
-       │ Word Document
-       │
-┌──────▼──────┐
-│   Download  │
-│    (.docx)  │
-└─────────────┘
-```
-
----
-
-## 🌐 Deploy
-
-### Variáveis de Ambiente Necessárias
-
-Em **qualquer plataforma de deploy**, configure:
-
-```env
-OPENROUTER_API_KEY=sua_chave_aqui
-OPENROUTER_MODEL=google/gemma-4-31b-it
-NODE_ENV=production
-DATABASE_URL=sua_url_do_banco (opcional)
-```
-
-### Render.com (Recomendado)
-
-1. Crie um novo **Web Service**
-2. Conecte seu repositório GitHub
-3. Configure as variáveis de ambiente
-4. Deploy automático!
-
-### Vercel
-
-```bash
-npm i -g vercel
-vercel --prod
-```
-
-### Railway
-
-```bash
-railway up
-```
-
-### Docker
-
-```bash
-docker build -t documente .
-docker run -p 5000:5000 -e OPENROUTER_API_KEY=sua_chave documente
+├── client/                       # Frontend React
+│   └── src/
+│       ├── components/
+│       │   ├── ai-quick-actions.tsx       # Dropdown de ações de IA
+│       │   ├── refine-chat.tsx            # Chat de refinamento
+│       │   ├── quality-score-panel.tsx    # Score 0-100 por dimensões
+│       │   ├── share-dialog.tsx           # Compartilhamento público
+│       │   ├── tag-input.tsx              # Tags com chips
+│       │   ├── version-history-modal.tsx  # Histórico + diff visual
+│       │   └── ...
+│       └── pages/
+│           ├── home.tsx
+│           ├── templates.tsx
+│           ├── stats.tsx                  # Dashboard de métricas
+│           └── share.tsx                  # Página pública /share/:token
+├── server/
+│   ├── index.ts
+│   ├── routes.ts                          # Rotas legadas + geração
+│   ├── routes/
+│   │   ├── upload.ts                      # Upload e extração de arquivos
+│   │   ├── ai.ts                          # Endpoints de IA (suggest-title, quick-action, chat, quality-score)
+│   │   └── documents-extra.ts             # Meta, share, stats, versions
+│   ├── services/
+│   │   ├── openrouter.ts                  # Wrapper centralizado pra OpenRouter
+│   │   └── file-processor.ts              # Extração de PDF/DOCX/XLSX/PPTX/CSV
+│   ├── pdfTemplate.ts                     # Templates de PDF profissionais
+│   └── storage.ts                         # IStorage + DatabaseStorage + MemStorage
+├── shared/
+│   └── schema.ts                          # Drizzle + Zod schemas
+└── ...
 ```
 
 ---
 
 ## 🔧 API Endpoints
 
-### POST `/api/preview-document`
+### Geração
 
-Gera preview do documento sem salvar.
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/preview-document` | Gera preview sem salvar |
+| `POST` | `/api/generate-document` | Gera, salva, retorna doc com `id` |
+| `GET`  | `/api/documents/:id/download` | Baixa Word (.docx) |
+| `GET`  | `/api/documents/:id/download/pdf` | Baixa PDF |
+| `GET`  | `/api/documents/:id/download/markdown` | Baixa Markdown |
+| `GET`  | `/api/documents/:id/download/text` | Baixa texto plano |
 
-**Body:**
-```json
-{
-  "type": "prd",
-  "demand": "Sistema de autenticação com login social"
-}
+### IA (refinamento e análise)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/ai/suggest-title` | Sugere 5 títulos baseados na demanda |
+| `POST` | `/api/ai/quick-action` | Aplica ação (resumir, expandir, reescrever, etc.) num texto |
+| `POST` | `/api/ai/chat` | Chat de refinamento com histórico de conversa |
+| `POST` | `/api/ai/quality-score` | Score 0-100 + dimensões + sugestões |
+
+### Documentos e metadata
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET`    | `/api/documents` | Lista (suporta `?search=`, `?type=`, `?tags=tag1,tag2`) |
+| `GET`    | `/api/documents/:id` | Recupera documento |
+| `PUT`    | `/api/documents/:id` | Atualiza conteúdo (cria versão automaticamente) |
+| `PATCH`  | `/api/documents/:id/meta` | Atualiza título, tags, parentDocumentId |
+| `GET`    | `/api/documents/:id/versions` | Lista versões |
+| `GET`    | `/api/documents/:id/generate-prompt` | Gera prompt pra usar em outras IAs |
+
+### Compartilhamento público
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST`   | `/api/documents/:id/share` | Cria/regenera token de compartilhamento |
+| `DELETE` | `/api/documents/:id/share` | Revoga token |
+| `GET`    | `/api/share/:token` | **Público** — retorna documento read-only |
+
+### Estatísticas
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/stats` | Total, por tipo, por mês, top tags, tempo economizado |
+
+---
+
+## 🔐 Segurança da API Key
+
+A chave da OpenRouter **NÃO** é solicitada no frontend. Toda chamada à IA passa pelo backend:
+
+```
+Frontend (sem chave)
+    ↓
+Backend (lê OPENROUTER_API_KEY do .env)
+    ↓
+OpenRouter API
 ```
 
-**Response:**
-```json
-{
-  "content": "📄 **PRD**...",
-  "title": "Sistema de autenticação..."
-}
+**Benefícios:**
+- ✅ API key nunca exposta no navegador
+- ✅ Logs e auditoria centralizados
+- ✅ Rate limit controlado pelo servidor
+- ✅ Você controla o uso
+
+---
+
+## 🌐 Deploy
+
+Configure as variáveis de ambiente em qualquer plataforma:
+
+```env
+OPENROUTER_API_KEY=...
+OPENROUTER_MODEL=google/gemma-4-31b-it
+APP_URL=https://seu-dominio.com
+NODE_ENV=production
+DATABASE_URL=...   # recomendado em produção
+PORT=3000
 ```
 
-### POST `/api/generate-document`
+### Render.com (recomendado)
+1. Crie um Web Service conectado ao repositório
+2. Configure as variáveis de ambiente
+3. Build: `npm run build` · Start: `npm start`
 
-Gera e salva documento, retorna .docx
+### Outras opções
+- **Vercel**: `vercel --prod`
+- **Railway**: `railway up`
+- **Docker**: `docker build -t documente . && docker run -p 3000:3000 -e OPENROUTER_API_KEY=... documente`
 
-**Body:**
-```json
-{
-  "type": "userstories",
-  "demand": "Carrinho de compras com cupons"
-}
-```
+---
 
-**Response:** Arquivo `.docx` para download
+## 🧪 Verificação local
 
-### GET `/api/documents`
+```bash
+# Type check
+npm run check
 
-Lista todos os documentos gerados
+# Build de produção
+npm run build
 
-**Response:**
-```json
-[
-  {
-    "id": 1,
-    "title": "Sistema de autenticação",
-    "type": "prd",
-    "content": "...",
-    "originalDemand": "...",
-    "createdAt": "2025-11-05T10:30:00.000Z"
-  }
-]
+# Smoke test com servidor rodando
+curl http://localhost:3000/api/stats
+curl http://localhost:3000/api/documents
 ```
 
 ---
 
-## 🐛 Problemas Conhecidos
+## 🐛 Problemas conhecidos
 
-### API Key não encontrada
+### "API key is not configured"
+Verifique se `OPENROUTER_API_KEY` está no `.env` e se o servidor foi reiniciado após colocar a chave.
 
-**Sintoma**: Erro "API key is not configured"
+### Documentos somem ao reiniciar
+Você está em modo MemStorage. Configure `DATABASE_URL` no `.env` e rode `npm run db:push`.
 
-**Solução**: Verifique se `OPENROUTER_API_KEY` está no arquivo `.env` ou nas variáveis de ambiente do servidor
-
-### Documentos não persistem
-
-**Sintoma**: Documentos desaparecem ao reiniciar
-
-**Solução**: Configure `DATABASE_URL` no `.env` e execute `npm run db:push`
+### Score de qualidade não aparece
+O endpoint depende da OpenRouter. Confira o console do servidor pra erros — pode ser timeout ou rate limit.
 
 ---
 
 ## 🤝 Contribuindo
 
-Contribuições são bem-vindas! Para contribuir:
-
 1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
+2. Crie uma branch: `git checkout -b feature/MinhaFeature`
+3. Commit: `git commit -m 'feat: adiciona MinhaFeature'`
+4. Push: `git push origin feature/MinhaFeature`
 5. Abra um Pull Request
 
-### Diretrizes
-
-- Siga o estilo de código existente
-- Adicione testes quando aplicável
-- Atualize a documentação
-- Faça commits semânticos
-- **Nunca commite arquivos `.env`**
+**Nunca** commite arquivos `.env`.
 
 ---
 
 ## 📝 Changelog
 
-### Versão Atual (Stable)
-- ✅ API key gerenciada apenas no servidor (segurança)
-- ✅ Interface sem campo de API key
-- ✅ 9 tipos de documentos suportados
-- ✅ Geração de documentos Word profissionais
-- ✅ Histórico de documentos
+### v2.0 — Refinamento com IA, tags, compartilhamento e diff
+- ✅ Auto-sugestão de título com IA
+- ✅ Ações rápidas no editor (Resumir, Expandir, Reescrever, Corrigir, Traduzir, Validar INVEST)
+- ✅ Chat de refinamento conversacional com aplicação direta de mudanças
+- ✅ Score de qualidade 0-100 com dimensões específicas por tipo
+- ✅ Tags customizadas com filtros rápidos no histórico
+- ✅ Compartilhamento via link público read-only
+- ✅ Página `/stats` com dashboard de métricas
+- ✅ Versionamento automático em cada edição
+- ✅ Diff visual entre versões (LCS line-by-line)
+- ✅ Schema atualizado: `tags`, `parentDocumentId`, `shareToken`, `qualityScore`, `updatedAt`, tabela `document_versions`
+
+### v1.0 — Stable
+- ✅ Geração de 9 tipos de documentos
+- ✅ Export em Word, PDF, Markdown, texto
+- ✅ Histórico com busca
+- ✅ API key apenas no servidor
+- ✅ Dark mode + interface responsiva
 
 ---
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+MIT — veja [LICENSE](LICENSE).
 
 ---
 
 ## 👤 Autor
 
-**Jonathan Alves**
-- GitHub: [@jhonnybrzz1](https://github.com/jhonnybrzz1)
-- Email: jose.jonathan@hotmail.com
-
----
-
-## 🙏 Agradecimentos
-
-- [OpenRouter](https://openrouter.ai) - API de IA
-- [shadcn/ui](https://ui.shadcn.com) - Componentes UI
-- [Neon](https://neon.tech) - Database PostgreSQL
-
----
-
-## ⚠️ Notas Importantes
-
-### Segurança
-
-- ❌ **NUNCA** commite o arquivo `.env`
-- ❌ **NUNCA** exponha a `OPENROUTER_API_KEY` no frontend
-- ✅ **SEMPRE** configure a chave via variável de ambiente
-- ✅ **SEMPRE** valide entradas do usuário no backend
-
-### Produção
-
-- Configure `DATABASE_URL` para persistência
-- Use HTTPS
-- Configure rate limiting
-- Monitore custos da API OpenRouter
-- Faça backup regular do banco de dados
+**Jonathan Alves** · GitHub: [@jhonnybrzz1](https://github.com/jhonnybrzz1)
 
 ---
 
@@ -470,8 +389,6 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 **Feito com ❤️ e IA**
 
-Se este projeto foi útil, considere dar uma ⭐!
-
-[Reportar Bug](https://github.com/jhonnybrzz1/DocuMente/issues) • [Solicitar Feature](https://github.com/jhonnybrzz1/DocuMente/issues)
+[Reportar bug](https://github.com/jhonnybrzz1/DocuMente/issues) · [Solicitar feature](https://github.com/jhonnybrzz1/DocuMente/issues)
 
 </div>

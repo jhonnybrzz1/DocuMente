@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import uploadRouter from "./routes/upload";
+import aiRouter from "./routes/ai";
+import documentsExtraRouter from "./routes/documents-extra";
 import { storage } from "./storage";
 import {
   insertDocumentSchema,
@@ -1586,6 +1588,8 @@ async function createWordDocument(title: string, content: string): Promise<Buffe
 export async function registerRoutes(app: Express): Promise<Server> {
   
   app.use("/api", uploadRouter);
+  app.use("/api/ai", aiRouter);
+  app.use("/api", documentsExtraRouter);
 
   // Test API connection (uses server-side API key)
   app.post("/api/test-connection", async (req, res) => {
@@ -1673,7 +1677,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Validar input com Zod
       const input = generateDocumentInputSchema.parse(req.body);
-      const { type, demand, title, extractedText } = input;
+      const { type, demand, title, extractedText, tags, parentDocumentId } = input;
 
       const combinedDemand = extractedText ? `${demand}\n\n--- Documentos Anexados ---\n\n${extractedText}` : demand;
 
@@ -1694,6 +1698,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type,
         content,
         originalDemand: combinedDemand,
+        tags: tags ?? [],
+        parentDocumentId: parentDocumentId ?? null,
       });
 
       const document = await storage.createDocument(validated);
@@ -1777,18 +1783,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get documents with search
   app.get("/api/documents", async (req, res) => {
     try {
-      const { search, type } = req.query;
-      
-      let documents;
-      if (search || (type && type !== "all")) {
-        documents = await storage.searchDocuments(
-          search as string || "", 
-          type === "all" ? undefined : (type as string || undefined)
-        );
-      } else {
-        documents = await storage.getDocuments();
+      const { search, type, tags } = req.query;
+
+      // tags pode vir como "tag1,tag2" ou como múltiplos query params
+      let parsedTags: string[] | undefined;
+      if (Array.isArray(tags)) {
+        parsedTags = tags.flatMap(t => String(t).split(",")).map(t => t.trim()).filter(Boolean);
+      } else if (typeof tags === "string" && tags.length > 0) {
+        parsedTags = tags.split(",").map(t => t.trim()).filter(Boolean);
       }
-      
+
+      const hasFilter = !!search || (type && type !== "all") || (parsedTags && parsedTags.length > 0);
+
+      const documents = hasFilter
+        ? await storage.searchDocuments({
+            query: (search as string) || undefined,
+            type: type === "all" ? undefined : ((type as string) || undefined),
+            tags: parsedTags,
+          })
+        : await storage.getDocuments();
+
       res.json(documents);
     } catch (error) {
       console.error("Get documents error:", error);
@@ -1900,12 +1914,47 @@ ${document.content}
 
       // Validar input com Zod
       const input = updateDocumentInputSchema.parse(req.body);
-      const { content } = input;
+      const { content, changeDescription } = input;
 
       const existingDocument = await storage.getDocument(id);
 
       if (!existingDocument) {
         return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Se o conteúdo realmente mudou, salva a versão anterior antes de sobrescrever
+      if (existingDocument.content !== content) {
+        try {
+          const existingVersions = await storage.getDocumentVersions(id);
+          const nextVersion = existingVersions.length === 0
+            ? 1 // primeira versão = conteúdo original
+            : existingVersions[existingVersions.length - 1].version + 1;
+
+          // Se ainda não tem nenhuma versão, salva a v1 com o conteúdo atual ANTES de atualizar
+          if (existingVersions.length === 0) {
+            await storage.createDocumentVersion({
+              documentId: id,
+              version: 1,
+              content: existingDocument.content,
+              changeDescription: "Versão original",
+            });
+            await storage.createDocumentVersion({
+              documentId: id,
+              version: 2,
+              content,
+              changeDescription: changeDescription ?? "Edição manual",
+            });
+          } else {
+            await storage.createDocumentVersion({
+              documentId: id,
+              version: nextVersion,
+              content,
+              changeDescription: changeDescription ?? "Edição manual",
+            });
+          }
+        } catch (versionErr) {
+          console.warn("Failed to record document version:", versionErr);
+        }
       }
 
       // Update the document using the storage method

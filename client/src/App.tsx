@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import Home from "@/pages/home";
 import TemplatesPage from "@/pages/templates";
+import StatsPage from "@/pages/stats";
+import SharePage from "@/pages/share";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -13,6 +15,8 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/templates" component={TemplatesPage} />
+      <Route path="/stats" component={StatsPage} />
+      <Route path="/share/:token" component={SharePage} />
       <Route component={NotFound} />
     </Switch>
   );

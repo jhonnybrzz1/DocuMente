@@ -13,6 +13,7 @@ export default function Home() {
   const [demand, setDemand] = useState("");
   const [selectedType, setSelectedType] = useState<DocumentType | "">("");
   const [title, setTitle] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [previewContent, setPreviewContent] = useState("");
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
@@ -42,6 +43,9 @@ export default function Home() {
               title={title}
               setTitle={setTitle}
               onUseTemplate={handleUseTemplate}
+              selectedType={selectedType}
+              tags={tags}
+              setTags={setTags}
             />
             
             <DocumentTypeSelector 
@@ -53,6 +57,7 @@ export default function Home() {
               demand={demand}
               selectedType={selectedType}
               title={title}
+              tags={tags}
               onPreview={(content) => {
                 setPreviewContent(content);
                 setShowPreview(true);
@@ -73,6 +78,7 @@ export default function Home() {
         demand={demand}
         selectedType={selectedType}
         title={title}
+        tags={tags}
       />
 
       <TemplateSelector

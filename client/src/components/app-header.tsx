@@ -1,4 +1,4 @@
-import { FileText, Settings, User, Library } from "lucide-react";
+import { FileText, Settings, User, Library, BarChart3 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { Link, useLocation } from "wouter";
 import { Button } from "./ui/button";
@@ -53,6 +53,17 @@ export default function AppHeader() {
                 >
                   <Library className="mr-2" size={16} />
                   <span className="hidden sm:inline">Biblioteca</span>
+                </Button>
+              </Link>
+              <Link href="/stats">
+                <Button
+                  variant={location === "/stats" ? "secondary" : "ghost"}
+                  size="sm"
+                  className={`flex items-center min-h-[44px] min-w-[44px] ${location === "/stats" ? "bg-secondary" : ""}`}
+                  aria-current={location === "/stats" ? "page" : undefined}
+                >
+                  <BarChart3 className="mr-2" size={16} />
+                  <span className="hidden sm:inline">Stats</span>
                 </Button>
               </Link>
               <ThemeToggle />
