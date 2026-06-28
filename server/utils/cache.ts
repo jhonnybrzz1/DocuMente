@@ -128,7 +128,7 @@ class SimpleMemoryCache {
     let magnitude1 = 0;
     let magnitude2 = 0;
 
-    for (const word of allWords) {
+    for (const word of Array.from(allWords)) {
       const f1 = freq1[word] || 0;
       const f2 = freq2[word] || 0;
       dotProduct += f1 * f2;

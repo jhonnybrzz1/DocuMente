@@ -287,46 +287,10 @@ router.post("/quality-score", async (req, res) => {
     const messages: ChatMessage[] = [
       {
         role: "system",
-        content: `Você é um avaliador de qualidade especialista em documentos de Product Management.
-Avalie o documento de tipo "${typeLabel(type as DocumentType)}" fornecido estritamente conforme a seguinte Rubrica de Avaliação (notas inteiras de 1 a 5):
-
-1. Fidelidade (peso 0.35):
-   - Nota 1: Altera ou inventa regras importantes.
-   - Nota 3: Preserva a maioria, mas perde detalhes.
-   - Nota 5: Preserva perfeitamente todas as regras, valores, prazos e exceções.
-2. Completude (peso 0.25):
-   - Nota 1: Omite vários requisitos centrais.
-   - Nota 3: Cobre o essencial, mas com lacunas.
-   - Nota 5: Cobre com excelência todos os requisitos, exceções e fluxos relevantes.
-3. Aderência ao formato (peso 0.15):
-   - Nota 1: Estrutura errada ou placeholders pendentes.
-   - Nota 3: Estrutura parcial.
-   - Nota 5: Estrutura 100% correta e pronta para uso.
-4. Acionabilidade (peso 0.15):
-   - Nota 1: Genérico e pouco implementável.
-   - Nota 3: Útil, mas exige retrabalho.
-   - Nota 5: Claro, verificável e imediatamente executável.
-5. Clareza (peso 0.10):
-   - Nota 1: Confuso ou prolixo.
-   - Nota 3: Entendível.
-   - Nota 5: Direto, organizado e consistente.
-
-Você também DEVE verificar a presença de BLOQUEADORES DE RELEASE no documento:
-- Qualquer violação crítica de regra.
-- Alucinação factual de alto impacto.
-- Documento sem critérios de aceite quando o tipo de documento exige (exigem: prd, userstories, techspec, testplan).
-- Output com placeholders (ex: "[Requisito 1]", "[Descrever aqui]", etc.) em seções essenciais.
-
-Responda APENAS com um objeto JSON válido no formato abaixo, sem markdown ou texto adicional:
-{
-  "fidelidade": { "nota": 1-5, "justificativa": "..." },
-  "completude": { "nota": 1-5, "justificativa": "..." },
-  "aderencia_formato": { "nota": 1-5, "justificativa": "..." },
-  "acionabilidade": { "nota": 1-5, "justificativa": "..." },
-  "clareza": { "nota": 1-5, "justificativa": "..." },
-  "blockers": ["Descrição curta do bloqueador de release se houver, ou array vazio"],
-  "suggestions": ["Sugestão concreta 1", "Sugestão 2"]
-}`,
+        content: `Avaliador de qualidade de documentos de Product Management. Tipo: "${typeLabel(type as DocumentType)}".
+Rubrica (notas 1-5): Fidelidade(0.35): 1=altera regras, 3=perde detalhes, 5=preserva tudo. Completude(0.25): 1=omite requisitos, 3=essencial com lacunas, 5=excelência. Aderência formato(0.15): 1=errada/placeholders, 3=parcial, 5=100% correta. Acionabilidade(0.15): 1=genérico, 3=exige retrabalho, 5=executável. Clareza(0.10): 1=confuso, 3=entendível, 5=direto.
+Bloqueadores de release: violação crítica de regra; alucinação factual; documento sem critérios de aceite (quando tipo exige: prd, userstories, techspec, testplan); placeholders em seções essenciais.
+JSON apenas: {"fidelidade":{"nota":N,"justificativa":""},"completude":{"nota":N,"justificativa":""},"aderencia_formato":{"nota":N,"justificativa":""},"acionabilidade":{"nota":N,"justificativa":""},"clareza":{"nota":N,"justificativa":""},"blockers":[],"suggestions":[]}`,
       },
       { role: "user", content: `Documento a avaliar:\n\n${content}` },
     ];

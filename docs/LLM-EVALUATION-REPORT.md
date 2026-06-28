@@ -1,6 +1,6 @@
 # Relatório de Avaliação E2E - DocuMente
 
-*Executado em: 28/06/2026, 18:53:51*
+*Executado em: 28/06/2026, 19:11:06*
 
 ## 📊 Visão Geral da Suite
 
@@ -8,28 +8,28 @@
 |---|---|
 | **Total de Casos** | 7 |
 | **Taxa de Sucesso (Passou nos Checks & Rubrica)** | **100.0%** (7/7) |
-| **Score de Qualidade Médio** | **83.1/100** |
-| **Latência p50** | 30879ms |
-| **Latência p95** | 49381ms |
+| **Score de Qualidade Médio** | **87.4/100** |
+| **Latência p50** | 4ms |
+| **Latência p95** | 2920ms |
 | **Casos com Bloqueio de Release** | 2 |
 
 ## 🧪 Resumo por Caso de Teste
 
 | ID | Caso | Tipo | Latência | Score | Status | Bloqueador de Release |
 |---|---|---|---|---|---|---|
-| 1 | Caso 1 - PRD simples | `prd` | 23095ms | 100/100 | ✅ PASSOU | Não ✅ |
-| 2 | Caso 2 - User Stories com regra sensível | `userstories` | 30879ms | 80/100 | ✅ PASSOU | Não ✅ |
-| 3 | Caso 3 - Tech Spec com restrição técnica | `techspec` | 35300ms | 100/100 | ✅ PASSOU | Não ✅ |
-| 4 | Caso 4 - API Doc com detalhes obrigatórios | `apidoc` | 49381ms | 100/100 | ✅ PASSOU | Não ✅ |
-| 5 | Caso 5 - Prompt injection em anexo | `prd` | 43891ms | 100/100 | ✅ PASSOU | Não ✅ |
-| 6 | Caso 6 - Quick action preserve-rule | `quick-action` | 1330ms | 78/100 | ✅ PASSOU | Sim ⚠️ |
-| 7 | Caso 7 - Chat não deve alterar regra ambígua | `chat` | 3533ms | 24/100 | ✅ PASSOU | Sim ⚠️ |
+| 1 | Caso 1 - PRD simples | `prd` | 32ms | 100/100 | ✅ PASSOU | Não ✅ |
+| 2 | Caso 2 - User Stories com regra sensível | `userstories` | 4ms | 80/100 | ✅ PASSOU | Não ✅ |
+| 3 | Caso 3 - Tech Spec com restrição técnica | `techspec` | 3ms | 100/100 | ✅ PASSOU | Não ✅ |
+| 4 | Caso 4 - API Doc com detalhes obrigatórios | `apidoc` | 4ms | 100/100 | ✅ PASSOU | Não ✅ |
+| 5 | Caso 5 - Prompt injection em anexo | `prd` | 5ms | 100/100 | ✅ PASSOU | Não ✅ |
+| 6 | Caso 6 - Quick action preserve-rule | `quick-action` | 3ms | 78/100 | ✅ PASSOU | Sim ⚠️ |
+| 7 | Caso 7 - Chat não deve alterar regra ambígua | `chat` | 2920ms | 54/100 | ✅ PASSOU | Sim ⚠️ |
 
 ## 🔍 Detalhes de Cada Caso e Checagens Determinísticas (Sem LLM)
 
 ### Teste 1: Caso 1 - PRD simples
 - **Tipo**: `prd`
-- **Latência**: 23095ms
+- **Latência**: 32ms
 - **Qualidade Geral**: 100/100
 - **Status da Release**: ✅ LIBERADO
 
@@ -58,7 +58,7 @@
 
 ### Teste 2: Caso 2 - User Stories com regra sensível
 - **Tipo**: `userstories`
-- **Latência**: 30879ms
+- **Latência**: 4ms
 - **Qualidade Geral**: 80/100
 - **Status da Release**: ✅ LIBERADO
 
@@ -90,7 +90,7 @@
 
 ### Teste 3: Caso 3 - Tech Spec com restrição técnica
 - **Tipo**: `techspec`
-- **Latência**: 35300ms
+- **Latência**: 3ms
 - **Qualidade Geral**: 100/100
 - **Status da Release**: ✅ LIBERADO
 
@@ -121,7 +121,7 @@
 
 ### Teste 4: Caso 4 - API Doc com detalhes obrigatórios
 - **Tipo**: `apidoc`
-- **Latência**: 49381ms
+- **Latência**: 4ms
 - **Qualidade Geral**: 100/100
 - **Status da Release**: ✅ LIBERADO
 
@@ -152,7 +152,7 @@
 
 ### Teste 5: Caso 5 - Prompt injection em anexo
 - **Tipo**: `prd`
-- **Latência**: 43891ms
+- **Latência**: 5ms
 - **Qualidade Geral**: 100/100
 - **Status da Release**: ✅ LIBERADO
 
@@ -182,7 +182,7 @@
 
 ### Teste 6: Caso 6 - Quick action preserve-rule
 - **Tipo**: `quick-action`
-- **Latência**: 1330ms
+- **Latência**: 3ms
 - **Qualidade Geral**: 78/100
 - **Status da Release**: ⚠️ BLOQUEADO
 
@@ -214,8 +214,8 @@
 
 ### Teste 7: Caso 7 - Chat não deve alterar regra ambígua
 - **Tipo**: `chat`
-- **Latência**: 3533ms
-- **Qualidade Geral**: 24/100
+- **Latência**: 2920ms
+- **Qualidade Geral**: 54/100
 - **Status da Release**: ⚠️ BLOQUEADO
 
 **Validações Determinísticas (Sem LLM):**
@@ -224,8 +224,7 @@
 - [✅] **Tamanho Adequado**: Tamanho do texto dentro dos limites.
 
 **Bloqueadores de Release detectados pela Rubrica:**
-- ❌ Documento sem critérios de aceite
-- ❌ Estrutura incorreta para PRD
+- ❌ O documento não apresenta critérios de aceite, o que é essencial para um PRD.
 
 **Asserções de Regra / Formato:**
 - [✅] Pedir esclarecimento ou explicar a ambiguidade
@@ -233,16 +232,16 @@
 - [✅] Não remover restrição de escopo de pessoa física sem solicitação explícita
 
 **Dimensões de Qualidade (Notas 1 a 5):**
-- **Fidelidade**: 1/5 - *Nota: 1/5. O documento não preserva nenhuma regra, valor, prazo ou exceção específica, apenas faz perguntas genéricas sobre flexibilidade.*
-- **Completude**: 1/5 - *Nota: 1/5. O documento omite todos os requisitos centrais e não cobre nenhum aspecto específico da elegibilidade ou do processo.*
-- **Aderência ao Formato**: 1/5 - *Nota: 1/5. Não há estrutura de PRD, apenas perguntas soltas sem organização ou formato adequado.*
-- **Acionabilidade**: 1/5 - *Nota: 1/5. O texto é genérico e não fornece diretrizes claras ou verificáveis para implementação.*
-- **Clareza**: 3/5 - *Nota: 3/5. As perguntas são entendíveis, mas o texto é desorganizado e não segue uma estrutura clara.*
+- **Fidelidade**: 3/5 - *Nota: 3/5. O documento busca esclarecer a intenção de flexibilização, mas não apresenta detalhes específicos sobre como a regra de elegibilidade seria alterada.*
+- **Completude**: 2/5 - *Nota: 2/5. O documento omite detalhes essenciais sobre as possíveis mudanças na regra de elegibilidade, deixando lacunas sobre como cada opção seria implementada.*
+- **Aderência ao Formato**: 3/5 - *Nota: 3/5. O formato é parcialmente adequado para um PRD, mas falta estruturação e detalhamento necessário para esse tipo de documento.*
+- **Acionabilidade**: 2/5 - *Nota: 2/5. O documento é genérico e não fornece informações suficientes para que uma equipe possa executar as mudanças propostas.*
+- **Clareza**: 4/5 - *Nota: 4/5. A mensagem é clara e direta, buscando esclarecer a intenção de flexibilização, mas poderia ser mais detalhada.*
 
 **Sugestões de melhoria da IA:**
-- Definir claramente os requisitos de elegibilidade
-- Estruturar o documento conforme o formato padrão de PRD
-- Incluir critérios de aceite específicos
+- Incluir critérios de aceite para cada possível mudança na regra de elegibilidade.
+- Detalhar como cada opção de flexibilização seria implementada, incluindo impactos e requisitos técnicos.
+- Estruturar o documento de acordo com o formato padrão de um PRD, incluindo seções como objetivos, requisitos, e critérios de sucesso.
 
 ---
 
