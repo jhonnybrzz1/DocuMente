@@ -7,7 +7,7 @@ const OPENROUTER_API_URL =
   process.env.OPENROUTER_API_URL ?? "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MODEL = "deepseek/deepseek-chat"; // DeepSeek Chat para escrita rápida e barata
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL ?? DEFAULT_MODEL;
-const OPENROUTER_APP_URL = process.env.APP_URL ?? "http://localhost:5001";
+const OPENROUTER_APP_URL = process.env.APP_URL ?? "http://localhost:3000";
 
 // Provider routing - prefer providers de baixa latência e ignora os instáveis.
 function parseProviderList(envValue: string | undefined): string[] | undefined {
