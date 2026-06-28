@@ -212,12 +212,12 @@ No painel do Render:
 
 ### Checklist de Segurança
 
-- [ ] `OPENROUTER_API_KEY` configurada como variável de ambiente
-- [ ] Arquivo `.env` está no `.gitignore`
-- [ ] Nunca commitar chaves no código
-- [ ] HTTPS ativado (automático no Render)
-- [ ] Validação de inputs no backend
-- [ ] Rate limiting configurado (TODO)
+- [x] `OPENROUTER_API_KEY` configurada como variável de ambiente
+- [x] Arquivo `.env` está no `.gitignore`
+- [x] Nunca commitar chaves no código
+- [x] HTTPS ativado (automático no Render)
+- [x] Validação de inputs no backend
+- [x] Rate limiting configurado
 
 ---
 

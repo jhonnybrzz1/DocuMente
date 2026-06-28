@@ -27,6 +27,9 @@ export const documentVersions = pgTable("document_versions", {
 
 export const apiKeys = pgTable("api_keys", {
   id: serial("id").primaryKey(),
+  // NOTA DE GOVERNANÇA: Por motivos de retrocompatibilidade com o banco de dados físico, 
+  // este campo chama-se 'mistral_key', mas armazena a chave da OpenRouter (provedor principal) 
+  // ou da Mistral configurada de forma ativa no servidor.
   mistralKey: text("mistral_key").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
