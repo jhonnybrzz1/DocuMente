@@ -12,7 +12,8 @@
     "test:eval": "tsx tests/run-evaluation.ts",
     "test:eval-docs": "tsx evals/runners/run-document-evals.ts",
     "test:eval-routes": "tsx evals/runners/run-ai-route-evals.ts",
-    "test:eval-all": "tsx evals/runners/run-document-evals.ts && tsx evals/runners/run-ai-route-evals.ts"
+    "test:eval-all": "tsx evals/runners/run-document-evals.ts && tsx evals/runners/run-ai-route-evals.ts",
+    "test:unit": "vitest run tests/unit"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -116,7 +117,8 @@
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.1",
     "typescript": "5.6.3",
-    "vite": "^5.4.19"
+    "vite": "^5.4.19",
+    "vitest": "^4.1.9"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"

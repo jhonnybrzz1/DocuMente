@@ -1,28 +1,9 @@
 {
   "results": [
     {
-      "id": "quickaction-rewrite-limit-approval",
-      "routeType": "quick-action",
-      "latencyMs": 1977,
-      "passed": true,
-      "checks": [
-        {
-          "name": "Preservação de Regras Críticas (Required)",
-          "passed": true,
-          "details": "Todas as regras requeridas estão presentes."
-        },
-        {
-          "name": "Ausência de Termos Proibidos (Forbidden)",
-          "passed": true,
-          "details": "Nenhum termo proibido gerado."
-        }
-      ],
-      "outputText": "Clientes com limite superior a R$ 100.000 requerem aprovação manual. Para limites iguais ou inferiores a R$ 100.000, o processo segue o fluxo automático."
-    },
-    {
       "id": "chat-refine-eligibility-ambiguity",
       "routeType": "chat-refinement",
-      "latencyMs": 4987,
+      "latencyMs": 2072,
       "passed": true,
       "checks": [
         {
@@ -36,8 +17,27 @@
           "details": "Nenhum termo proibido foi incluído incorretamente."
         }
       ],
-      "outputText": "Você pediu para deixar a regra mais flexível, mas não especificou como ou em qual aspecto. Por exemplo:\n\n1. Quer incluir pessoas físicas?\n2. Quer flexibilizar o critério de cadastro completo?\n3. Quer adicionar exceções ou condições adicionais?\n\nPor favor, especifique qual aspecto você gostaria de tornar mais flexível para que eu possa ajustar o documento corretamente."
+      "outputText": "Não entendi exatamente qual aspecto você quer tornar mais flexível. Poderia especificar se deseja:\n\n1. Ampliar o escopo para incluir pessoas físicas?\n2. Flexibilizar os requisitos de cadastro completo?\n3. Outro tipo de flexibilização?\n\nPor favor, detalhe qual mudança de regra você deseja para que eu possa atualizar o documento corretamente."
+    },
+    {
+      "id": "quickaction-rewrite-limit-approval",
+      "routeType": "quick-action",
+      "latencyMs": 1359,
+      "passed": true,
+      "checks": [
+        {
+          "name": "Preservação de Regras Críticas (Required)",
+          "passed": true,
+          "details": "Todas as regras requeridas estão presentes."
+        },
+        {
+          "name": "Ausência de Termos Proibidos (Forbidden)",
+          "passed": true,
+          "details": "Nenhum termo proibido gerado."
+        }
+      ],
+      "outputText": "Clientes com limite superior a R$ 100.000 requerem aprovação manual. Para limites de até R$ 100.000, o processo pode seguir o fluxo automático."
     }
   ],
-  "timestamp": "2026-06-28T19:30:03.921Z"
+  "timestamp": "2026-06-28T20:11:47.841Z"
 }

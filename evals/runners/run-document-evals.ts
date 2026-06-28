@@ -80,13 +80,15 @@ async function run() {
 
   const results: any[] = [];
   let successfulCases = 0;
+  let index = 0;
+  const concurrencyLimit = 3;
 
-  try {
-    for (const tc of testCases) {
-      console.log(`\n-------------------------------------------------------------`);
-      console.log(`Rodando Caso: ${tc.id} (${tc.type.toUpperCase()})`);
-      console.log(`-------------------------------------------------------------`);
-
+  const worker = async () => {
+    while (index < testCases.length) {
+      const currentIndex = index++;
+      const tc = testCases[currentIndex];
+      
+      console.log(`\n[worker] Iniciando Caso: ${tc.id} (${tc.type.toUpperCase()})`);
       const start = Date.now();
       let outputText = "";
       let documentId: number | undefined = undefined;
@@ -106,7 +108,7 @@ async function run() {
         documentId = genRes.id;
 
         const latency = Date.now() - start;
-        console.log(`[latência] Documento gerado em ${latency}ms.`);
+        console.log(`[worker] [${tc.id}] Documento gerado em ${latency}ms.`);
 
         // --- Checagens Determinísticas Sem LLM ---
         const checkResults: { name: string; passed: boolean; details?: string }[] = [];
@@ -193,22 +195,17 @@ async function run() {
         });
 
         const allDeterministicPassed = checkResults.every(c => c.passed);
-        console.log(`[deterministico] ${checkResults.filter(c => c.passed).length}/${checkResults.length} checagens sem LLM passaram.`);
-        checkResults.forEach(c => console.log(`  - [${c.passed ? "OK" : "FALHA"}] ${c.name}: ${c.details}`));
+        console.log(`[worker] [${tc.id}] ${checkResults.filter(c => c.passed).length}/${checkResults.length} checagens sem LLM passaram.`);
 
         // --- Avaliação do Juiz (LLM-as-Judge) ---
-        console.log(`[juiz] Rodando avaliação de rubrica no quality-score...`);
+        console.log(`[worker] [${tc.id}] Avaliando documento via modelo juiz...`);
         const judgeRes = await apiCall("/api/ai/quality-score", {
           content: outputText,
           type: tc.type,
           documentId
         });
 
-        console.log(`[juiz] Score de Qualidade: ${judgeRes.overall}/100.`);
-        console.log(`[juiz] Bloqueado para Release: ${judgeRes.isReleaseBlocked ? "SIM ❌" : "NÃO ✅"}`);
-        if (judgeRes.isReleaseBlocked && judgeRes.blockers) {
-          judgeRes.blockers.forEach((b: string) => console.log(`  - Bloqueador: ${b}`));
-        }
+        console.log(`[worker] [${tc.id}] Score de Qualidade: ${judgeRes.overall}/100.`);
 
         const passed = allDeterministicPassed && !judgeRes.isReleaseBlocked;
         if (passed) successfulCases++;
@@ -229,7 +226,7 @@ async function run() {
         });
 
       } catch (caseErr: any) {
-        console.error(`[erro] Falha ao executar caso ${tc.id}:`, caseErr.message);
+        console.error(`[worker] [erro] Falha ao executar caso ${tc.id}:`, caseErr.message);
         results.push({
           id: tc.id,
           type: tc.type,
@@ -245,6 +242,11 @@ async function run() {
         });
       }
     }
+  };
+
+  try {
+    const workers = Array.from({ length: Math.min(concurrencyLimit, testCases.length) }, worker);
+    await Promise.all(workers);
   } finally {
     if (serverProcess) {
       console.log("\n[server] Desligando servidor temporário...");
@@ -257,6 +259,9 @@ async function run() {
   if (!fs.existsSync(reportsDir)) {
     fs.mkdirSync(reportsDir, { recursive: true });
   }
+
+  // Ordenar resultados pelo ID para manter relatório determinístico
+  results.sort((a, b) => a.id.localeCompare(b.id));
 
   // Escrever JSON
   fs.writeFileSync(

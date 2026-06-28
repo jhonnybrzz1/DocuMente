@@ -96,12 +96,9 @@ async function run() {
   const results: any[] = [];
   let successfulCases = 0;
 
-  // 2. Processar Quick Actions
-  for (const tc of qaCases) {
-    console.log(`\n-------------------------------------------------------------`);
-    console.log(`Rodando Quick Action: ${tc.id}`);
-    console.log(`-------------------------------------------------------------`);
-
+  // Função para processar uma Quick Action em paralelo
+  const processQuickAction = async (tc: QuickActionCase) => {
+    console.log(`\n[worker] Iniciando Quick Action: ${tc.id}`);
     const start = Date.now();
     try {
       const res = await apiCall("/api/ai/quick-action", {
@@ -166,8 +163,7 @@ async function run() {
       const passed = checkResults.every(c => c.passed);
       if (passed) successfulCases++;
 
-      console.log(`[res] Latência: ${latency}ms. Status: ${passed ? "PASSOU ✅" : "FALHOU ❌"}`);
-      checkResults.forEach(c => console.log(`  - [${c.passed ? "OK" : "FALHA"}] ${c.name}: ${c.details}`));
+      console.log(`[worker] [${tc.id}] Latência: ${latency}ms. Status: ${passed ? "PASSOU ✅" : "FALHOU ❌"}`);
 
       results.push({
         id: tc.id,
@@ -179,7 +175,7 @@ async function run() {
       });
 
     } catch (err: any) {
-      console.error(`[erro] Falha ao rodar quick action ${tc.id}:`, err.message);
+      console.error(`[worker] [erro] Falha ao rodar quick action ${tc.id}:`, err.message);
       results.push({
         id: tc.id,
         routeType: "quick-action",
@@ -189,14 +185,11 @@ async function run() {
         outputText: ""
       });
     }
-  }
+  };
 
-  // 3. Processar Chat Refinement
-  for (const tc of chatCases) {
-    console.log(`\n-------------------------------------------------------------`);
-    console.log(`Rodando Chat Refinement: ${tc.id}`);
-    console.log(`-------------------------------------------------------------`);
-
+  // Função para processar um Chat Refinement em paralelo
+  const processChatRefinement = async (tc: ChatCase) => {
+    console.log(`\n[worker] Iniciando Chat Refinement: ${tc.id}`);
     const start = Date.now();
     try {
       const res = await apiCall("/api/ai/chat", {
@@ -262,8 +255,7 @@ async function run() {
       const passed = checkResults.every(c => c.passed);
       if (passed) successfulCases++;
 
-      console.log(`[res] Latência: ${latency}ms. Status: ${passed ? "PASSOU ✅" : "FALHOU ❌"}`);
-      checkResults.forEach(c => console.log(`  - [${c.passed ? "OK" : "FALHA"}] ${c.name}: ${c.details}`));
+      console.log(`[worker] [${tc.id}] Latência: ${latency}ms. Status: ${passed ? "PASSOU ✅" : "FALHOU ❌"}`);
 
       results.push({
         id: tc.id,
@@ -275,7 +267,7 @@ async function run() {
       });
 
     } catch (err: any) {
-      console.error(`[erro] Falha ao rodar chat ${tc.id}:`, err.message);
+      console.error(`[worker] [erro] Falha ao rodar chat ${tc.id}:`, err.message);
       results.push({
         id: tc.id,
         routeType: "chat-refinement",
@@ -285,11 +277,20 @@ async function run() {
         outputText: ""
       });
     }
-  }
+  };
 
-  if (serverProcess) {
-    console.log("\n[server] Desligando servidor temporário...");
-    serverProcess.kill();
+  // Executar todas as promessas concorrentemente
+  try {
+    const promises = [
+      ...qaCases.map(processQuickAction),
+      ...chatCases.map(processChatRefinement)
+    ];
+    await Promise.all(promises);
+  } finally {
+    if (serverProcess) {
+      console.log("\n[server] Desligando servidor temporário...");
+      serverProcess.kill();
+    }
   }
 
   // Gravar relatórios de rotas
@@ -297,6 +298,9 @@ async function run() {
   if (!fs.existsSync(reportsDir)) {
     fs.mkdirSync(reportsDir, { recursive: true });
   }
+
+  // Ordenar resultados para manter relatório determinístico
+  results.sort((a, b) => a.id.localeCompare(b.id));
 
   fs.writeFileSync(
     path.join(reportsDir, "routes.json"),
