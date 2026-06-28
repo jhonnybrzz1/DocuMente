@@ -44,4 +44,24 @@ describe('SimpleMemoryCache Unit Tests', () => {
     const fileContent = fs.readFileSync(cacheFile, 'utf-8');
     expect(fileContent).toContain('conteudo-persistido');
   });
+
+  it('deve recuperar valores via cache semântico aproximado (>95% similaridade)', () => {
+    const inputOriginal = { demand: 'Gerar um plano de ação detalhado para diminuir os custos com IA do DocuMente' };
+    const inputAproximado = { demand: 'Gerar plano de ação detalhado para reduzir custos com IA no DocuMente' };
+    const inputDiferente = { demand: 'Escrever uma documentação de API para a rota de cadastro de clientes' };
+
+    appCache.set('suggest-title', inputOriginal, 'titulo-sugerido', 60);
+
+    // Exact Match
+    const cachedExact = appCache.get('suggest-title', inputOriginal);
+    expect(cachedExact).toBe('titulo-sugerido');
+
+    // Semantic Match (Aproximado)
+    const cachedSemantic = appCache.get('suggest-title', inputAproximado);
+    expect(cachedSemantic).toBe('titulo-sugerido');
+
+    // Diferente (Sem Match)
+    const cachedDiff = appCache.get('suggest-title', inputDiferente);
+    expect(cachedDiff).toBeNull();
+  });
 });
