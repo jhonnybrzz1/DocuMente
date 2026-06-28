@@ -73,7 +73,7 @@
 - **express-rate-limit** — proteção de endpoints
 
 ### IA
-- **OpenRouter** com modelo padrão `google/gemma-4-31b-it`
+- **OpenRouter** com modelo padrão `deepseek/deepseek-flash`
 - API key apenas no servidor (`OPENROUTER_API_KEY`)
 - Endpoints especializados: `/api/ai/suggest-title`, `/quick-action`, `/chat`, `/quality-score`
 
@@ -109,7 +109,7 @@ Crie um `.env` na raiz:
 OPENROUTER_API_KEY=sua_chave_openrouter_aqui
 
 # Modelo (opcional)
-OPENROUTER_MODEL=google/gemma-4-31b-it
+OPENROUTER_MODEL=deepseek/deepseek-flash
 
 # Provider routing (opcional - defaults otimizados via análise da skill openrouter-models)
 # DeepInfra: 493ms p50 latência · 99.5% uptime
@@ -120,13 +120,13 @@ OPENROUTER_ALLOW_FALLBACKS=true
 # Use "none" pra desabilitar cada lista. Ex: OPENROUTER_PREFERRED_PROVIDERS=none
 
 # URL pública (usada nos headers da OpenRouter)
-APP_URL=http://localhost:3000
+APP_URL=http://localhost:5000
 
 # Database (opcional - usa in-memory se não configurado)
 DATABASE_URL=postgresql://usuario:senha@host/database
 
-# Porta do servidor (opcional, default 3000)
-PORT=3000
+# Porta do servidor (opcional, default 5000)
+PORT=5000
 
 # Ambiente
 NODE_ENV=development
@@ -165,7 +165,7 @@ npm start
 npm run check
 ```
 
-Acesse `http://localhost:3000`
+Acesse `http://localhost:5000`
 
 ---
 
@@ -298,11 +298,11 @@ Configure as variáveis de ambiente em qualquer plataforma:
 
 ```env
 OPENROUTER_API_KEY=...
-OPENROUTER_MODEL=google/gemma-4-31b-it
+OPENROUTER_MODEL=deepseek/deepseek-flash
 APP_URL=https://seu-dominio.com
 NODE_ENV=production
 DATABASE_URL=...   # recomendado em produção
-PORT=3000
+PORT=5000
 ```
 
 ### Render.com (recomendado)
@@ -313,7 +313,7 @@ PORT=3000
 ### Outras opções
 - **Vercel**: `vercel --prod`
 - **Railway**: `railway up`
-- **Docker**: `docker build -t documente . && docker run -p 3000:3000 -e OPENROUTER_API_KEY=... documente`
+- **Docker**: `docker build -t documente . && docker run -p 5000:5000 -e OPENROUTER_API_KEY=... documente`
 
 ---
 
@@ -327,8 +327,8 @@ npm run check
 npm run build
 
 # Smoke test com servidor rodando
-curl http://localhost:3000/api/stats
-curl http://localhost:3000/api/documents
+curl http://localhost:5000/api/stats
+curl http://localhost:5000/api/documents
 ```
 
 ---

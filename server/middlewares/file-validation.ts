@@ -13,7 +13,15 @@ const ALLOWED_TYPES = [
   'text/plain',
   'text/csv',
   'application/vnd.ms-excel',
-  'application/vnd.ms-powerpoint'
+  'application/vnd.ms-powerpoint',
+  'audio/mpeg',
+  'audio/mp3',
+  'audio/wav',
+  'audio/webm',
+  'audio/ogg',
+  'audio/x-m4a',
+  'audio/m4a',
+  'audio/mp4'
 ];
 const MAX_SIZE = 15 * 1024 * 1024; // 15MB
 
@@ -41,7 +49,11 @@ export const validateFile = (req: Request, res: Response, next: NextFunction) =>
 
     // Validar extensão do arquivo (segurança adicional)
     const fileExtension = path.extname(file.originalname).toLowerCase();
-    const validExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx', '.xlsx', '.xls', '.pptx', '.ppt', '.txt', '.csv'];
+    const validExtensions = [
+      '.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx', '.xlsx', '.xls', 
+      '.pptx', '.ppt', '.txt', '.csv', '.mp3', '.wav', '.webm', '.ogg', 
+      '.m4a', '.mp4'
+    ];
     
     if (!validExtensions.includes(fileExtension)) {
       return res.status(400).json({ 

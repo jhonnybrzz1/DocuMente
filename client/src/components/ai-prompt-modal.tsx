@@ -81,11 +81,11 @@ export default function AiPromptModal({ isOpen, onClose, document }: AiPromptMod
         <DialogHeader>
           <div className="flex items-center space-x-2">
             <Sparkles className="h-5 w-5 text-purple-600" />
-            <DialogTitle>Gerar Prompt para IA</DialogTitle>
+            <DialogTitle>Prompt para assistente de código</DialogTitle>
           </div>
           <DialogDescription>
-            Prompt otimizado gerado automaticamente a partir do documento "{document?.title}".
-            Você pode editar o texto antes de copiar.
+            Prompt gerado somente com o resultado final salvo em "{document?.title}".
+            Entradas, anexos e demanda original não são incluídos.
           </DialogDescription>
         </DialogHeader>
 

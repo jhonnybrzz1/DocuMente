@@ -8,6 +8,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// CORS Middleware para integração local com AiChatFlow1 e agentes externos
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Rate limiting geral para API
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
@@ -57,11 +68,28 @@ app.use((req, res, next) => {
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        // Cópia rasa limpa para logs seguros
+        const cleanLog: Record<string, any> = { ...capturedJsonResponse };
+        if (typeof cleanLog.content === "string") {
+          cleanLog.content = `[CONTENT_TRUNCATED_${cleanLog.content.length}_CHARS]`;
+        }
+        if (cleanLog.document && typeof cleanLog.document.content === "string") {
+          cleanLog.document = { 
+            ...cleanLog.document, 
+            content: `[CONTENT_TRUNCATED_${cleanLog.document.content.length}_CHARS]` 
+          };
+        }
+        if (typeof cleanLog.extractedText === "string") {
+          cleanLog.extractedText = `[EXTRACTED_TEXT_TRUNCATED_${cleanLog.extractedText.length}_CHARS]`;
+        }
+        if (typeof cleanLog.demand === "string") {
+          cleanLog.demand = `[DEMAND_TRUNCATED_${cleanLog.demand.length}_CHARS]`;
+        }
+        logLine += ` :: ${JSON.stringify(cleanLog)}`;
       }
 
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
+      if (logLine.length > 120) {
+        logLine = logLine.slice(0, 119) + "…";
       }
 
       log(logLine);

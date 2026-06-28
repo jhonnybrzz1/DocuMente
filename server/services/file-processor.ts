@@ -7,6 +7,7 @@ import xlsx from 'xlsx';
 import csv from 'csv-parser';
 import { OfficeParser } from 'officeparser';
 import { logger } from '../utils/logger';
+import { getOpenRouterApiKey, chatCompletion, type ChatMessage } from './openrouter';
 
 /**
  * Classe responsável por processar arquivos e extrair textos de diferentes formatos
@@ -37,6 +38,11 @@ class FileProcessor {
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
           extractedText = await this.extractTextFromDocx(filePath, fileName);
           break;
+        case 'image/png':
+        case 'image/jpeg':
+        case 'image/jpg':
+          extractedText = await this.extractTextFromImage(filePath, mimetype, fileName);
+          break;
         case 'text/plain':
           extractedText = await this.extractTextFromTxt(filePath, fileName);
           break;
@@ -53,6 +59,17 @@ class FileProcessor {
         // CSV files
         case 'text/csv':
           extractedText = await this.extractTextFromCSV(filePath, fileName);
+          break;
+        // Audio files (Whisper)
+        case 'audio/mpeg':
+        case 'audio/mp3':
+        case 'audio/wav':
+        case 'audio/webm':
+        case 'audio/ogg':
+        case 'audio/x-m4a':
+        case 'audio/m4a':
+        case 'audio/mp4':
+          extractedText = await this.extractTextFromAudio(filePath, mimetype, fileName);
           break;
         default:
           logger.error(`Tipo de arquivo não suportado: ${mimetype}`, {
@@ -335,6 +352,120 @@ class FileProcessor {
         status: 'error'
       });
       throw new Error(`Falha ao processar CSV: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
+  }
+
+  private async extractTextFromAudio(filePath: string, mimetype: string, fileName?: string): Promise<string> {
+    logger.info('Iniciando processamento de áudio com Whisper', {
+      action: 'audio_processing',
+      fileType: mimetype,
+      fileName: fileName,
+      fileSize: fs.statSync(filePath).size
+    });
+
+    const apiKey = getOpenRouterApiKey();
+    if (!apiKey) {
+      throw new Error('OPENROUTER_API_KEY is not configured on the server. Não é possível transcrever o áudio.');
+    }
+
+    try {
+      const fileBuffer = fs.readFileSync(filePath);
+      // Criar Blob nativo (Node 18+) para enviar via FormData
+      const blob = new Blob([fileBuffer], { type: mimetype });
+      const formData = new FormData();
+      formData.append('file', blob, fileName || 'audio.mp3');
+      formData.append('model', 'openai/whisper-large-v3');
+
+      const response = await fetch('https://openrouter.ai/api/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erro na API OpenRouter (Whisper): ${response.status} - ${errorText}`);
+      }
+
+      const data = (await response.json()) as { text: string };
+      
+      logger.info('Áudio processado com sucesso via Whisper', {
+        action: 'audio_processing',
+        fileName: fileName,
+        status: 'success'
+      });
+
+      return data.text || '';
+    } catch (error) {
+      logger.error(`Falha ao processar áudio: ${error instanceof Error ? error.message : 'Erro desconhecido'}`, {
+        action: 'audio_processing',
+        fileType: mimetype,
+        fileName: fileName,
+        error: error instanceof Error ? error.message : String(error),
+        status: 'error'
+      });
+      throw error;
+    }
+  }
+
+  private async extractTextFromImage(filePath: string, mimetype: string, fileName?: string): Promise<string> {
+    logger.info('Iniciando processamento de imagem via IA Multimodal', {
+      action: 'image_processing',
+      fileType: mimetype,
+      fileName: fileName
+    });
+
+    const apiKey = getOpenRouterApiKey();
+    if (!apiKey) {
+      throw new Error('OPENROUTER_API_KEY is not configured. Não é possível processar imagens.');
+    }
+
+    try {
+      const fileBuffer = fs.readFileSync(filePath);
+      const base64Image = fileBuffer.toString('base64');
+      const dataUrl = `data:${mimetype};base64,${base64Image}`;
+
+      const messages: ChatMessage[] = [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: 'Você é um assistente OCR de alta fidelidade. Transcreva ou extraia todo o texto, tabelas, fatos, regras e dados visíveis desta imagem de forma limpa, direta e sem comentários externos.'
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: dataUrl
+              }
+            }
+          ] as any
+        }
+      ];
+
+      const text = await chatCompletion(messages, {
+        model: "deepseek/deepseek-flash",
+        temperature: 0.1,
+        taskName: "quick-action"
+      });
+
+      logger.info('Imagem processada com sucesso via IA', {
+        action: 'image_processing',
+        fileName: fileName,
+        status: 'success'
+      });
+
+      return text;
+    } catch (error) {
+      logger.error(`Falha ao processar imagem: ${error instanceof Error ? error.message : 'Erro desconhecido'}`, {
+        action: 'image_processing',
+        fileType: mimetype,
+        fileName: fileName,
+        status: 'error'
+      });
+      throw error;
     }
   }
 }

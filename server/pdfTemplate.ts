@@ -43,7 +43,8 @@ export function generatePdfHtml(
   title: string,
   htmlContent: string,
   currentDate: string,
-  theme: { primary: string; secondary: string; accent: string; name: string }
+  theme: { primary: string; secondary: string; accent: string; name: string },
+  visualTheme: string = "modern"
 ): string {
   const escapedTitle = escapeHtml(title);
 
@@ -53,7 +54,6 @@ export function generatePdfHtml(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapedTitle}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: ${theme.primary};
@@ -64,22 +64,93 @@ export function generatePdfHtml(
       --border: #e5e7eb;
       --bg: #ffffff;
       --bg-alt: #f9fafb;
+      --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
+
+    /* ========== THEME OVERRIDES ========== */
+    ${visualTheme === 'clean' ? `
+    :root {
+      --primary: #1a202c;
+      --secondary: #4a5568;
+      --accent: #f7fafc;
+      --text: #2d3748;
+      --text-light: #718096;
+      --border: #e2e8f0;
+      --bg: #ffffff;
+      --bg-alt: #fafdff;
+      --font-family: 'Georgia', 'Times New Roman', serif;
+    }
+    h1, h2, h3, h4, .document-title {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-weight: 600;
+    }
+    ` : ''}
+
+    ${visualTheme === 'slate' ? `
+    :root {
+      --primary: #0f172a;
+      --secondary: #475569;
+      --accent: #f1f5f9;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #cbd5e1;
+      --bg: #ffffff;
+      --bg-alt: #f8fafc;
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Segoe UI', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    ` : ''}
 
     @page {
       size: A4;
-      margin: 20mm 15mm 25mm 15mm;
+      margin: 18mm 16mm 18mm 16mm;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: var(--font-family);
       font-size: 10.5pt;
-      line-height: 1.6;
+      line-height: 1.5;
       color: var(--text);
       background: var(--bg);
       -webkit-font-smoothing: antialiased;
+    }
+
+    .document-header {
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      ${visualTheme === 'clean' ? 'border-bottom-width: 1px;' : ''}
+    }
+
+    .document-kicker {
+      color: var(--primary);
+      font-size: 9pt;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .document-title {
+      border: 0;
+      color: var(--text);
+      font-size: 22pt;
+      line-height: 1.18;
+      margin: 0 0 10px;
+      padding: 0;
+    }
+
+    .document-meta {
+      color: var(--text-light);
+      display: flex;
+      gap: 16px;
+      font-size: 9pt;
     }
 
     /* ========== COVER PAGE ========== */
@@ -98,6 +169,12 @@ export function generatePdfHtml(
       margin: -20mm -15mm 0 -15mm;
       width: calc(100% + 30mm);
     }
+
+    ${visualTheme === 'slate' ? `
+    .cover {
+      background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    }
+    ` : ''}
 
     .cover::before {
       content: '';
@@ -167,7 +244,7 @@ export function generatePdfHtml(
 
     /* ========== CONTENT ========== */
     .content {
-      padding: 30px 0 0 0;
+      padding: 0;
       max-width: 100%;
     }
 
@@ -176,17 +253,18 @@ export function generatePdfHtml(
       font-size: 18pt;
       font-weight: 700;
       color: var(--primary);
-      margin: 35px 0 18px;
+      margin: 26px 0 14px;
       padding-bottom: 10px;
       border-bottom: 3px solid var(--primary);
       page-break-after: avoid;
+      ${visualTheme === 'clean' ? 'border-bottom-width: 1px;' : ''}
     }
 
     h2 {
       font-size: 14pt;
       font-weight: 600;
       color: var(--primary);
-      margin: 28px 0 14px;
+      margin: 22px 0 12px;
       padding-bottom: 8px;
       border-bottom: 1.5px solid var(--border);
       page-break-after: avoid;
@@ -196,7 +274,7 @@ export function generatePdfHtml(
       font-size: 12pt;
       font-weight: 600;
       color: var(--text);
-      margin: 22px 0 10px;
+      margin: 18px 0 8px;
       page-break-after: avoid;
     }
 
@@ -208,8 +286,8 @@ export function generatePdfHtml(
     }
 
     p {
-      margin: 12px 0;
-      text-align: justify;
+      margin: 9px 0;
+      text-align: left;
       hyphens: auto;
     }
 
@@ -251,10 +329,11 @@ export function generatePdfHtml(
       border-spacing: 0;
       margin: 20px 0;
       font-size: 9.5pt;
-      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      page-break-inside: avoid;
+      page-break-inside: auto;
+      table-layout: fixed;
     }
 
     thead {
@@ -268,13 +347,15 @@ export function generatePdfHtml(
       font-weight: 600;
       font-size: 9pt;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.03em;
+      overflow-wrap: anywhere;
     }
 
     td {
       padding: 10px 14px;
       border-bottom: 1px solid var(--border);
       vertical-align: top;
+      overflow-wrap: anywhere;
     }
 
     tbody tr:last-child td {
@@ -292,15 +373,17 @@ export function generatePdfHtml(
       border-radius: 8px;
       padding: 16px 20px;
       margin: 18px 0;
-      overflow-x: auto;
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      overflow-x: hidden;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
       font-size: 9pt;
       line-height: 1.5;
       page-break-inside: avoid;
     }
 
     code {
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
       font-size: 9pt;
       background: var(--accent);
       color: var(--primary);
@@ -395,9 +478,9 @@ export function generatePdfHtml(
     /* ========== HR ========== */
     hr {
       border: none;
-      height: 2px;
-      background: linear-gradient(to right, var(--primary), var(--secondary), transparent);
-      margin: 30px 0;
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
     }
 
     /* ========== FOOTER ========== */
@@ -433,27 +516,36 @@ export function generatePdfHtml(
   </style>
 </head>
 <body>
-  <!-- Cover Page -->
+  ${visualTheme !== 'clean' ? `
   <div class="cover">
     <div class="cover-content">
       <div class="cover-badge">${theme.name}</div>
       <h1 class="cover-title">${escapedTitle}</h1>
-      <p class="cover-subtitle">Documento gerado automaticamente</p>
+      <p class="cover-subtitle">Documentação de Produto Gerada por Inteligência Artificial</p>
       <div class="cover-meta">
         <div class="cover-meta-item">
-          <span>📅</span>
-          <span>${currentDate}</span>
+          <span>Criado em:</span>
+          <strong>${currentDate}</strong>
         </div>
         <div class="cover-meta-item">
-          <span>📄</span>
-          <span>${theme.name}</span>
+          <span>Plataforma:</span>
+          <strong>DocuMente</strong>
         </div>
       </div>
     </div>
-    <div class="cover-logo">DOCUMENTE</div>
+    <div class="cover-logo">DocuMente</div>
+  </div>
+  ` : ''}
+
+  <div class="document-header">
+    <div class="document-kicker">${theme.name}</div>
+    <h1 class="document-title">${escapedTitle}</h1>
+    <div class="document-meta">
+      <span>Gerado em ${currentDate}</span>
+      <span>DocuMente</span>
+    </div>
   </div>
 
-  <!-- Content -->
   <div class="content">
     ${htmlContent}
   </div>

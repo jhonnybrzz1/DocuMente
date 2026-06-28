@@ -38,17 +38,32 @@ const colorMap = {
 };
 
 interface DocumentTypeSelectorProps {
-  selectedType: DocumentType | "";
-  onTypeSelect: (type: DocumentType) => void;
+  selectedTypes: DocumentType[];
+  onTypesChange: (types: DocumentType[]) => void;
 }
 
-export default function DocumentTypeSelector({ selectedType, onTypeSelect }: DocumentTypeSelectorProps) {
+export default function DocumentTypeSelector({ selectedTypes, onTypesChange }: DocumentTypeSelectorProps) {
+  const handleToggleType = (typeValue: DocumentType) => {
+    if (selectedTypes.includes(typeValue)) {
+      onTypesChange(selectedTypes.filter((t) => t !== typeValue));
+    } else {
+      onTypesChange([...selectedTypes, typeValue]);
+    }
+  };
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <ListPlus className="text-primary mr-2" size={20} />
-          Tipo de Documento
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex items-center">
+            <ListPlus className="text-primary mr-2" size={20} />
+            Tipos de Documento a Gerar
+          </span>
+          {selectedTypes.length > 0 && (
+            <span className="text-xs text-muted-foreground">
+              {selectedTypes.length} selecionado(s) (Geração em fila se houver mais de um)
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -56,17 +71,17 @@ export default function DocumentTypeSelector({ selectedType, onTypeSelect }: Doc
           {documentTypes.map((type) => {
             const IconComponent = iconMap[type.icon as keyof typeof iconMap];
             const colorClass = colorMap[type.color as keyof typeof colorMap];
-            const isSelected = selectedType === type.value;
+            const isSelected = selectedTypes.includes(type.value);
             
             return (
               <div key={type.value} className="relative">
                 <input
-                  type="radio"
+                  type="checkbox"
                   name="documentType"
                   value={type.value}
                   id={type.value}
                   checked={isSelected}
-                  onChange={() => onTypeSelect(type.value)}
+                  onChange={() => handleToggleType(type.value)}
                   className="peer sr-only"
                   aria-describedby={`${type.value}-description`}
                 />
@@ -76,14 +91,19 @@ export default function DocumentTypeSelector({ selectedType, onTypeSelect }: Doc
                     focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2
                     ${isSelected
                       ? 'border-primary bg-primary/10 dark:bg-primary/20'
-                      : 'border-border hover:border-primary'
+                      : 'border-border hover:border-primary/50'
                     }`}
                 >
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 shrink-0 ${colorClass}`}>
                     <IconComponent size={20} aria-hidden="true" />
                   </div>
                   <div>
-                    <div className="font-medium text-foreground">{type.label}</div>
+                    <div className="font-medium text-foreground flex items-center gap-1.5">
+                      {type.label}
+                      {isSelected && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                      )}
+                    </div>
                     <div id={`${type.value}-description`} className="text-sm text-muted-foreground">{type.description}</div>
                   </div>
                 </label>

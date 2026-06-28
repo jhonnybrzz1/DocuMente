@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { X, Download, Loader2, MessageSquare, ListChecks } from "lucide-react";
+import { X, Save, Loader2, MessageSquare, ListChecks } from "lucide-react";
 import type { DocumentType } from "@shared/schema";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
@@ -32,6 +32,7 @@ export default function PreviewModal({
   tags = [],
 }: PreviewModalProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [currentContent, setCurrentContent] = useState(content);
   const [sideTab, setSideTab] = useState<"chat" | "score">("chat");
 
@@ -42,42 +43,23 @@ export default function PreviewModal({
 
   const generateFromPreviewMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/generate-document", {
+      const response = await apiRequest("POST", "/api/documents", {
         type: selectedType,
-        demand,
         title,
+        content: currentContent,
+        originalDemand: demand,
         tags,
       });
       return response.json();
     },
-    onSuccess: async (doc) => {
-      try {
-        const downloadResponse = await fetch(`/api/documents/${doc.id}/download`);
-        const blob = await downloadResponse.blob();
-
-        const url = window.URL.createObjectURL(blob);
-        const a = window.document.createElement("a");
-        a.href = url;
-        a.download = `${doc.title}.docx`;
-        window.document.body.appendChild(a);
-        a.click();
-        window.document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-        toast({
-          title: "Documento gerado",
-          description: "O documento foi gerado e baixado com sucesso.",
-          variant: "default",
-        });
-
-        onClose();
-      } catch (error) {
-        toast({
-          title: "Erro no download",
-          description: "O documento foi gerado mas falhou no download.",
-          variant: "destructive",
-        });
-      }
+    onSuccess: async () => {
+      toast({
+        title: "Documento gerado",
+        description: "O documento foi salvo no histórico. Use o menu de exportação para baixar.",
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      onClose();
     },
     onError: (error: Error) => {
       toast({
@@ -178,9 +160,9 @@ export default function PreviewModal({
             {generateFromPreviewMutation.isPending ? (
               <Loader2 className="mr-2 animate-spin" size={16} />
             ) : (
-              <Download className="mr-2" size={16} />
+              <Save className="mr-2" size={16} />
             )}
-            Gerar e Baixar Word
+            Gerar Documento
           </Button>
         </div>
       </DialogContent>

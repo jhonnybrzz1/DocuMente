@@ -106,6 +106,12 @@
       "sourceType": "github",
       "computedHash": "cfbdc49b57d08a3f23e060990cb468b4e0bdb18b388d5b3be8572f501daf271c"
     },
+    "pdf-generation": {
+      "source": "glebis/claude-skills",
+      "sourceType": "github",
+      "skillPath": "pdf-generation/SKILL.md",
+      "computedHash": "44abb1d7cfc2573c7a6f842d18fa12a2985819b9ea3b5443dc267f26e3603ffc"
+    },
     "pestel-analysis": {
       "source": "deanpeters/product-manager-skills",
       "sourceType": "github",

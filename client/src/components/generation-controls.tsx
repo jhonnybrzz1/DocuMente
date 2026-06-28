@@ -4,27 +4,36 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Eye, Wand2, Loader2, Paperclip, X } from "lucide-react";
+import { Eye, Wand2, Loader2, Paperclip, X, Plus } from "lucide-react";
 import type { DocumentType } from "@shared/schema";
 
 interface GenerationControlsProps {
   demand: string;
-  selectedType: DocumentType | "";
+  selectedTypes: DocumentType[];
   title: string;
   tags?: string[];
   onPreview: (content: string) => void;
+  onAddToQueue?: () => void;
+  onGenerateBatch?: () => void;
+  uploadedFiles: File[];
+  setUploadedFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  extractedText: string;
+  setExtractedText: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function GenerationControls({
   demand,
-  selectedType,
+  selectedTypes,
   title,
   tags = [],
-  onPreview
+  onPreview,
+  onAddToQueue,
+  onGenerateBatch,
+  uploadedFiles,
+  setUploadedFiles,
+  extractedText,
+  setExtractedText
 }: GenerationControlsProps) {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [extractedText, setExtractedText] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -33,7 +42,7 @@ export default function GenerationControls({
   const previewMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/preview-document", {
-        type: selectedType,
+        type: selectedTypes[selectedTypes.length - 1] || "",
         demand,
       });
       return response.json();
@@ -53,7 +62,7 @@ export default function GenerationControls({
   const generateMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/generate-document", {
-        type: selectedType,
+        type: selectedTypes[0] || "",
         demand,
         title,
         extractedText,
@@ -61,52 +70,15 @@ export default function GenerationControls({
       });
       return response.json();
     },
-    onSuccess: async (document) => {
-      setIsProcessing(true);
-
-      // Download the document
-      try {
-        const downloadResponse = await fetch(`/api/documents/${document.id}/download`);
-
-        if (!downloadResponse.ok) {
-          const errorData = await downloadResponse.json().catch(() => ({ message: 'Erro desconhecido' }));
-          throw new Error(errorData.message || `Erro ${downloadResponse.status}`);
-        }
-
-        const blob = await downloadResponse.blob();
-
-        if (blob.size === 0) {
-          throw new Error("Documento vazio");
-        }
-
-        const url = window.URL.createObjectURL(blob);
-        const link = window.document.createElement('a');
-        link.href = url;
-        link.download = `${document.title}.docx`;
-        window.document.body.appendChild(link);
-        link.click();
-        window.document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-
-        toast({
-          title: "Documento gerado",
-          description: "O documento foi gerado e baixado com sucesso.",
-          variant: "default",
-        });
-
-        // Invalidate documents list to refresh history
-        queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
-
-      } catch (error) {
-        console.error("Download error:", error);
-        toast({
-          title: "Erro no download",
-          description: error instanceof Error ? error.message : "O documento foi gerado mas falhou no download.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsProcessing(false);
-      }
+    onSuccess: async () => {
+      toast({
+        title: "Documento gerado",
+        description: "O documento foi salvo no histórico. Use o menu de exportação para baixar.",
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      setUploadedFiles([]);
+      setExtractedText("");
     },
     onError: (error: Error) => {
       toast({
@@ -114,7 +86,6 @@ export default function GenerationControls({
         description: error.message || "Falha ao gerar documento.",
         variant: "destructive",
       });
-      setIsProcessing(false);
     },
   });
 
@@ -131,7 +102,15 @@ export default function GenerationControls({
         "text/plain",
         "text/csv",
         "application/vnd.ms-excel",
-        "application/vnd.ms-powerpoint"
+        "application/vnd.ms-powerpoint",
+        "audio/mpeg",
+        "audio/mp3",
+        "audio/wav",
+        "audio/webm",
+        "audio/ogg",
+        "audio/x-m4a",
+        "audio/m4a",
+        "audio/mp4"
       ];
       if (!allowedTypes.includes(file.type)) {
         toast({
@@ -211,14 +190,19 @@ export default function GenerationControls({
 
   const handleGenerate = () => {
     if (!validateForm()) return;
-    generateMutation.mutate();
+    
+    if (selectedTypes.length > 1 && onGenerateBatch) {
+      onGenerateBatch();
+    } else {
+      generateMutation.mutate();
+    }
   };
 
   const validateForm = () => {
-    if (!selectedType) {
+    if (selectedTypes.length === 0) {
       toast({
         title: "Tipo necessário",
-        description: "Por favor, selecione um tipo de documento.",
+        description: "Por favor, selecione pelo menos um tipo de documento.",
         variant: "destructive",
       });
       return false;
@@ -291,7 +275,7 @@ export default function GenerationControls({
             multiple
             className="hidden"
             onChange={(e) => handleFileChange(e.target.files)}
-            accept=".pdf,.docx,.txt,.xlsx,.xls,.pptx,.ppt,.csv"
+            accept=".pdf,.docx,.txt,.xlsx,.xls,.pptx,.ppt,.csv,.mp3,.wav,.webm,.ogg,.m4a,.mp4"
           />
         </div>
 
@@ -323,7 +307,7 @@ export default function GenerationControls({
             variant="outline"
             onClick={handlePreview}
             disabled={previewMutation.isPending}
-            className="flex-1 flex items-center justify-center"
+            className="flex-1 flex items-center justify-center h-10 text-sm"
           >
             {previewMutation.isPending ? (
               <Loader2 className="mr-2 animate-spin" size={16} />
@@ -332,17 +316,30 @@ export default function GenerationControls({
             )}
             Visualizar Prévia
           </Button>
+
+          {onAddToQueue && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onAddToQueue}
+              className="flex-1 flex items-center justify-center h-10 text-sm"
+            >
+              <Plus className="mr-2" size={16} />
+              + Adicionar à Fila
+            </Button>
+          )}
+
           <Button
             onClick={handleGenerate}
             disabled={generateMutation.isPending}
-            className="flex-1 flex items-center justify-center"
+            className="flex-1 flex items-center justify-center h-10 text-sm bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {generateMutation.isPending ? (
               <Loader2 className="mr-2 animate-spin" size={16} />
             ) : (
               <Wand2 className="mr-2" size={16} />
             )}
-            Gerar e Baixar
+            Gerar Documento
           </Button>
         </div>
       </CardContent>

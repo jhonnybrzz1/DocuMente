@@ -436,6 +436,7 @@ export default function HistorySidebar() {
                   <ExportMenu
                     documentId={document.id}
                     documentTitle={document.title}
+                    documentType={document.type}
                     onExportSuccess={() => {
                       toast({
                         title: "Exportação concluída",
