@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import AppHeader from "@/components/app-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, TrendingUp, Calendar, Share2, Hash, Clock, type LucideIcon } from "lucide-react";
+import { Loader2, FileText, TrendingUp, Calendar, Share2, Hash, Clock, DollarSign, Activity, Cpu, type LucideIcon } from "lucide-react";
 import { documentTypes } from "@shared/schema";
 import {
   ResponsiveContainer,
@@ -88,6 +88,24 @@ function formatDuration(minutes: number): string {
 export default function StatsPage() {
   const { data, isLoading } = useQuery<DocumentStats>({
     queryKey: ["/api/stats"],
+  });
+
+  const { data: costData } = useQuery<{
+    summary: {
+      totalCostUsd: number;
+      totalTokens: number;
+      promptTokens: number;
+      completionTokens: number;
+      totalRequests: number;
+      successCount: number;
+      failureCount: number;
+      averageLatencyMs: number;
+    };
+    byModel: Record<string, { costUsd: number; count: number; tokens: number }>;
+    byTask: Record<string, { costUsd: number; count: number; tokens: number }>;
+    dailyCost: Array<{ date: string; cost: number }>;
+  }>({
+    queryKey: ["/api/ai/cost-summary"],
   });
 
   const typeChartData = data
@@ -298,6 +316,82 @@ export default function StatsPage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Telemetria e Gastos com IA */}
+            {costData && costData.summary && costData.summary.totalRequests > 0 && (
+              <div className="mt-8 mb-6">
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <DollarSign className="text-primary" />
+                  Telemetria e Gastos com IA
+                </h2>
+                
+                {/* Cards de KPIs de Custo */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  <StatCard
+                    icon={DollarSign}
+                    label="Custo Total (IA)"
+                    value={`$${costData.summary.totalCostUsd.toFixed(4)}`}
+                    hint="estimativa com base em tokens"
+                  />
+                  <StatCard
+                    icon={Activity}
+                    label="Requisições IA"
+                    value={`${costData.summary.totalRequests} chamadas`}
+                    hint={`${costData.summary.successCount} OK / ${costData.summary.failureCount} falhas`}
+                  />
+                  <StatCard
+                    icon={Cpu}
+                    label="Total de Tokens"
+                    value={costData.summary.totalTokens.toLocaleString()}
+                    hint={`P: ${costData.summary.promptTokens.toLocaleString()} / C: ${costData.summary.completionTokens.toLocaleString()}`}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Gráfico de Evolução Diária */}
+                  <Card className="lg:col-span-2">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Evolução diária dos custos (USD)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {costData.dailyCost.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">Sem dados históricos</p>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={280}>
+                          <BarChart data={costData.dailyCost}>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                            <YAxis tick={{ fontSize: 12 }} />
+                            <Tooltip formatter={(value: number) => [`$${value.toFixed(5)}`, 'Custo']} />
+                            <Bar dataKey="cost" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Detalhamento por Modelo */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Custo por Modelo</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {Object.entries(costData.byModel).map(([model, metrics]) => (
+                        <div key={model} className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0">
+                          <div>
+                            <p className="text-sm font-medium truncate max-w-[180px]">{model}</p>
+                            <p className="text-xs text-muted-foreground">{metrics.count} chamadas</p>
+                          </div>
+                          <Badge variant="secondary" className="font-mono">
+                            ${metrics.costUsd.toFixed(4)}
+                          </Badge>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>

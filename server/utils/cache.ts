@@ -50,12 +50,29 @@ class SimpleMemoryCache {
     }
   }
 
+  private normalizeData(data: any): any {
+    if (typeof data === 'string') {
+      return data.trim().replace(/\s+/g, ' ');
+    }
+    if (data && Array.isArray(data)) {
+      return data.map(item => this.normalizeData(item));
+    }
+    if (data && typeof data === 'object') {
+      const copy = { ...data };
+      for (const key of Object.keys(copy)) {
+        copy[key] = this.normalizeData(copy[key]);
+      }
+      return copy;
+    }
+    return data;
+  }
+
   private getHash(key: string): string {
     return crypto.createHash('sha256').update(key).digest('hex');
   }
 
   get(prefix: string, data: any, version: string = 'v1'): any | null {
-    const key = prefix + ":" + JSON.stringify(data) + ":" + version;
+    const key = prefix + ":" + JSON.stringify(this.normalizeData(data)) + ":" + version;
     const hash = this.getHash(key);
     const cached = this.cache.get(hash);
     if (!cached) return null;
@@ -68,7 +85,7 @@ class SimpleMemoryCache {
   }
 
   set(prefix: string, data: any, value: any, ttlSeconds: number = 3600, version: string = 'v1') {
-    const key = prefix + ":" + JSON.stringify(data) + ":" + version;
+    const key = prefix + ":" + JSON.stringify(this.normalizeData(data)) + ":" + version;
     const hash = this.getHash(key);
     this.cache.set(hash, {
       value,

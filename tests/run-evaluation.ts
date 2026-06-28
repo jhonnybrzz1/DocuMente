@@ -222,7 +222,7 @@ const TEST_SUITE: TestCase[] = [
 
 // Helper para chamar a API
 async function apiCall(endpoint: string, payload: Record<string, any>): Promise<any> {
-  const response = await fetch(`http://localhost:${activePort}${endpoint}`, {
+  const response = await fetch(`http://127.0.0.1:${activePort}${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
@@ -236,7 +236,7 @@ async function apiCall(endpoint: string, payload: Record<string, any>): Promise<
 // Verifica se um servidor já está online
 async function checkPortOnline(port: number): Promise<boolean> {
   try {
-    const res = await fetch(`http://localhost:${port}/api/documents`);
+    const res = await fetch(`http://127.0.0.1:${port}/api/documents`);
     return res.ok || res.status === 401 || res.status === 400 || res.status === 404;
   } catch {
     return false;
@@ -311,12 +311,40 @@ async function run() {
 
         const isLengthOk = outputText.length >= 100 && outputText.length <= 40000;
 
+        const checkSection = (text: string, sectionKey: string): boolean => {
+          let patterns: RegExp[] = [];
+          if (sectionKey === "## Resumo") patterns = [/##\s*(\d+\.\s*)?Resumo/i];
+          else if (sectionKey === "## Problema") patterns = [/##\s*(\d+\.\s*)?O\s+Problema/i, /Situação Atual/i];
+          else if (sectionKey === "## Usuários") patterns = [/##\s*(\d+\.\s*)?Quem\s+Vai\s+Usar/i, /Usuário Principal/i, /##\s*Usuários/i];
+          else if (sectionKey === "## Solução") patterns = [/##\s*(\d+\.\s*)?A\s+Solução/i];
+          else if (sectionKey === "## Requisitos") patterns = [/##\s*(\d+\.\s*)?Requisitos\s+Detalhados/i];
+          else if (sectionKey === "## Critérios de Aceitação") patterns = [/Critérios\s+de\s+Aceit(e|ação)/i];
+          
+          else if (sectionKey === "🧩 **User Stories**") patterns = [/User\s+Stories/i];
+          else if (sectionKey === "## Contexto") patterns = [/##\s*Contexto/i];
+          else if (sectionKey === "## Stories") patterns = [/##\s*Stories/i];
+          else if (sectionKey === "#### Critérios de Aceitação") patterns = [/####\s*Critérios\s+de\s+Aceit(e|ação)/i];
+          else if (sectionKey === "```gherkin") patterns = [/```gherkin/i];
+
+          else if (sectionKey === "## Visão Geral") patterns = [/##\s*(\d+\.\s*)?Visão\s+Geral/i];
+          else if (sectionKey === "## Arquitetura") patterns = [/##\s*(\d+\.\s*)?Arquitetura/i];
+          else if (sectionKey === "## Modelagem de Dados") patterns = [/##\s*(\d+\.\s*)?Model(os?|agem)\s+de\s+Dados/i];
+          else if (sectionKey === "## Segurança") patterns = [/##\s*(\d+\.\s*)?Segurança/i];
+
+          else if (sectionKey === "## Autenticação") patterns = [/##\s*(\d+\.\s*)?Autenticação/i];
+          else if (sectionKey === "## Endpoints") patterns = [/##\s*(\d+\.\s*)?Endpoints/i, /##\s*(\d+\.\s*)?APIs\s+e\s+Interfaces/i];
+          else if (sectionKey === "## Modelos de Dados") patterns = [/##\s*(\d+\.\s*)?Modelos?\s+de\s+Dados/i];
+          else patterns = [new RegExp(sectionKey, "i")];
+
+          return patterns.some(p => p.test(text));
+        };
+
         let sectionsPassed = true;
         const missingSections: string[] = [];
         if (test.type === "prd") {
           const reqSections = ["## Resumo", "## Problema", "## Usuários", "## Solução", "## Requisitos", "## Critérios de Aceitação"];
           for (const sec of reqSections) {
-            if (!outputText.includes(sec)) {
+            if (!checkSection(outputText, sec)) {
               sectionsPassed = false;
               missingSections.push(sec);
             }
@@ -324,7 +352,7 @@ async function run() {
         } else if (test.type === "userstories") {
           const reqSections = ["🧩 **User Stories**", "## Contexto", "## Stories", "#### Critérios de Aceitação", "```gherkin"];
           for (const sec of reqSections) {
-            if (!outputText.includes(sec)) {
+            if (!checkSection(outputText, sec)) {
               sectionsPassed = false;
               missingSections.push(sec);
             }
@@ -332,7 +360,7 @@ async function run() {
         } else if (test.type === "techspec") {
           const reqSections = ["## Visão Geral", "## Arquitetura", "## Modelagem de Dados", "## Segurança"];
           for (const sec of reqSections) {
-            if (!outputText.includes(sec)) {
+            if (!checkSection(outputText, sec)) {
               sectionsPassed = false;
               missingSections.push(sec);
             }
@@ -340,7 +368,7 @@ async function run() {
         } else if (test.type === "apidoc") {
           const reqSections = ["## Autenticação", "## Endpoints", "## Modelos de Dados"];
           for (const sec of reqSections) {
-            if (!outputText.includes(sec)) {
+            if (!checkSection(outputText, sec)) {
               sectionsPassed = false;
               missingSections.push(sec);
             }

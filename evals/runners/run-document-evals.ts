@@ -16,7 +16,7 @@ type TestCase = {
 let activePort = 5000;
 
 async function apiCall(endpoint: string, payload: Record<string, any>): Promise<any> {
-  const response = await fetch(`http://localhost:${activePort}${endpoint}`, {
+  const response = await fetch(`http://127.0.0.1:${activePort}${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
@@ -29,7 +29,7 @@ async function apiCall(endpoint: string, payload: Record<string, any>): Promise<
 
 async function checkPortOnline(port: number): Promise<boolean> {
   try {
-    const res = await fetch(`http://localhost:${port}/api/documents`);
+    const res = await fetch(`http://127.0.0.1:${port}/api/documents`);
     return res.ok || res.status === 401 || res.status === 400 || res.status === 404;
   } catch {
     return false;

@@ -101,6 +101,12 @@
       "sourceType": "github",
       "computedHash": "f2a7fa51b3f57afd03f4f6a27ea9892b3257f6773de3d24c01dda0065bc6c264"
     },
+    "llm-cost-optimizer": {
+      "source": "alirezarezvani/claude-skills",
+      "sourceType": "github",
+      "skillPath": "engineering/llm-cost-optimizer/skills/llm-cost-optimizer/SKILL.md",
+      "computedHash": "8e758ab223aff930ac2079c4a6a74029fefd84dbdcc2fff323eec9430ff428a5"
+    },
     "opportunity-solution-tree": {
       "source": "deanpeters/product-manager-skills",
       "sourceType": "github",

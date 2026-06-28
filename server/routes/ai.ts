@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { ZodError, z } from "zod";
+import * as fs from "fs";
+import * as path from "path";
 import {
   suggestTitleInputSchema,
   quickActionInputSchema,
@@ -540,6 +542,113 @@ router.post("/github-repo", async (req, res) => {
   } catch (error) {
     console.error("[github] Failed to fetch repo info:", error);
     res.status(500).json({ message: "Falha ao obter dados do repositório GitHub.", error: error instanceof Error ? error.message : "Erro desconhecido" });
+  }
+});
+
+// =============================================================================
+// GET /api/ai/cost-summary
+// Retorna um dashboard com o resumo agregado dos custos de IA baseados em telemetria.
+// =============================================================================
+router.get("/cost-summary", async (_req, res) => {
+  try {
+    const logFilePath = path.resolve(process.cwd(), "logs/telemetry.jsonl");
+    
+    let totalCostUsd = 0;
+    let totalTokens = 0;
+    let promptTokens = 0;
+    let completionTokens = 0;
+    let totalRequests = 0;
+    let successCount = 0;
+    let failureCount = 0;
+    let sumLatencyMs = 0;
+    let validLatencyCount = 0;
+
+    const byModel: Record<string, { costUsd: number; count: number; tokens: number }> = {};
+    const byTask: Record<string, { costUsd: number; count: number; tokens: number }> = {};
+    const dailyCost: Record<string, number> = {};
+
+    if (fs.existsSync(logFilePath)) {
+      const fileContent = await fs.promises.readFile(logFilePath, "utf-8");
+      const lines = fileContent.split("\n").map(l => l.trim()).filter(Boolean);
+
+      for (const line of lines) {
+        try {
+          const data = JSON.parse(line);
+          totalRequests++;
+          
+          if (data.status === "success") {
+            successCount++;
+          } else {
+            failureCount++;
+          }
+
+          if (data.latencyMs && data.latencyMs > 0) {
+            sumLatencyMs += data.latencyMs;
+            validLatencyCount++;
+          }
+
+          const cost = data.estimatedCostUsd || 0;
+          const tokens = data.totalTokens || 0;
+          const pTokens = data.promptTokens || 0;
+          const cTokens = data.completionTokens || 0;
+
+          totalCostUsd += cost;
+          totalTokens += tokens;
+          promptTokens += pTokens;
+          completionTokens += cTokens;
+
+          // Agrupado por Modelo
+          const modelName = data.model || "unknown";
+          if (!byModel[modelName]) {
+            byModel[modelName] = { costUsd: 0, count: 0, tokens: 0 };
+          }
+          byModel[modelName].costUsd += cost;
+          byModel[modelName].count++;
+          byModel[modelName].tokens += tokens;
+
+          // Agrupado por Tarefa
+          const taskName = data.taskName || "unknown";
+          if (!byTask[taskName]) {
+            byTask[taskName] = { costUsd: 0, count: 0, tokens: 0 };
+          }
+          byTask[taskName].costUsd += cost;
+          byTask[taskName].count++;
+          byTask[taskName].tokens += tokens;
+
+          // Agrupado por Dia
+          if (data.timestamp) {
+            const dateStr = data.timestamp.split("T")[0]; // YYYY-MM-DD
+            dailyCost[dateStr] = (dailyCost[dateStr] || 0) + cost;
+          }
+        } catch (e) {
+          // Ignora linhas malformadas
+        }
+      }
+    }
+
+    // Ordenar a série temporal diária por data
+    const dailyCostSorted = Object.entries(dailyCost)
+      .map(([date, cost]) => ({ date, cost }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    res.json({
+      summary: {
+        totalCostUsd,
+        totalTokens,
+        promptTokens,
+        completionTokens,
+        totalRequests,
+        successCount,
+        failureCount,
+        averageLatencyMs: validLatencyCount > 0 ? Math.round(sumLatencyMs / validLatencyCount) : 0,
+      },
+      byModel,
+      byTask,
+      dailyCost: dailyCostSorted,
+    });
+  } catch (error) {
+    console.error("[cost-summary] Failed to load cost summary:", error);
+    res.status(500).json({ message: "Falha ao processar resumo de custos.", error: error instanceof Error ? error.message : "Erro desconhecido" });
   }
 });
 

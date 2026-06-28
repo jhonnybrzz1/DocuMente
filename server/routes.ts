@@ -1813,6 +1813,7 @@ ${generatedContent}
       model: "deepseek/deepseek-flash",
       temperature: 0,
       jsonMode: true,
+      maxTokens: 1000,
       taskName: "verification"
     });
 
@@ -1825,7 +1826,7 @@ ${generatedContent}
     console.warn(`[fidelity] Encontrados ${issues.length} desvios de fidelidade. Iniciando reparo...`);
 
     const hasCriticalIssues = issues.some(issue => issue.severity === "critical");
-    const useStrongRepair = hasCriticalIssues || demandText.length > 3000 || (extractedText && extractedText.length > 5000);
+    const useStrongRepair = hasCriticalIssues || demandText.length > 12000 || (extractedText && extractedText.length > 15000);
     const repairModel = useStrongRepair ? "mimo-2.5-pro" : "deepseek/deepseek-flash";
 
     const repairIssuesText = issues.map((issue, idx) => 
@@ -1861,6 +1862,7 @@ ${generatedContent}
     const repairedContent = await chatCompletion(repairMessages, {
       model: repairModel,
       temperature: 0.1,
+      maxTokens: 6000,
       taskName: "repair"
     });
 
@@ -2728,11 +2730,15 @@ Responda APENAS com um objeto JSON válido (sem tags markdown de código ou text
             { role: "user", content: `Demanda original:\n${demand}\n\nDocumento gerado:\n${content}` }
           ];
 
+          const isComplex = content.length > 15000;
+          const isLegalCompliance = /duimp|siscomex|bcb\s*277|pucomex/i.test(content);
+          const judgeModel = (isComplex || isLegalCompliance) ? "mimo-2.5-pro" : "deepseek/deepseek-chat";
+
           const qualityRaw = await chatCompletion(evaluationMessages, {
             temperature: 0.2,
             maxTokens: 1000,
             jsonMode: true,
-            model: "mimo-2.5-pro"
+            model: judgeModel
           });
 
           const qualityData = JSON.parse(qualityRaw.trim());
