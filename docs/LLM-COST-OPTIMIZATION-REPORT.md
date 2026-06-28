@@ -189,13 +189,17 @@ Assumindo 1000 gerações/mês:
 
 ---
 
-## 6. Próximos Passos Imediatos
+## 6. Status de Implementação
 
-1. **Corrigir `useStrongRepair` threshold** — elevar de 3000 para 5000 chars
-2. **Adicionar `maxTokens` em verification e quality-score** — fixo em 1000 e 1500
-3. **Implementar cache semântico simples** — Redis + embedding cosine >0.95
-4. **Criar `/api/cost-summary`** — dashboard de gastos
-5. **Comprimir system prompts** — remover exemplos冗長as, manter instruções essenciais
+| # | Item | Status | Commit |
+|---|------|--------|--------|
+| 3.1 | Elevar `useStrongRepair` threshold 3000→5000 | ✅ Implementado | `0582abc` |
+| 3.2 | Cache semântico (cosseno >0.85 + stopwords pt-BR) | ✅ Implementado | `dd1d026` |
+| 3.3 | `maxTokens` explícito em verification (1000) e quality-score (1500) | ✅ Já existia | — |
+| 3.4 | Comprimir system prompts (verification, quality-score, compression, preprocessing, repair) | ✅ Implementado | `0582abc` |
+| 3.5 | Quality-score assíncrono (fire-and-forget) | ✅ Implementado | pendente |
+| 3.6 | Tier de modelo por plano de usuário | ⏳ Prioridade 3 | — |
+| 3.7 | Cost Dashboard + Alertas | ✅ Implementado | anterior |
 
 Cada item pode ser implementado independentemente em ordem de ROI decrescente.
 

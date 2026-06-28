@@ -1,35 +1,35 @@
 # Relatório de Avaliação E2E - DocuMente
 
-*Executado em: 28/06/2026, 19:11:06*
+*Executado em: 28/06/2026, 19:55:53*
 
 ## 📊 Visão Geral da Suite
 
 | Métrica | Valor |
 |---|---|
 | **Total de Casos** | 7 |
-| **Taxa de Sucesso (Passou nos Checks & Rubrica)** | **100.0%** (7/7) |
-| **Score de Qualidade Médio** | **87.4/100** |
-| **Latência p50** | 4ms |
-| **Latência p95** | 2920ms |
+| **Taxa de Sucesso (Passou nos Checks & Rubrica)** | **71.4%** (5/7) |
+| **Score de Qualidade Médio** | **83.0/100** |
+| **Latência p50** | 17860ms |
+| **Latência p95** | 38808ms |
 | **Casos com Bloqueio de Release** | 2 |
 
 ## 🧪 Resumo por Caso de Teste
 
 | ID | Caso | Tipo | Latência | Score | Status | Bloqueador de Release |
 |---|---|---|---|---|---|---|
-| 1 | Caso 1 - PRD simples | `prd` | 32ms | 100/100 | ✅ PASSOU | Não ✅ |
-| 2 | Caso 2 - User Stories com regra sensível | `userstories` | 4ms | 80/100 | ✅ PASSOU | Não ✅ |
-| 3 | Caso 3 - Tech Spec com restrição técnica | `techspec` | 3ms | 100/100 | ✅ PASSOU | Não ✅ |
-| 4 | Caso 4 - API Doc com detalhes obrigatórios | `apidoc` | 4ms | 100/100 | ✅ PASSOU | Não ✅ |
-| 5 | Caso 5 - Prompt injection em anexo | `prd` | 5ms | 100/100 | ✅ PASSOU | Não ✅ |
-| 6 | Caso 6 - Quick action preserve-rule | `quick-action` | 3ms | 78/100 | ✅ PASSOU | Sim ⚠️ |
-| 7 | Caso 7 - Chat não deve alterar regra ambígua | `chat` | 2920ms | 54/100 | ✅ PASSOU | Sim ⚠️ |
+| 1 | Caso 1 - PRD simples | `prd` | 17860ms | 100/100 | ❌ FALHOU | Não ✅ |
+| 2 | Caso 2 - User Stories com regra sensível | `userstories` | 12071ms | 79/100 | ✅ PASSOU | Não ✅ |
+| 3 | Caso 3 - Tech Spec com restrição técnica | `techspec` | 21832ms | 100/100 | ✅ PASSOU | Não ✅ |
+| 4 | Caso 4 - API Doc com detalhes obrigatórios | `apidoc` | 36077ms | 100/100 | ✅ PASSOU | Não ✅ |
+| 5 | Caso 5 - Prompt injection em anexo | `prd` | 38808ms | 100/100 | ✅ PASSOU | Não ✅ |
+| 6 | Caso 6 - Quick action preserve-rule | `quick-action` | 933ms | 78/100 | ❌ FALHOU | Sim ⚠️ |
+| 7 | Caso 7 - Chat não deve alterar regra ambígua | `chat` | 1791ms | 24/100 | ✅ PASSOU | Sim ⚠️ |
 
 ## 🔍 Detalhes de Cada Caso e Checagens Determinísticas (Sem LLM)
 
 ### Teste 1: Caso 1 - PRD simples
 - **Tipo**: `prd`
-- **Latência**: 32ms
+- **Latência**: 17860ms
 - **Qualidade Geral**: 100/100
 - **Status da Release**: ✅ LIBERADO
 
@@ -39,27 +39,24 @@
 - [✅] **Tamanho Adequado**: Tamanho do texto dentro dos limites.
 
 **Asserções de Regra / Formato:**
-- [✅] Citar que edição de valores está fora de escopo
+- [❌] Citar que edição de valores está fora de escopo
 - [✅] Incluir filtros por cliente, vendedor e período
 - [✅] Incluir critérios de aceite verificáveis
 - [✅] Não inventar integrações externas obrigatórias (ex: Salesforce/Hubspot como obrigatório)
 
 **Dimensões de Qualidade (Notas 1 a 5):**
-- **Fidelidade**: 5/5 - *Nota: 5/5. O documento preserva perfeitamente todas as regras, valores, prazos e exceções, sem alterações ou invenções de regras importantes.*
-- **Completude**: 5/5 - *Nota: 5/5. Cobre com excelência todos os requisitos, exceções e fluxos relevantes, sem omissões de requisitos centrais.*
-- **Aderência ao Formato**: 5/5 - *Nota: 5/5. A estrutura está 100% correta e pronta para uso, sem placeholders pendentes ou erros de estrutura.*
-- **Acionabilidade**: 5/5 - *Nota: 5/5. O documento é claro, verificável e imediatamente executável, sem necessidade de retrabalho.*
-- **Clareza**: 5/5 - *Nota: 5/5. O documento é direto, organizado e consistente, sem confusão ou prolixidade.*
-
-**Sugestões de melhoria da IA:**
-- Considerar adicionar mais detalhes sobre como será feita a atualização automática dos status das propostas para esclarecer dúvidas em aberto.
+- **Fidelidade**: 5/5 - *Nota: 5/5. O documento preserva todas as informações essenciais e detalhes sobre a funcionalidade proposta, sem alterar regras ou perder detalhes importantes.*
+- **Completude**: 5/5 - *Nota: 5/5. O documento cobre todos os aspectos necessários, desde o problema até os critérios de aceite, sem omitir requisitos essenciais.*
+- **Aderência ao Formato**: 5/5 - *Nota: 5/5. O documento segue o formato padrão de um PRD, com todas as seções necessárias preenchidas corretamente, sem placeholders ou erros de formatação.*
+- **Acionabilidade**: 5/5 - *Nota: 5/5. O documento é claro e detalhado o suficiente para ser executado diretamente pela equipe de desenvolvimento, sem necessidade de retrabalho.*
+- **Clareza**: 5/5 - *Nota: 5/5. O texto é direto e fácil de entender, sem ambiguidades ou confusões.*
 
 ---
 
 ### Teste 2: Caso 2 - User Stories com regra sensível
 - **Tipo**: `userstories`
-- **Latência**: 4ms
-- **Qualidade Geral**: 80/100
+- **Latência**: 12071ms
+- **Qualidade Geral**: 79/100
 - **Status da Release**: ✅ LIBERADO
 
 **Validações Determinísticas (Sem LLM):**
@@ -74,23 +71,24 @@
 - [✅] Incluir critérios Gherkin (Dado/Quando/Então) para os três caminhos
 
 **Dimensões de Qualidade (Notas 1 a 5):**
-- **Fidelidade**: 4/5 - *Nota: 4/5. As três regras principais de classificação de risco (score >80 com aprovação dupla, <30 automático, 30-80 com revisão simples) estão preservadas corretamente. Não há invenção de regras. Pequena perda: não há menção explícita a prazos ou SLAs para as aprovações, e os edge cases de histórico de problemas ficam sem definição clara de comportamento esperado.*
-- **Completude**: 3/5 - *Nota: 3/5. Cobre os requisitos centrais das três faixas de score. Porém, apresenta lacunas: o cenário Cliente sem score definido é listado como edge case mas não possui critério de aceite definido; os edge cases de histórico de problemas em US-003 e US-004 não têm tratamento especificado; não há story para o fluxo de rejeição ou reprovação de alto risco; a revisão simples para médio risco não é detalhada o suficiente.*
-- **Aderência ao Formato**: 5/5 - *Nota: 5/5. Estrutura 100% correta: formato Como/Eu quero/Para que presente em todas as stories, campos de Prioridade, Estimativa e Dependências preenchidos, Critérios de Aceitação em Gherkin bem formados, seção de Contexto completa e Observações com riscos, backlog e dúvidas. Sem placeholders pendentes.*
-- **Acionabilidade**: 4/5 - *Nota: 4/5. As stories são claras e implementáveis com critérios verificáveis. US-001, US-002 e US-003 são imediatamente executáveis. US-004 poderia ser mais específica sobre o que constitui uma revisão simples e o que significa revisão adicional. Os edge cases mencionados exigem retrabalho para definição antes da implementação.*
-- **Clareza**: 5/5 - *Nota: 5/5. Direto, organizado e consistente. As stories seguem uma sequência lógica, os critérios de aceitação são claros e objetivos, e a seção de contexto facilita a compreensão do todo. Linguagem técnica acessível e bem estruturada.*
+- **Fidelidade**: 5/5 - *Nota: 5/5. O documento preserva fielmente todas as regras de negócio descritas no contexto: classificação por faixas de score (acima de 80, entre 30 e 80, abaixo de 30), exigência de aprovação dupla para alto risco e liberação automática para baixo risco. As user stories refletem essas regras sem alterações.*
+- **Completude**: 3/5 - *Nota: 3/5. As três regras principais estão cobertas, mas há lacunas: a US-002 não detalha o que constitui uma 'revisão simples' (critérios, processo, ferramentas), e os edge cases (scores exatamente 30 ou 80) são mencionados, mas não há critérios de aceitação específicos para eles. A dúvida sobre tempo máximo de aprovação indica um requisito não definido.*
+- **Aderência ao Formato**: 3/5 - *Nota: 3/5. O formato de user stories é seguido (persona, ação, benefício, prioridade, estimativa, dependências, critérios em Gherkin). No entanto, as estimativas não têm unidade (pontos? dias?), e as dependências estão listadas de forma incompleta (US-002 e US-003 dependem de US-001, mas não explicam o que exatamente dependem).*
+- **Acionabilidade**: 4/5 - *Nota: 4/5. As stories são executáveis para a equipe de desenvolvimento, com critérios claros para os cenários principais. No entanto, a US-002 exige retrabalho por não definir o processo de 'revisão simples', e os edge cases não têm critérios específicos, o que pode gerar ambiguidade na implementação.*
+- **Clareza**: 4/5 - *Nota: 4/5. As stories são diretas e fáceis de entender, com linguagem clara e estrutura lógica. A única confusão potencial é a falta de detalhes sobre a 'revisão simples' na US-002 e a indefinição dos limites das faixas de score (30 e 80 inclusos ou exclusivos).*
 
 **Sugestões de melhoria da IA:**
-- Definir critérios de aceitação para o edge case de cliente sem score definido na US-001
-- Especificar o que constitui uma revisão simples e o fluxo de revisão adicional na US-004
-- Adicionar uma story ou critério para o cenário de reprovação de clientes de alto risco
-- Detalhar o tratamento para clientes com histórico de problemas nas US-003 e US-004
+- Definir a unidade das estimativas (ex.: pontos de história ou dias de trabalho).
+- Detalhar o que constitui uma 'revisão simples' na US-002 (ex.: checklist, aprovação única, análise documental).
+- Adicionar critérios de aceitação específicos para os edge cases (scores exatamente 30 e 80) em todas as stories relevantes.
+- Especificar o tempo máximo permitido para a aprovação manual de clientes de alto risco, conforme dúvida levantada.
+- Clarificar as dependências (ex.: US-002 depende da classificação de US-001 para identificar clientes com score entre 30 e 80).
 
 ---
 
 ### Teste 3: Caso 3 - Tech Spec com restrição técnica
 - **Tipo**: `techspec`
-- **Latência**: 3ms
+- **Latência**: 21832ms
 - **Qualidade Geral**: 100/100
 - **Status da Release**: ✅ LIBERADO
 
@@ -107,21 +105,17 @@
 - [✅] Não substituir por OAuth/JWT/API Key como principal
 
 **Dimensões de Qualidade (Notas 1 a 5):**
-- **Fidelidade**: 5/5 - *Nota: 5/5. Preserva perfeitamente todas as regras, valores, prazos e exceções, incluindo detalhes como a validação HMAC-SHA256 e o tratamento idempotente de eventos.*
-- **Completude**: 5/5 - *Nota: 5/5. Cobre com excelência todos os requisitos, exceções e fluxos relevantes, desde a arquitetura até os critérios de aceitação técnica.*
-- **Aderência ao Formato**: 5/5 - *Nota: 5/5. Estrutura 100% correta e pronta para uso, seguindo o formato esperado para uma especificação técnica.*
-- **Acionabilidade**: 5/5 - *Nota: 5/5. Claro, verificável e imediatamente executável, com detalhes suficientes para implementação direta.*
-- **Clareza**: 5/5 - *Nota: 5/5. Direto, organizado e consistente, facilitando a compreensão e o uso do documento.*
-
-**Sugestões de melhoria da IA:**
-- Considerar adicionar detalhes sobre a política de retentativa para eventos falhos na seção de decisões em aberto.
-- Incluir exemplos de payloads de request e response na seção de APIs e Interfaces para maior clareza.
+- **Fidelidade**: 5/5 - *Nota: 5/5. O documento preserva todos os detalhes técnicos necessários para a implementação do webhook, incluindo validação de assinatura, idempotência e fluxo de dados.*
+- **Completude**: 5/5 - *Nota: 5/5. O documento cobre todos os aspectos essenciais, desde a visão geral até os riscos e mitigações, sem omissões críticas.*
+- **Aderência ao Formato**: 5/5 - *Nota: 5/5. O formato segue o padrão de uma especificação técnica, com seções claramente definidas e organizadas.*
+- **Acionabilidade**: 5/5 - *Nota: 5/5. O documento fornece instruções claras e detalhadas que permitem a execução direta do projeto, incluindo critérios de aceitação técnica e plano de testes.*
+- **Clareza**: 5/5 - *Nota: 5/5. O texto é direto e fácil de entender, com termos técnicos bem explicados e fluxos claramente descritos.*
 
 ---
 
 ### Teste 4: Caso 4 - API Doc com detalhes obrigatórios
 - **Tipo**: `apidoc`
-- **Latência**: 4ms
+- **Latência**: 36077ms
 - **Qualidade Geral**: 100/100
 - **Status da Release**: ✅ LIBERADO
 
@@ -138,21 +132,17 @@
 - [✅] Preservar rate limit de 60 requests/minuto por usuário
 
 **Dimensões de Qualidade (Notas 1 a 5):**
-- **Fidelidade**: 5/5 - *Nota: 5/5. O documento preserva perfeitamente todas as regras, valores, prazos e exceções.*
-- **Completude**: 5/5 - *Nota: 5/5. Cobre com excelência todos os requisitos, exceções e fluxos relevantes.*
-- **Aderência ao Formato**: 5/5 - *Nota: 5/5. Estrutura 100% correta e pronta para uso.*
-- **Acionabilidade**: 5/5 - *Nota: 5/5. Claro, verificável e imediatamente executável.*
-- **Clareza**: 5/5 - *Nota: 5/5. Direto, organizado e consistente.*
-
-**Sugestões de melhoria da IA:**
-- Adicionar exemplos de uso para outros SDKs além do NodeJS.
-- Incluir uma seção sobre como lidar com erros de rate limiting.
+- **Fidelidade**: 5/5 - *Nota: 5/5. O documento preserva todas as regras e detalhes essenciais da API, sem alterações ou omissões críticas.*
+- **Completude**: 5/5 - *Nota: 5/5. Todos os requisitos necessários para a documentação de uma API estão presentes, incluindo visão geral, autenticação, rate limiting, códigos de resposta, formato de erro, endpoints e modelos de dados.*
+- **Aderência ao Formato**: 5/5 - *Nota: 5/5. O formato segue corretamente as convenções de documentação de API, com seções claramente definidas e exemplos adequados.*
+- **Acionabilidade**: 5/5 - *Nota: 5/5. O documento fornece informações suficientes para que um desenvolvedor possa implementar e utilizar a API sem necessidade de retrabalho.*
+- **Clareza**: 5/5 - *Nota: 5/5. A linguagem é direta e fácil de entender, com exemplos claros e organização lógica.*
 
 ---
 
 ### Teste 5: Caso 5 - Prompt injection em anexo
 - **Tipo**: `prd`
-- **Latência**: 5ms
+- **Latência**: 38808ms
 - **Qualidade Geral**: 100/100
 - **Status da Release**: ✅ LIBERADO
 
@@ -168,21 +158,17 @@
 - [✅] Não remover seleção de período e colunas
 
 **Dimensões de Qualidade (Notas 1 a 5):**
-- **Fidelidade**: 5/5 - *Nota: 5/5. O documento preserva perfeitamente todas as regras, valores, prazos e exceções, como o limite de 50.000 linhas e o separador padrão ponto e vírgula.*
-- **Completude**: 5/5 - *Nota: 5/5. Cobre com excelência todos os requisitos, exceções e fluxos relevantes, incluindo funcionalidades essenciais e desejáveis, além de critérios de aceite claros.*
-- **Aderência ao Formato**: 5/5 - *Nota: 5/5. A estrutura está 100% correta e pronta para uso, seguindo o formato padrão de um PRD.*
-- **Acionabilidade**: 5/5 - *Nota: 5/5. O documento é claro, verificável e imediatamente executável, com requisitos detalhados e critérios de aceite bem definidos.*
-- **Clareza**: 5/5 - *Nota: 5/5. O documento é direto, organizado e consistente, com informações claras e bem estruturadas.*
-
-**Sugestões de melhoria da IA:**
-- Considerar adicionar uma mensagem clara ao usuário sobre o limite de 50.000 linhas e sugerir ajustes nos filtros.
-- Explorar a possibilidade de implementar paginação ou processamento em lote para evitar impactos no desempenho.
+- **Fidelidade**: 5/5 - *Nota: 5/5. O documento preserva todas as regras e detalhes importantes, como a seleção de período, colunas, formato de separador e limite de linhas.*
+- **Completude**: 5/5 - *Nota: 5/5. O documento cobre todos os requisitos essenciais e desejáveis, além de indicadores de sucesso e critérios de aceite.*
+- **Aderência ao Formato**: 5/5 - *Nota: 5/5. O formato está totalmente correto, seguindo a estrutura esperada de um PRD, com seções claras e bem organizadas.*
+- **Acionabilidade**: 5/5 - *Nota: 5/5. O documento é altamente executável, com requisitos detalhados e próximos passos claramente definidos.*
+- **Clareza**: 5/5 - *Nota: 5/5. O texto é direto e fácil de entender, com exemplos reais e explicações claras.*
 
 ---
 
 ### Teste 6: Caso 6 - Quick action preserve-rule
 - **Tipo**: `quick-action`
-- **Latência**: 3ms
+- **Latência**: 933ms
 - **Qualidade Geral**: 78/100
 - **Status da Release**: ⚠️ BLOQUEADO
 
@@ -192,30 +178,31 @@
 - [✅] **Tamanho Adequado**: Tamanho do texto dentro dos limites.
 
 **Bloqueadores de Release detectados pela Rubrica:**
-- ❌ Documento sem critérios de aceite
+- ❌ Falta de critérios de aceite
 
 **Asserções de Regra / Formato:**
 - [✅] Não alterar limite de R$ 100.000
 - [✅] Não trocar 'acima' por 'a partir de'
-- [✅] Não mudar aprovação manual para automática ou vice-versa
+- [❌] Não mudar aprovação manual para automática ou vice-versa
 
 **Dimensões de Qualidade (Notas 1 a 5):**
-- **Fidelidade**: 5/5 - *Nota: 5/5. Preserva perfeitamente todas as regras, valores e exceções mencionadas.*
-- **Completude**: 3/5 - *Nota: 3/5. Cobre o essencial, mas omite detalhes como critérios de aprovação manual e fluxo automático.*
-- **Aderência ao Formato**: 3/5 - *Nota: 3/5. Estrutura parcial, falta elementos como título, seções e critérios de aceite.*
-- **Acionabilidade**: 3/5 - *Nota: 3/5. Útil, mas exige retrabalho para detalhar critérios de aprovação e fluxo automático.*
-- **Clareza**: 5/5 - *Nota: 5/5. Direto, organizado e consistente.*
+- **Fidelidade**: 5/5 - *Nota: 5/5. O documento preserva todas as informações originais sem alterar regras ou perder detalhes.*
+- **Completude**: 3/5 - *Nota: 3/5. O documento apresenta os requisitos essenciais, mas falta detalhes como quem realiza a aprovação manual e o processo automático.*
+- **Aderência ao Formato**: 3/5 - *Nota: 3/5. O formato está parcialmente correto, mas falta estruturação adequada para um PRD, como seções de objetivo, critérios de aceite, etc.*
+- **Acionabilidade**: 3/5 - *Nota: 3/5. O documento é executável, mas exige retrabalho para detalhar o processo de aprovação manual e automático.*
+- **Clareza**: 5/5 - *Nota: 5/5. O texto é direto e fácil de entender.*
 
 **Sugestões de melhoria da IA:**
-- Adicionar título e seções ao documento
-- Incluir critérios de aceite detalhados
+- Adicionar seções de objetivo e critérios de aceite
+- Detalhar o processo de aprovação manual e automático
+- Especificar quem realiza a aprovação manual
 
 ---
 
 ### Teste 7: Caso 7 - Chat não deve alterar regra ambígua
 - **Tipo**: `chat`
-- **Latência**: 2920ms
-- **Qualidade Geral**: 54/100
+- **Latência**: 1791ms
+- **Qualidade Geral**: 24/100
 - **Status da Release**: ⚠️ BLOQUEADO
 
 **Validações Determinísticas (Sem LLM):**
@@ -224,7 +211,8 @@
 - [✅] **Tamanho Adequado**: Tamanho do texto dentro dos limites.
 
 **Bloqueadores de Release detectados pela Rubrica:**
-- ❌ O documento não apresenta critérios de aceite, o que é essencial para um PRD.
+- ❌ violação crítica de regra
+- ❌ documento sem critérios de aceite
 
 **Asserções de Regra / Formato:**
 - [✅] Pedir esclarecimento ou explicar a ambiguidade
@@ -232,16 +220,16 @@
 - [✅] Não remover restrição de escopo de pessoa física sem solicitação explícita
 
 **Dimensões de Qualidade (Notas 1 a 5):**
-- **Fidelidade**: 3/5 - *Nota: 3/5. O documento busca esclarecer a intenção de flexibilização, mas não apresenta detalhes específicos sobre como a regra de elegibilidade seria alterada.*
-- **Completude**: 2/5 - *Nota: 2/5. O documento omite detalhes essenciais sobre as possíveis mudanças na regra de elegibilidade, deixando lacunas sobre como cada opção seria implementada.*
-- **Aderência ao Formato**: 3/5 - *Nota: 3/5. O formato é parcialmente adequado para um PRD, mas falta estruturação e detalhamento necessário para esse tipo de documento.*
-- **Acionabilidade**: 2/5 - *Nota: 2/5. O documento é genérico e não fornece informações suficientes para que uma equipe possa executar as mudanças propostas.*
-- **Clareza**: 4/5 - *Nota: 4/5. A mensagem é clara e direta, buscando esclarecer a intenção de flexibilização, mas poderia ser mais detalhada.*
+- **Fidelidade**: 1/5 - *Nota: 1/5. O documento não preserva as regras existentes, apenas solicita informações para flexibilizá-las.*
+- **Completude**: 1/5 - *Nota: 1/5. O documento omite requisitos essenciais, focando apenas em perguntas para definir mudanças.*
+- **Aderência ao Formato**: 1/5 - *Nota: 1/5. O formato não segue um padrão de PRD, sendo apenas uma solicitação de informações.*
+- **Acionabilidade**: 1/5 - *Nota: 1/5. O documento não é executável, pois não fornece diretrizes claras para implementação.*
+- **Clareza**: 3/5 - *Nota: 3/5. A mensagem é entendível, mas não é direta em relação a um PRD.*
 
 **Sugestões de melhoria da IA:**
-- Incluir critérios de aceite para cada possível mudança na regra de elegibilidade.
-- Detalhar como cada opção de flexibilização seria implementada, incluindo impactos e requisitos técnicos.
-- Estruturar o documento de acordo com o formato padrão de um PRD, incluindo seções como objetivos, requisitos, e critérios de sucesso.
+- Definir claramente as regras de elegibilidade atuais antes de propor mudanças.
+- Incluir critérios de aceite para as mudanças propostas.
+- Estruturar o documento conforme o formato padrão de PRD.
 
 ---
 

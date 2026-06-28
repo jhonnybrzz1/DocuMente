@@ -2666,37 +2666,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      // Se solicitado, calcula reativamente a auditoria de qualidade usando o Juiz (MiMo 2.5 Pro)
-      if (calculateQuality === true) {
-        try {
-          const qualityPrompt = `Juiz de qualidade de requisitos de software. Avalie: Clareza, Completude, Risco de Alucinação, Aderência ao Formato.
+      // Envia a resposta imediatamente ao cliente (sem esperar quality-score)
+      res.json(result);
+
+      // Fire-and-forget: calcula quality-score em background e persiste no banco
+      if (calculateQuality === true && newDoc.id) {
+        (async () => {
+          try {
+            const qualityPrompt = `Juiz de qualidade de requisitos de software. Avalie: Clareza, Completude, Risco de Alucinação, Aderência ao Formato.
 JSON apenas: {"score":0-100,"positives":["..."],"improvements":["..."]}`;
 
-          const evaluationMessages: ChatMessage[] = [
-            { role: "system", content: qualityPrompt },
-            { role: "user", content: `Demanda original:\n${demand}\n\nDocumento gerado:\n${content}` }
-          ];
+            const evaluationMessages: ChatMessage[] = [
+              { role: "system", content: qualityPrompt },
+              { role: "user", content: `Demanda original:\n${demand}\n\nDocumento gerado:\n${content}` }
+            ];
 
-          const isComplex = content.length > 15000;
-          const isLegalCompliance = /duimp|siscomex|bcb\s*277|pucomex/i.test(content);
-          const judgeModel = (isComplex || isLegalCompliance) ? "mimo-2.5-pro" : "deepseek/deepseek-chat";
+            const isComplex = content.length > 15000;
+            const isLegalCompliance = /duimp|siscomex|bcb\s*277|pucomex/i.test(content);
+            const judgeModel = (isComplex || isLegalCompliance) ? "mimo-2.5-pro" : "deepseek/deepseek-chat";
 
-          const qualityRaw = await chatCompletion(evaluationMessages, {
-            temperature: 0.2,
-            maxTokens: 1000,
-            jsonMode: true,
-            model: judgeModel
-          });
+            const qualityRaw = await chatCompletion(evaluationMessages, {
+              temperature: 0.2,
+              maxTokens: 1000,
+              jsonMode: true,
+              model: judgeModel
+            });
 
-          const qualityData = JSON.parse(qualityRaw.trim());
-          result.qualityAudit = qualityData;
-        } catch (qualErr) {
-          console.error("Falha ao calcular auditoria de qualidade na API pública:", qualErr);
-          result.qualityAudit = { error: "Não foi possível calcular a qualidade do documento." };
-        }
+            const qualityData = JSON.parse(qualityRaw.trim());
+            await storage.updateDocument(newDoc.id, { qualityScore: qualityData });
+            console.log(`[quality-async] Quality score calculado e persistido para doc ${newDoc.id}: ${qualityData.score}/100`);
+          } catch (qualErr) {
+            console.warn(`[quality-async] Falha ao calcular quality score para doc ${newDoc.id}:`, qualErr);
+          }
+        })();
       }
-
-      res.json(result);
 
     } catch (err: any) {
       console.error("Erro na API externa de geração:", err);
