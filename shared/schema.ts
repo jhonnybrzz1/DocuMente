@@ -67,6 +67,8 @@ export type QualityScore = {
   }>;
   suggestions: string[];
   evaluatedAt: string;
+  isReleaseBlocked?: boolean;
+  blockers?: string[];
 };
 
 export const documentTypes = [

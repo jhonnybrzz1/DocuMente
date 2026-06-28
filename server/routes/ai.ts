@@ -282,54 +282,60 @@ router.post("/quality-score", async (req, res) => {
       return res.json(cached);
     }
 
-    const dimensionsByType: Record<DocumentType, string[]> = {
-      prd: ["Clareza do problema", "Definição de usuários", "Solução proposta", "Critérios de aceite", "Métricas de sucesso", "Riscos e dependências"],
-      epic: ["Hipótese testável", "Outcome mensurável", "Validação INVEST", "Story map / divisão", "Métricas e guardrails", "Dependências"],
-      userstories: ["Formato Mike Cohn", "Critérios em Gherkin", "INVEST por story", "Splitting adequado", "Definition of Done", "Cobertura de cenários"],
-      roadmap: ["Visão e North Star", "Now/Next/Later", "Outcomes vs outputs", "Trade-offs explícitos", "Riscos e premissas", "Cadência de revisão"],
-      releasenote: ["Resumo orientado a usuário", "Mudanças destacadas", "Compatibilidade", "Bugs corrigidos", "Próximos passos", "Linguagem acessível"],
-      pitch: ["Hook inicial", "Problema/oportunidade", "Solução e diferencial", "Mercado e tamanho", "Tração / evidências", "Call to action"],
-      techspec: ["Arquitetura clara", "Fluxos detalhados", "Modelagem de dados", "Segurança", "Performance / escalabilidade", "Plano de rollout"],
-      testplan: ["Escopo de testes", "Estratégia (unit/integ/e2e)", "Critérios de entrada/saída", "Casos críticos", "Ambientes e dados", "Riscos de qualidade"],
-      apidoc: ["Endpoints documentados", "Auth e permissões", "Exemplos de request/response", "Erros e códigos", "Versionamento", "Rate limiting"],
-    };
-
-    const dimensions = dimensionsByType[type as DocumentType] ?? dimensionsByType.prd;
-
     const messages: ChatMessage[] = [
       {
         role: "system",
-        content: `Você é um avaliador de qualidade de documentos de Product Management. Avalie o documento de tipo "${typeLabel(
-          type as DocumentType
-        )}" abaixo nas seguintes dimensões: ${dimensions.join(", ")}.
+        content: `Você é um avaliador de qualidade especialista em documentos de Product Management.
+Avalie o documento de tipo "${typeLabel(type as DocumentType)}" fornecido estritamente conforme a seguinte Rubrica de Avaliação (notas inteiras de 1 a 5):
 
-REGRAS:
-- Para cada dimensão, dê um score 0-100 e um feedback curto (1-2 frases) em português.
-- Calcule um score geral (média ponderada simples).
-- Liste no máximo 5 sugestões concretas e acionáveis para melhorar o documento.
-- Resposta APENAS em JSON válido, sem markdown e sem texto adicional.
+1. Fidelidade (peso 0.35):
+   - Nota 1: Altera ou inventa regras importantes.
+   - Nota 3: Preserva a maioria, mas perde detalhes.
+   - Nota 5: Preserva perfeitamente todas as regras, valores, prazos e exceções.
+2. Completude (peso 0.25):
+   - Nota 1: Omite vários requisitos centrais.
+   - Nota 3: Cobre o essencial, mas com lacunas.
+   - Nota 5: Cobre com excelência todos os requisitos, exceções e fluxos relevantes.
+3. Aderência ao formato (peso 0.15):
+   - Nota 1: Estrutura errada ou placeholders pendentes.
+   - Nota 3: Estrutura parcial.
+   - Nota 5: Estrutura 100% correta e pronta para uso.
+4. Acionabilidade (peso 0.15):
+   - Nota 1: Genérico e pouco implementável.
+   - Nota 3: Útil, mas exige retrabalho.
+   - Nota 5: Claro, verificável e imediatamente executável.
+5. Clareza (peso 0.10):
+   - Nota 1: Confuso ou prolixo.
+   - Nota 3: Entendível.
+   - Nota 5: Direto, organizado e consistente.
 
-FORMATO:
+Você também DEVE verificar a presença de BLOQUEADORES DE RELEASE no documento:
+- Qualquer violação crítica de regra.
+- Alucinação factual de alto impacto.
+- Documento sem critérios de aceite quando o tipo de documento exige (exigem: prd, userstories, techspec, testplan).
+- Output com placeholders (ex: "[Requisito 1]", "[Descrever aqui]", etc.) em seções essenciais.
+
+Responda APENAS com um objeto JSON válido no formato abaixo, sem markdown ou texto adicional:
 {
-  "overall": 0-100,
-  "dimensions": [
-    { "name": "<dimensão>", "score": 0-100, "feedback": "<feedback curto>" }
-  ],
-  "suggestions": ["<sugestão>", ...]
+  "fidelidade": { "nota": 1-5, "justificativa": "..." },
+  "completude": { "nota": 1-5, "justificativa": "..." },
+  "aderencia_formato": { "nota": 1-5, "justificativa": "..." },
+  "acionabilidade": { "nota": 1-5, "justificativa": "..." },
+  "clareza": { "nota": 1-5, "justificativa": "..." },
+  "blockers": ["Descrição curta do bloqueador de release se houver, ou array vazio"],
+  "suggestions": ["Sugestão concreta 1", "Sugestão 2"]
 }`,
       },
       { role: "user", content: `Documento a avaliar:\n\n${content}` },
     ];
 
     const qualitySchema = z.object({
-      overall: z.number(),
-      dimensions: z.array(
-        z.object({
-          name: z.string(),
-          score: z.number(),
-          feedback: z.string(),
-        })
-      ),
+      fidelidade: z.object({ nota: z.number(), justificativa: z.string() }),
+      completude: z.object({ nota: z.number(), justificativa: z.string() }),
+      aderencia_formato: z.object({ nota: z.number(), justificativa: z.string() }),
+      acionabilidade: z.object({ nota: z.number(), justificativa: z.string() }),
+      clareza: z.object({ nota: z.number(), justificativa: z.string() }),
+      blockers: z.array(z.string()),
       suggestions: z.array(z.string()),
     });
 
@@ -339,20 +345,45 @@ FORMATO:
     const judgeModel = useStrongJudge ? "mimo-2.5-pro" : "deepseek/deepseek-flash";
 
     const parsed = await chatCompletionJsonWithRetry(messages, qualitySchema, {
-      temperature: 0.2,
+      temperature: 0.1,
       maxTokens: 1500,
       model: judgeModel,
+      taskName: "quality-score"
     });
 
+    const clamp1to5 = (n: unknown): number => {
+      const num = Number(n);
+      if (!Number.isFinite(num)) return 3;
+      return Math.max(1, Math.min(5, Math.round(num)));
+    };
+
+    const fid = clamp1to5(parsed.fidelidade.nota);
+    const comp = clamp1to5(parsed.completude.nota);
+    const fmt = clamp1to5(parsed.aderencia_formato.nota);
+    const aci = clamp1to5(parsed.acionabilidade.nota);
+    const cla = clamp1to5(parsed.clareza.nota);
+
+    // Fórmula da Rubrica Oficial:
+    // score = (fid * 0.35 + comp * 0.25 + fmt * 0.15 + aci * 0.15 + cla * 0.10) * 20
+    const overallScore = Math.round(
+      (fid * 0.35 + comp * 0.25 + fmt * 0.15 + aci * 0.15 + cla * 0.10) * 20
+    );
+
+    const dimensionsList = [
+      { name: "Fidelidade", score: fid * 20, feedback: `Nota: ${fid}/5. ${parsed.fidelidade.justificativa}` },
+      { name: "Completude", score: comp * 20, feedback: `Nota: ${comp}/5. ${parsed.completude.justificativa}` },
+      { name: "Aderência ao Formato", score: fmt * 20, feedback: `Nota: ${fmt}/5. ${parsed.aderencia_formato.justificativa}` },
+      { name: "Acionabilidade", score: aci * 20, feedback: `Nota: ${aci}/5. ${parsed.acionabilidade.justificativa}` },
+      { name: "Clareza", score: cla * 20, feedback: `Nota: ${cla}/5. ${parsed.clareza.justificativa}` }
+    ];
+
     const score: QualityScore = {
-      overall: clampScore(parsed.overall),
-      dimensions: (parsed.dimensions ?? []).map(d => ({
-        name: String(d.name ?? "").slice(0, 80),
-        score: clampScore(d.score),
-        feedback: String(d.feedback ?? "").slice(0, 500),
-      })),
+      overall: overallScore,
+      dimensions: dimensionsList,
       suggestions: (parsed.suggestions ?? []).map(s => String(s).slice(0, 500)).slice(0, 5),
       evaluatedAt: new Date().toISOString(),
+      isReleaseBlocked: (parsed.blockers ?? []).length > 0,
+      blockers: (parsed.blockers ?? []).slice(0, 5)
     };
 
     // Cacheia no documento se um id foi passado
