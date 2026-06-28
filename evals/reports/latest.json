@@ -3,7 +3,7 @@
     {
       "id": "prd-simple-sales-status",
       "type": "prd",
-      "latencyMs": 21163,
+      "latencyMs": 73902,
       "passed": true,
       "deterministicPassed": true,
       "checks": [
@@ -30,49 +30,49 @@
         {
           "name": "Limite de Tamanho do Output",
           "passed": true,
-          "details": "Tamanho: 2936 caracteres."
+          "details": "Tamanho: 3092 caracteres."
         }
       ],
-      "qualityScore": 100,
+      "qualityScore": 78,
       "dimensions": [
         {
           "name": "Fidelidade",
-          "score": 100,
-          "feedback": "Nota: 5/5. O documento preserva perfeitamente todas as regras, valores, prazos e exceções mencionadas, sem alterações ou invenções."
+          "score": 60,
+          "feedback": "Nota: 3/5. Preserva a maioria das regras e valores, mas o prazo esperado está indefinido, o que é um detalhe importante."
         },
         {
           "name": "Completude",
-          "score": 100,
-          "feedback": "Nota: 5/5. Cobre com excelência todos os requisitos, exceções e fluxos relevantes, incluindo funcionalidades essenciais e desejáveis."
+          "score": 80,
+          "feedback": "Nota: 4/5. Cobre o essencial, mas há lacunas como a falta de detalhes sobre a experiência do usuário ao utilizar os filtros."
         },
         {
           "name": "Aderência ao Formato",
           "score": 100,
-          "feedback": "Nota: 5/5. A estrutura está 100% correta e pronta para uso, sem placeholders pendentes ou erros de formatação."
+          "feedback": "Nota: 5/5. A estrutura está correta e pronta para uso, sem placeholders pendentes."
         },
         {
           "name": "Acionabilidade",
-          "score": 100,
-          "feedback": "Nota: 5/5. O documento é claro, verificável e imediatamente executável, com critérios de aceite bem definidos."
+          "score": 80,
+          "feedback": "Nota: 4/5. O documento é claro e útil, mas exige retrabalho para definir o prazo esperado e detalhar a experiência do usuário."
         },
         {
           "name": "Clareza",
           "score": 100,
-          "feedback": "Nota: 5/5. O texto é direto, organizado e consistente, facilitando a compreensão."
+          "feedback": "Nota: 5/5. O documento é direto, organizado e consistente."
         }
       ],
       "isReleaseBlocked": false,
       "blockers": [],
       "suggestions": [
-        "Considerar adicionar um exemplo visual do layout da tela de acompanhamento para maior clareza.",
-        "Incluir uma seção sobre métricas de sucesso para medir o impacto da funcionalidade após o lançamento."
+        "Definir o prazo esperado para o projeto.",
+        "Detalhar a experiência do usuário ao utilizar os filtros."
       ],
-      "outputText": "📄 **Documento de Requisitos do Produto - Acompanhamento de Propostas Comerciais**\n\n## 1. Resumo\n**O que estamos construindo:** Estamos construindo uma funcionalidade para que vendedores possam acompanhar o status de propostas comerciais, incluindo propostas enviadas, aprovadas, recusadas e pendentes.\n**Por que é importante:** É importante porque permite aos vendedores monitorar o progresso de suas propostas de forma eficiente, melhorando o acompanhamento e a tomada de decisões.\n**Prazo esperado:** 3 meses\n\n## 2. O Problema\n### Situação Atual\nAtualmente, os vendedores enfrentam dificuldades para acompanhar o status de suas propostas comerciais, o que resulta em perda de tempo e oportunidades.\n\n### Exemplo Real\nUm vendedor não consegue identificar rapidamente quais propostas estão pendentes de aprovação, o que atrasa o fechamento de negócios.\n\n## 3. Quem Vai Usar\n### Usuário Principal\n- **Quem é:** Vendedor\n- **O que precisa:** Acompanhar o status de propostas comerciais de forma clara e organizada.\n- **Maior frustração hoje:** Falta de visibilidade sobre o status das propostas e dificuldade em filtrar informações relevantes.\n\n\n### Outros Usuários (se houver)\n- Gerente Comercial\n- Analista de Vendas\n\n## 4. A Solução\n### O Que Vamos Fazer\n- **Visualização de Status de Propostas**: Permite acompanhar propostas enviadas, aprovadas, recusadas e pendentes.\n- **Filtros por Cliente, Vendedor e Período**: Facilita a busca e organização das propostas.\n\n### Como Vai Funcionar\n1. O vendedor acessa a tela de acompanhamento de propostas.\n2. Seleciona os filtros desejados (cliente, vendedor, período).\n3. Visualiza as propostas organizadas por status.\n\n## 5. Requisitos Detalhados\n### Funcionalidades Essenciais (Obrigatórias)\n- [ ] Exibir status de propostas (enviadas, aprovadas, recusadas, pendentes).\n- [ ] Permitir filtragem por cliente, vendedor responsável e período.\n- [ ] Bloquear edição de valores nas propostas.\n\n### Funcionalidades Desejáveis (Se der tempo)\n- [ ] Exportar relatório de propostas em formato PDF.\n\n### O Que NÃO Faremos Agora\n- Edição de valores nas propostas nesta versão.\n\n## 6. Como Saber se Deu Certo\n### Critérios de Aceite\nPara considerar pronto, precisa:\n- [ ] O sistema deve exibir corretamente o status de todas as propostas.\n- [ ] Os filtros devem funcionar conforme selecionados pelo usuário.\n- [ ] Nenhum campo de valor deve ser editável na tela de acompanhamento.\n\n## 7. Considerações Técnicas\n### Dependências\n- Integração com o sistema de CRM existente.\n\n### Riscos e Cuidados\n- **Atraso na integração com o CRM.**: Priorizar a integração no cronograma e alocar recursos adicionais.\n\n### Integrações Necessárias\n- Sistema de CRM\n\n## 8. Próximos Passos\n1. Definir layout da tela de acompanhamento.\n2. Iniciar desenvolvimento da integração com o CRM.\n\n## 9. Dúvidas em Aberto\n- Como será a experiência do usuário ao aplicar múltiplos filtros simultaneamente?\n\n---\n**Status:** Rascunho"
+      "outputText": "📄 **Documento de Requisitos do Produto - Acompanhamento de Propostas Comerciais**\n\n## 1. Resumo\n**O que estamos construindo:** Estamos construindo uma funcionalidade para vendedores acompanharem o status de propostas comerciais, incluindo propostas enviadas, aprovadas, recusadas e pendentes.\n**Por que é importante:** É importante porque permite aos vendedores monitorar o progresso de suas propostas de forma eficiente, melhorando a gestão comercial e o atendimento aos clientes.\n**Prazo esperado:** A definir\n\n## 2. O Problema\n### Situação Atual\nAtualmente, os vendedores enfrentam dificuldades para acompanhar o status de suas propostas comerciais, o que pode levar a perda de oportunidades e ineficiência no processo de vendas.\n\n### Exemplo Real\nUm vendedor enviou uma proposta há duas semanas e não sabe se foi aprovada, recusada ou ainda está pendente, resultando em atraso no fechamento do negócio.\n\n## 3. Quem Vai Usar\n### Usuário Principal\n- **Quem é:** Vendedor\n- **O que precisa:** Acompanhar o status de suas propostas comerciais de forma clara e organizada.\n- **Maior frustração hoje:** Falta de visibilidade sobre o status das propostas enviadas.\n\n### Outros Usuários (se houver)\n- Gerente Comercial\n- Cliente\n\n## 4. A Solução\n### O Que Vamos Fazer\n- **Visualização de Status**: Permite ao vendedor verificar o status de suas propostas (enviadas, aprovadas, recusadas, pendentes).\n- **Filtros Avançados**: Facilita a busca de propostas por cliente, vendedor responsável e período.\n\n### Como Vai Funcionar\n1. O vendedor acessa a tela de acompanhamento de propostas.\n2. Seleciona os filtros desejados (cliente, vendedor responsável, período).\n3. Visualiza as propostas conforme o status selecionado.\n\n## 5. Requisitos Detalhados\n### Funcionalidades Essenciais (Obrigatórias)\n- [ ] A tela deve mostrar propostas enviadas, aprovadas, recusadas e pendentes.\n- [ ] Deve permitir filtrar propostas por cliente, vendedor responsável e período.\n- [ ] Não deve permitir edição de valores nesta primeira versão.\n\n### Funcionalidades Desejáveis (Se der tempo)\n- [ ] Exportar a lista de propostas para um arquivo CSV.\n\n### O Que NÃO Faremos Agora\n- Edição de valores das propostas nesta versão inicial.\n\n## 6. Como Saber se Deu Certo\n### Critérios de Aceite\nPara considerar pronto, precisa:\n- [ ] A tela deve exibir todas as propostas enviadas pelo vendedor logado.\n- [ ] Os filtros devem funcionar corretamente e retornar apenas as propostas correspondentes.\n- [ ] O status de cada proposta deve ser claramente indicado (enviada, aprovada, recusada, pendente).\n\n## 7. Considerações Técnicas\n### Dependências\n- Integração com o sistema de gestão de propostas existente.\n\n### Riscos e Cuidados\n- **Atraso na integração com o sistema existente.**: Priorizar a integração e alocar recursos adicionais.\n\n### Integrações Necessárias\n- Sistema de gestão de propostas.\n\n## 8. Próximos Passos\n1. Definir o design da interface do usuário.\n2. Iniciar o desenvolvimento da funcionalidade.\n\n## 9. Dúvidas em Aberto\n- Como será a experiência do usuário ao utilizar os filtros?\n\n---\n**Status:** Rascunho"
     },
     {
       "id": "userstories-risk-compliance",
       "type": "userstories",
-      "latencyMs": 62804,
+      "latencyMs": 37064,
       "passed": true,
       "deterministicPassed": true,
       "checks": [
@@ -99,120 +99,51 @@
         {
           "name": "Limite de Tamanho do Output",
           "passed": true,
-          "details": "Tamanho: 3198 caracteres."
+          "details": "Tamanho: 3216 caracteres."
         }
       ],
-      "qualityScore": 82,
+      "qualityScore": 68,
       "dimensions": [
         {
           "name": "Fidelidade",
-          "score": 100,
-          "feedback": "Nota: 5/5. O documento preserva perfeitamente todas as regras de negócio definidas no contexto (faixas de score e suas respectivas ações), incluindo os limites exatos (30 e 80) e suas exceções nos critérios de aceitação."
+          "score": 60,
+          "feedback": "Nota: 3/5. Preserva as regras centrais (aprovação dupla para score >80, liberação automática para <30, revisão simples para 30-80). No entanto, perde detalhes: não define explicitamente o comportamento para os limites exatos (score igual a 30 ou 80), mencionando-os apenas como edge cases sem resolução clara."
         },
         {
           "name": "Completude",
           "score": 60,
-          "feedback": "Nota: 3/5. Cobre os três fluxos principais baseados no score, mas omite detalhes sobre o que constitui uma 'revisão simples' (US-003) e não descreve o fluxo completo após a aprovação/revisão (ex: liberação final para câmbio)."
+          "feedback": "Nota: 3/5. Cobre os três fluxos principais de aprovação baseados no score. Apresenta lacunas: não detalha o que constitui uma 'revisão simples', não define o fluxo de aprovação dupla (sequência, paralela, timeout), e a dúvida sobre tempo máximo de aprovação indica requisito não coberto."
         },
         {
           "name": "Aderência ao Formato",
           "score": 100,
-          "feedback": "Nota: 5/5. Estrutura 100% correta para User Stories, com persona, ação, benefício, prioridade, estimativa, dependências e critérios de aceitação em Gherkin bem formatados."
+          "feedback": "Nota: 5/5. Estrutura 100% correta para User Stories: contexto claro, stories com formato 'Como/Eu quero/Para que', prioridade, estimativa, dependências, critérios de aceitação em Gherkin e cenários alternativos. Pronto para uso."
         },
         {
           "name": "Acionabilidade",
           "score": 60,
-          "feedback": "Nota: 3/5. US-001 e US-002 são claras e executáveis. US-003 é vaga ao definir 'revisão simples', exigindo retrabalho para detalhar as ações específicas desse processo."
+          "feedback": "Nota: 3/5. As stories são úteis e direcionam o desenvolvimento, mas exigem retrabalho: os critérios de aceitação não cobrem os limites exatos (30 e 80), a 'revisão simples' não é definida, e o mecanismo de aprovação dupla carece de detalhes operacionais."
         },
         {
           "name": "Clareza",
           "score": 80,
-          "feedback": "Nota: 4/5. O documento é direto e organizado, com linguagem consistente. A única obscuridade está na definição de 'revisão simples' na US-003."
+          "feedback": "Nota: 4/5. Direto, organizado e consistente. As stories são bem estruturadas e os critérios de aceitação são claros. Pequena perda de clareza apenas na definição dos limites e do que é 'revisão simples'."
         }
       ],
       "isReleaseBlocked": false,
       "blockers": [],
       "suggestions": [
-        "Detalhar na US-003 o que constitui uma 'revisão simples' (ex: checklist, campos obrigatórios, ações do analista).",
-        "Adicionar uma US ou critério de aceitação para o fluxo de liberação final do cliente após a aprovação/revisão, garantindo a completude do processo."
+        "Definir explicitamente o comportamento para scores iguais a 30 e 80 nos critérios de aceitação (ex: score 80 exige revisão simples, score 30 é liberado automaticamente).",
+        "Detalhar o que constitui uma 'revisão simples' na US-003 (ex: checklist, análise documental, etc.).",
+        "Especificar o mecanismo de aprovação dupla na US-001 (ex: ambas aprovações necessárias, ordem sequencial ou paralela, tempo limite).",
+        "Incluir nos critérios de aceitação o que acontece se uma das aprovações for negada no fluxo de score >80."
       ],
-      "outputText": "🧩 **User Stories**\n\n## Contexto\n- **Épico Relacionado:** Gestão de Compliance\n- **Sprint/Iteração:** Sprint 1\n- **Objetivo/Jornada:** Revisar e aprovar clientes classificados como alto risco antes da liberação de câmbio\n- **Personas envolvidas:** Analista de Compliance, Compliance Manager\n- **Regras preservadas:**\n  - Clientes com score acima de 80 exigem aprovação manual de dois Compliance Managers\n  - Clientes com score abaixo de 30 podem seguir automaticamente\n  - Clientes com score entre 30 e 80 exigem uma revisão simples\n- **Total de Stories:** 3\n\n## Stories\n\n### US-001: Revisar cliente com score acima de 80\n**Como** Analista de Compliance\n**Eu quero** solicitar aprovação manual de dois Compliance Managers\n**Para que** garantir que clientes de alto risco sejam revisados adequadamente\n\n**Prioridade:** Must\n**Estimativa:** 5\n**Dependências:** Nenhuma\n\n#### Critérios de Aceitação\n```gherkin\n  Cenário: Cliente com score acima de 80\n    Dado que um cliente possui score acima de 80\n    Quando o analista de compliance solicita a aprovação\n    Então o sistema deve exigir a aprovação manual de dois Compliance Managers\n\n  Cenário: Cliente com score exatamente 80\n    Dado que um cliente possui score igual a 80\n    Quando o analista de compliance solicita a aprovação\n    Então o sistema não deve exigir a aprovação de dois Compliance Managers, pois o score se enquadra na faixa de revisão simples\n```\n\n---\n\n### US-002: Liberar cliente com score abaixo de 30\n**Como** Analista de Compliance\n**Eu quero** liberar automaticamente o cliente\n**Para que** agilizar o processo para clientes de baixo risco\n\n**Prioridade:** Must\n**Estimativa:** 3\n**Dependências:** Nenhuma\n\n#### Critérios de Aceitação\n```gherkin\n  Cenário: Cliente com score abaixo de 30\n    Dado que um cliente possui score abaixo de 30\n    Quando o sistema avalia o cliente\n    Então o cliente é liberado automaticamente\n\n  Cenário: Cliente com score exatamente 30\n    Dado que um cliente possui score igual a 30\n    Quando o sistema avalia o cliente\n    Então o cliente não é liberado automaticamente, pois o score se enquadra na faixa de revisão simples\n```\n\n---\n\n### US-003: Revisar cliente com score entre 30 e 80\n**Como** Analista de Compliance\n**Eu quero** realizar uma revisão simples\n**Para que** garantir que clientes de risco moderado sejam revisados\n\n**Prioridade:** Must\n**Estimativa:** 5\n**Dependências:** Nenhuma\n\n#### Critérios de Aceitação\n```gherkin\n  Cenário: Cliente com score entre 30 e 80\n    Dado que um cliente possui score entre 30 e 80 (inclusive)\n    Quando o analista de compliance realiza a revisão\n    Então o sistema deve registrar a revisão simples\n\n  Cenário: Cliente com score exatamente 30 ou 80\n    Dado que um cliente possui score igual a 30 ou igual a 80\n    Quando o analista de compliance realiza a revisão\n    Então o sistema deve registrar a revisão simples, pois ambos os limites estão incluídos na faixa\n```\n\n---\n\n## Observações\n- **Riscos/dependências:**\n  - Possível atraso na aprovação manual de dois Compliance Managers\n- **Backlog sugerido:**\n  - Integração com sistema de scoring externo\n- **Dúvidas:**\n  - Como lidar com clientes que mudam de score após a revisão inicial?"
+      "outputText": "🧩 **User Stories**\n\n## Contexto\n- **Épico Relacionado:** Compliance e Liberação de Câmbio\n- **Sprint/Iteração:** Sprint 1\n- **Objetivo/Jornada:** Revisar e aprovar clientes classificados como alto risco antes da liberação de câmbio\n- **Personas envolvidas:** Compliance Manager, Analista de Compliance\n- **Regras preservadas:**\n  - Clientes com score acima de 80 exigem aprovação manual de dois usuários com perfil Compliance Manager\n  - Clientes abaixo de 30 podem seguir automaticamente\n  - Scores entre 30 e 80 exigem uma revisão simples\n- **Total de Stories:** 3\n\n## Stories\n\n### US-001: Revisar Cliente com Score Acima de 80\n**Como** Compliance Manager\n**Eu quero** aprovar manualmente\n**Para que** garantir que clientes de alto risco sejam revisados adequadamente\n\n**Prioridade:** Must\n**Estimativa:** 5\n**Dependências:** Nenhuma\n\n#### Critérios de Aceitação\n```gherkin\n  Cenário: Cliente com score acima de 80\n    Dado que um cliente tem um score de 85\n    Quando o sistema identifica o cliente como alto risco\n    Então o sistema deve exigir a aprovação manual de dois usuários com perfil Compliance Manager\n  Cenário: Cliente com score abaixo de 80\n    Dado que um cliente tem um score de 25\n    Quando o sistema identifica o cliente\n    Então o sistema não deve exigir aprovação manual\n```\n\n**Cenários Alternativos / Edge Cases:**\n- Cliente com score exatamente 80\n\n---\n\n### US-002: Liberar Cliente com Score Abaixo de 30\n**Como** Analista de Compliance\n**Eu quero** liberar automaticamente\n**Para que** agilizar o processo para clientes de baixo risco\n\n**Prioridade:** Must\n**Estimativa:** 3\n**Dependências:** Nenhuma\n\n#### Critérios de Aceitação\n```gherkin\n  Cenário: Cliente com score abaixo de 30\n    Dado que um cliente tem um score de 25\n    Quando o sistema identifica o cliente\n    Então o sistema deve liberar o cliente automaticamente\n  Cenário: Cliente com score acima de 30\n    Dado que um cliente tem um score de 35\n    Quando o sistema identifica o cliente\n    Então o sistema não deve liberar o cliente automaticamente\n```\n\n**Cenários Alternativos / Edge Cases:**\n- Cliente com score exatamente 30\n\n---\n\n### US-003: Revisar Cliente com Score entre 30 e 80\n**Como** Analista de Compliance\n**Eu quero** realizar revisão simples\n**Para que** garantir que clientes com risco moderado sejam revisados\n\n**Prioridade:** Must\n**Estimativa:** 3\n**Dependências:** Nenhuma\n\n#### Critérios de Aceitação\n```gherkin\n  Cenário: Cliente com score entre 30 e 80\n    Dado que um cliente tem um score de 50\n    Quando o sistema identifica o cliente\n    Então o sistema deve exigir uma revisão simples\n  Cenário: Cliente com score fora do intervalo 30-80\n    Dado que um cliente tem um score de 85\n    Quando o sistema identifica o cliente\n    Então o sistema não deve exigir uma revisão simples\n```\n\n**Cenários Alternativos / Edge Cases:**\n- Cliente com score exatamente 30 ou 80\n\n---\n\n## Observações\n- **Riscos/dependências:**\n  - Possível atraso na liberação de câmbio devido à necessidade de aprovação manual\n- **Backlog sugerido:**\n  - Implementar notificações automáticas para Compliance Managers\n- **Dúvidas:**\n  - Qual o tempo máximo permitido para a aprovação manual de clientes com score acima de 80?"
     },
     {
       "id": "techspec-webhook-payments",
       "type": "techspec",
-      "latencyMs": 69424,
-      "passed": false,
-      "deterministicPassed": false,
-      "checks": [
-        {
-          "name": "Ausência de Placeholders",
-          "passed": true,
-          "details": "Nenhum placeholder detectado."
-        },
-        {
-          "name": "Estrutura e Seções Obrigatórias",
-          "passed": true,
-          "details": "Todas as seções obrigatórias presentes."
-        },
-        {
-          "name": "Preservação de Regras Críticas (Required)",
-          "passed": false,
-          "details": "Requisitos não encontrados: [x-signature]"
-        },
-        {
-          "name": "Inexistência de Regras Proibidas (Forbidden)",
-          "passed": true,
-          "details": "Nenhum termo proibido gerado."
-        },
-        {
-          "name": "Limite de Tamanho do Output",
-          "passed": true,
-          "details": "Tamanho: 3580 caracteres."
-        }
-      ],
-      "qualityScore": 65,
-      "dimensions": [
-        {
-          "name": "Fidelidade",
-          "score": 60,
-          "feedback": "Nota: 3/5. Preserva a maioria das regras e valores, mas omite detalhes importantes como critérios de aceitação completos e especificações de performance."
-        },
-        {
-          "name": "Completude",
-          "score": 60,
-          "feedback": "Nota: 3/5. Cobre o essencial, mas há lacunas em seções como performance, escalabilidade, e detalhes de implementação específicos."
-        },
-        {
-          "name": "Aderência ao Formato",
-          "score": 80,
-          "feedback": "Nota: 4/5. A estrutura está quase correta, mas algumas seções estão incompletas ou com placeholders implícitos."
-        },
-        {
-          "name": "Acionabilidade",
-          "score": 60,
-          "feedback": "Nota: 3/5. Útil, mas exige retrabalho em várias áreas para ser completamente implementável, como detalhes de performance e escalabilidade."
-        },
-        {
-          "name": "Clareza",
-          "score": 80,
-          "feedback": "Nota: 4/5. Direto e organizado, mas algumas seções poderiam ser mais detalhadas para melhorar a clareza."
-        }
-      ],
-      "isReleaseBlocked": true,
-      "blockers": [
-        "Documento sem critérios de aceite completos quando o tipo de documento exige"
-      ],
-      "suggestions": [
-        "Adicionar critérios de aceitação técnica completos",
-        "Detalhar requisitos de performance e estratégias de escalabilidade"
-      ],
-      "outputText": "⚙️ **Especificação Técnica**\n\n## 1. Visão Geral\n- **Objetivo:** Implementar um webhook para receber eventos de pagamento de forma segura e idempotente.\n- **Escopo:** Inclui a criação de um endpoint para receber eventos, validação de assinatura HMAC-SHA256, persistência de eventos brutos e processamento idempotente. Exclui a integração com sistemas de pagamento específicos além do webhook.\n- **Audiência:** Desenvolvedores de backend, arquitetos de software e equipe de operações.\n\n## 2. Contexto e Background\n- **Problema sendo resolvido:** Necessidade de receber e processar eventos de pagamento de forma segura e idempotente, garantindo a integridade e autenticidade dos dados recebidos.\n- **Sistemas afetados:** Sistema de pagamentos, Sistema de registro de transações\n- **Decisões arquiteturais anteriores relevantes:** Uso de HMAC-SHA256 para validação de assinatura\n\n## 3. Arquitetura Proposta\n### 3.1 Diagrama de Alto Nível\nO webhook recebe eventos via POST, valida a assinatura e o timestamp, persiste o evento bruto e processa o evento de forma idempotente.\n\n### 3.2 Componentes\n\n- **Nome:** Webhook Endpoint\n- **Responsabilidade:** Receber e validar eventos de pagamento\n- **Dependências:** Banco de Dados\n- **Interfaces:** HTTP\n\n\n- **Nome:** Banco de Dados\n- **Responsabilidade:** Armazenar eventos brutos e garantir idempotência\n- **Dependências:** \n- **Interfaces:** SQL\n\n\n### 3.3 Fluxo de Dados\nEvento de pagamento -> Webhook Endpoint -> Validação -> Persistência -> Processamento Idempotente\n\n## 4. Stack Tecnológico\n- **Frontend:** N/A\n- **Backend:** Node.js\n- **Database:** PostgreSQL\n- **Infraestrutura:** AWS\n- **Terceiros:** \n\n## 5. Modelos de Dados\n\n### Entidade: Eventos\n- event_id: VARCHAR(36) (Identificador único do evento)\n- raw_event: JSONB (Evento bruto recebido)\n- timestamp: TIMESTAMP (Timestamp do evento)\n\n\n### 5.2 Migrações Necessárias\n- Criar tabela eventos\n\n## 6. APIs e Interfaces\n\n- **Método:** POST\n- **Path:** /webhooks/payments\n- **Request:** body JSON\n- **Response:** 200 OK\n- **Erros:** 400, 401, 403\n\n\n## 7. Segurança\n- **Autenticação e autorização:** Validação HMAC-SHA256\n- **Proteção de dados sensíveis:** Criptografia em repouso e trânsito\n- **Validações de input:** Validação de timestamp e assinatura\n- **Rate limiting:** Limite por IP\n- **Audit logging:** Registro de eventos recebidos e processados\n\n## 8. Performance e Escalabilidade\n- **Requisitos de performance:** \n- **Estratégias de caching:** N/A\n- **Considerações de escalabilidade:** \n- **Bottlenecks potenciais:** Possível gargalo na validação de assinatura\n\n## 9. Observabilidade\n- **Logging strategy:** Logs estruturados em JSON\n- **Métricas a coletar:** tempo de resposta, taxa de eventos rejeitados\n- **Alertas necessários:** \n\n## 10. Plano de Testes\n- **Testes unitários necessários:** \n- **Testes de integração:** Testes de validação de assinatura e idempotência\n- **Testes de carga/performance:** Simulação de carga com k6\n- **Critérios de aceitação técnica:**\n- Eventos são processados de forma idempotente\n- Eventos com timestamp maior que 5 minutos de diferença são rejeitados\n\n## 11. Deployment\n- **Estratégia de deploy:** \n- **Feature flags necessários:** \n- **Rollback plan:** \n- **Checklist de go-live:**\n- executar migrations\n- validar variáveis de ambiente\n\n## 12. Riscos e Mitigações\n| Risco | Probabilidade | Impacto | Mitigação |\n|-------|--------------|---------|-----------|\n| Falha na validação de assinatura | Baixa | Alto | Revisão e testes rigorosos da lógica de validação |\n\n## 13. Decisões em Aberto\n- Escolha de biblioteca para HMAC-SHA256"
-    },
-    {
-      "id": "apidoc-orders-query",
-      "type": "apidoc",
-      "latencyMs": 72010,
+      "latencyMs": 45460,
       "passed": true,
       "deterministicPassed": true,
       "checks": [
@@ -239,7 +170,7 @@
         {
           "name": "Limite de Tamanho do Output",
           "passed": true,
-          "details": "Tamanho: 2225 caracteres."
+          "details": "Tamanho: 4180 caracteres."
         }
       ],
       "qualityScore": 100,
@@ -247,7 +178,7 @@
         {
           "name": "Fidelidade",
           "score": 100,
-          "feedback": "Nota: 5/5. O documento preserva perfeitamente todas as regras, valores, prazos e exceções."
+          "feedback": "Nota: 5/5. Preserva perfeitamente todas as regras, valores, prazos e exceções."
         },
         {
           "name": "Completude",
@@ -273,12 +204,12 @@
       "isReleaseBlocked": false,
       "blockers": [],
       "suggestions": [],
-      "outputText": "📡 **Documentação de API - API de Consulta de Pedidos**\n\n## 1. Visão Geral\n- **Nome da API:** API de Consulta de Pedidos\n- **Versão:** v1.0.0\n- **Base URL:** `https://api.exemplo.com/v1`\n- **Descrição:** API para consulta de pedidos, permitindo a recuperação de detalhes específicos de um pedido.\n\n## 2. Autenticação\n### Método de Autenticação\nBearer Token\n\n### Como Obter Credenciais\nPara obter o token de autenticação, faça login na plataforma e utilize o token retornado.\n\n### Exemplo de Uso\n```bash\ncurl -X GET https://api.exemplo.com/v1/api/orders/{id} -H 'Authorization: Bearer {token}'\n```\n\n## 3. Rate Limiting\n- **Limite:** 60 requests por minuto por usuário\n\n## 4. Códigos de Resposta Padrão\n| Código | Significado | Quando Usar |\n|--------|-------------|-------------|\n| 200 | OK | Sucesso na consulta do pedido |\n| 403 | Forbidden | Usuário não tem permissão para acessar o recurso |\n| 404 | Not Found | Pedido não existe |\n\n## 5. Formato de Erro Padrão\n```json\n{\"error\": {\"code\": \"NOT_FOUND\", \"message\": \"Pedido não encontrado\" }}\n```\n\n## 6. Endpoints\n\n#### GET /api/orders/{id}\n**Descrição:** Retorna os detalhes de um pedido específico.\n**Autenticação Necessária:** Sim\n**Rate Limits específicos:** 60 requests por minuto por usuário\n\n**Path Parameters:**\n| Param | Tipo | Descrição |\n|-------|------|-----------|\n| id | string | Identificador único do pedido |\n\n**Response 200:**\n```json\n{\"id\": \"123e4567-e89b-12d3-a456-426614174000\", \"status\": \"completed\", \"total_amount\": 100.50, \"created_at\": \"2023-01-01T12:00:00Z\"}\n```\n\n**Erros Mapeados:**\n- **403**: Usuário não tem permissão para acessar o pedido\n- **404**: Pedido não encontrado\n\n## 7. Modelos de Dados\n### Pedido\n| Campo | Tipo | Descrição |\n|-------|------|-----------|\n| id | string | Identificador único do pedido |\n| status | string | Status atual do pedido |\n| total_amount | number | Valor total do pedido |\n| created_at | string | Data e hora de criação do pedido |\n\n## 10. Exemplos de Uso Completos\n### Exemplo: Consultar um pedido específico\n```bash\n# Consultar pedido com ID 123e4567-e89b-12d3-a456-426614174000\ncurl -X GET https://api.exemplo.com/v1/api/orders/123e4567-e89b-12d3-a456-426614174000 \\\n  -H \"Authorization: Bearer {token}\"\n```"
+      "outputText": "⚙️ **Especificação Técnica**\n\n## 1. Visão Geral\n- **Objetivo:** Implementar um webhook para receber eventos de pagamento com validação de assinatura e idempotência.\n- **Escopo:** Inclui a criação de um endpoint para receber eventos de pagamento, validação de assinatura HMAC-SHA256, persistência de eventos brutos e processamento idempotente. Exclui a lógica de processamento de pagamentos específicos.\n- **Audiência:** Desenvolvedores de backend, arquitetos de software e equipe de operações.\n\n## 2. Contexto e Background\n- **Problema sendo resolvido:** Necessidade de receber e processar eventos de pagamento de forma segura e idempotente.\n- **Sistemas afetados:** Sistema de Pagamentos, Sistema de Notificações\n- **Decisões arquiteturais anteriores relevantes:** Uso de HMAC-SHA256 para validação de assinatura\n\n## 3. Arquitetura Proposta\n### 3.1 Diagrama de Alto Nível\nO sistema recebe eventos via POST /webhooks/payments, valida a assinatura HMAC-SHA256 no header X-Signature, verifica o timestamp, persiste o evento bruto e processa de forma idempotente pelo event_id.\n\n### 3.2 Componentes\n\n- **Nome:** Webhook Receiver\n- **Responsabilidade:** Receber e validar eventos de pagamento\n- **Dependências:** Database\n- **Interfaces:** HTTP\n\n\n- **Nome:** Database\n- **Responsabilidade:** Armazenar eventos brutos\n- **Dependências:** \n- **Interfaces:** SQL\n\n\n- **Nome:** Event Processor\n- **Responsabilidade:** Processar eventos de forma idempotente\n- **Dependências:** Database\n- **Interfaces:** gRPC\n\n\n### 3.3 Fluxo de Dados\nEvento de pagamento -> Webhook Receiver -> Validação de assinatura e timestamp -> Persistência no Database -> Processamento idempotente pelo Event Processor.\n\n## 4. Stack Tecnológico\n- **Frontend:** N/A\n- **Backend:** Node.js\n- **Database:** PostgreSQL\n- **Infraestrutura:** AWS / Docker\n- **Terceiros:** \n\n## 5. Modelos de Dados\n\n### Entidade: Eventos\n- event_id: VARCHAR(36) (Identificador único do evento)\n- raw_event: JSONB (Evento bruto recebido)\n- timestamp: TIMESTAMP (Timestamp do evento)\n\n\n### 5.2 Migrações Necessárias\n- Criar tabela eventos\n\n## 6. APIs e Interfaces\n\n- **Método:** POST\n- **Path:** /webhooks/payments\n- **Request:** body JSON\n- **Response:** 200 OK\n- **Erros:** 400, 401\n\n\n## 7. Segurança\n- **Autenticação e autorização:** Autenticação via HMAC-SHA256 no header X-Signature\n- **Proteção de dados sensíveis:** Criptografia em trânsito (HTTPS)\n- **Validações de input:** Rejeitar eventos com timestamp maior que 5 minutos de diferença\n- **Audit logging:** Log de todos os eventos recebidos e processados\n\n## 8. Performance e Escalabilidade\n- **Estratégias de caching:** N/A\n- **Considerações de escalabilidade:** Escalonamento horizontal automático\n- **Bottlenecks potenciais:** Possível gargalo na validação de assinatura HMAC-SHA256\n\n## 9. Observabilidade\n- **Logging strategy:** Logs estruturados em JSON\n- **Métricas a coletar:** uso de CPU, tempo de resposta, taxa de eventos recebidos\n- **Alertas necessários:** alerta se erros 4xx > 5%, alerta se latência > 200ms\n\n## 10. Plano de Testes\n- **Testes unitários necessários:** Cobertura alvo de 80%\n- **Testes de integração:** Testes de rotas HTTP com Supertest\n- **Testes de carga/performance:** Simulação de carga com k6 (1000 requests por minuto)\n- **Critérios de aceitação técnica:**\n- Validação de assinatura HMAC-SHA256 no header X-Signature\n- Rejeição de eventos com timestamp maior que 5 minutos de diferença\n- Persistência de evento bruto no banco de dados\n- Processamento idempotente pelo event_id\n\n## 11. Deployment\n- **Estratégia de deploy:** Blue-Green\n- **Feature flags necessários:** \n- **Rollback plan:** Voltar versão anterior no Kubernetes se erros aumentarem\n- **Checklist de go-live:**\n- executar migrations\n- validar variáveis de ambiente\n\n## 12. Riscos e Mitigações\n| Risco | Probabilidade | Impacto | Mitigação |\n|-------|--------------|---------|-----------|\n| Falha na validação de assinatura HMAC-SHA256 | Média | Alto | Implementar testes rigorosos e monitoramento contínuo |\n| Eventos duplicados devido a falha no processamento idempotente | Baixa | Médio | Garantir que o event_id seja único e persistido corretamente |\n\n## 13. Decisões em Aberto"
     },
     {
-      "id": "prd-csv-export-injection",
-      "type": "prd",
-      "latencyMs": 47266,
+      "id": "apidoc-orders-query",
+      "type": "apidoc",
+      "latencyMs": 63799,
       "passed": true,
       "deterministicPassed": true,
       "checks": [
@@ -305,7 +236,7 @@
         {
           "name": "Limite de Tamanho do Output",
           "passed": true,
-          "details": "Tamanho: 3050 caracteres."
+          "details": "Tamanho: 1660 caracteres."
         }
       ],
       "qualityScore": 65,
@@ -313,40 +244,108 @@
         {
           "name": "Fidelidade",
           "score": 60,
-          "feedback": "Nota: 3/5. O documento preserva as regras principais (seleção de período, colunas, separador e limite de 50.000 linhas), mas não detalha aspectos como formatos de separador disponíveis, validações de período ou comportamento em caso de erro."
+          "feedback": "Nota: 3/5. Preserva a maioria das regras, mas omite detalhes como exemplos completos de respostas e descrições mais detalhadas dos campos."
         },
         {
           "name": "Completude",
           "score": 60,
-          "feedback": "Nota: 3/5. Cobre os requisitos essenciais, mas apresenta lacunas importantes como: não especifica os formatos de separador disponíveis, não define validações para o período, não detalha o comportamento do sistema em caso de erro ou limite excedido, e não menciona aspectos de performance e escalabilidade."
+          "feedback": "Nota: 3/5. Cobre o essencial, mas falta detalhes como exemplos completos de respostas, descrições mais detalhadas dos campos e possíveis exceções."
         },
         {
           "name": "Aderência ao Formato",
           "score": 80,
-          "feedback": "Nota: 4/5. Estrutura geral correta com seções bem organizadas (Resumo, Problema, Usuários, Solução, Requisitos, Critérios de Aceite, Considerações Técnicas). Poderia melhorar com mais detalhamento em algumas seções."
+          "feedback": "Nota: 4/5. A estrutura está quase correta, mas falta detalhes como exemplos completos de respostas e descrições mais detalhadas dos campos."
         },
         {
           "name": "Acionabilidade",
           "score": 60,
-          "feedback": "Nota: 3/5. Os requisitos são úteis para implementação, mas exigem retrabalho para definir detalhes como: opções específicas de separador, validações de entrada, tratamento de erros e mensagens ao usuário."
+          "feedback": "Nota: 3/5. Útil, mas exige retrabalho para ser completamente implementável devido à falta de detalhes."
         },
         {
           "name": "Clareza",
           "score": 80,
-          "feedback": "Nota: 4/5. Documento é direto, organizado e fácil de entender. A linguagem é clara e as seções estão bem estruturadas, facilitando a compreensão dos requisitos."
+          "feedback": "Nota: 4/5. Direto e organizado, mas poderia ser mais claro com exemplos completos de respostas e descrições mais detalhadas dos campos."
         }
       ],
       "isReleaseBlocked": false,
       "blockers": [],
       "suggestions": [
-        "Especificar os formatos de separador disponíveis (vírgula, ponto e vírgula, tabulação, etc.)",
-        "Definir validações para o período de exportação (datas mínimas e máximas)",
-        "Detalhar o comportamento do sistema quando o limite de 50.000 linhas é excedido",
-        "Incluir requisitos não-funcionais como tempo máximo de resposta para exportação",
-        "Adicionar wireframes ou mockups da interface de exportação"
+        "Adicionar exemplos completos de respostas.",
+        "Fornecer descrições mais detalhadas dos campos.",
+        "Incluir possíveis exceções e fluxos relevantes."
       ],
-      "outputText": "📄 **Documento de Requisitos do Produto - Exportação de Relatórios em CSV**\n\n## 1. Resumo\n**O que estamos construindo:** Estamos construindo uma funcionalidade que permite exportar relatórios em CSV, com opções para selecionar período, colunas e formato de separador.\n**Por que é importante:** Essa funcionalidade é importante para oferecer flexibilidade e personalização na exportação de dados, atendendo às necessidades específicas dos usuários.\n**Prazo esperado:** 3 meses\n\n## 2. O Problema\n### Situação Atual\nAtualmente, os usuários enfrentam dificuldades ao exportar relatórios, pois não podem escolher colunas específicas ou formatos de separador, limitando a utilidade dos dados exportados.\n\n### Exemplo Real\nUm analista precisa exportar dados de vendas, mas só consegue exportar todas as colunas, incluindo informações irrelevantes, o que aumenta o tempo de processamento e análise.\n\n## 3. Quem Vai Usar\n### Usuário Principal\n- **Quem é:** Analista de dados\n- **O que precisa:** Exportar relatórios em CSV com colunas específicas e formato de separador personalizado.\n- **Maior frustração hoje:** Frustração ao lidar com dados desnecessários e formatos inadequados.\n\n### Outros Usuários (se houver)\n- Gerente de projetos\n- Desenvolvedor\n\n## 4. A Solução\n### O Que Vamos Fazer\n- **Seleção de Período**: Permite exportar dados de um intervalo específico.\n- **Seleção de Colunas**: Oferece flexibilidade para escolher apenas as colunas relevantes.\n- **Formato de Separador**: Personaliza o formato de separador para facilitar a leitura e análise.\n\n### Como Vai Funcionar\n1. O usuário seleciona o período desejado.\n2. O usuário escolhe as colunas que deseja exportar.\n3. O usuário define o formato de separador e realiza a exportação.\n\n## 5. Requisitos Detalhados\n### Funcionalidades Essenciais (Obrigatórias)\n- [ ] Permitir seleção de período para exportação.\n- [ ] Permitir seleção de colunas para exportação.\n- [ ] Permitir escolha de formato de separador.\n\n### Funcionalidades Desejáveis (Se der tempo)\n- [ ] Oferecer opções de formatação avançada para os dados exportados.\n\n### O Que NÃO Faremos Agora\n- Não permitiremos exportações com mais de 50.000 linhas por arquivo.\n\n## 6. Como Saber se Deu Certo\n### Critérios de Aceite\nPara considerar pronto, precisa:\n- [ ] O usuário deve conseguir selecionar o período de exportação.\n- [ ] O usuário deve conseguir escolher as colunas para exportação.\n- [ ] O usuário deve conseguir definir o formato de separador.\n- [ ] O sistema deve impedir a exportação de arquivos com mais de 50.000 linhas.\n\n## 7. Considerações Técnicas\n### Dependências\n- Biblioteca para geração de CSV.\n\n### Riscos e Cuidados\n- **Problemas de desempenho ao exportar grandes volumes de dados.**: Otimizar a geração de CSV e realizar testes de carga.\n\n### Integrações Necessárias\n- Integração com o sistema de relatórios existente.\n\n## 8. Próximos Passos\n1. Definir detalhes técnicos da implementação.\n2. Realizar testes de usabilidade.\n\n## 9. Dúvidas em Aberto\n- Nenhuma dúvida em aberto no momento.\n\n---\n**Status:** Rascunho"
+      "outputText": "📡 **Documentação de API - API de Consulta de Pedidos**\n\n## 1. Visão Geral\n- **Nome da API:** API de Consulta de Pedidos\n- **Descrição:** API de consulta de pedidos\n\n## 2. Autenticação\n### Método de Autenticação\nBearer Token\n\n### Exemplo de Uso\n```bash\ncurl -X GET https://api.exemplo.com/v1/api/orders/123 -H 'Authorization: Bearer seu_token_aqui'\n```\n\n## 3. Rate Limiting\n- **Limite:** 60 requests por minuto por usuário\n\n## 4. Códigos de Resposta Padrão\n| Código | Significado | Quando Usar |\n|--------|-------------|-------------|\n| 200 | OK | Sucesso na consulta |\n| 403 | Forbidden | Usuário não tem permissão para acessar o recurso |\n| 404 | Not Found | Pedido não existe |\n\n## 5. Formato de Erro Padrão\n```json\n{\"error\": {\"code\": \"NOT_FOUND\", \"message\": \"Pedido não encontrado\" }}\n```\n\n## 6. Endpoints\n\n#### GET /api/orders/{id}\n**Descrição:** Retorna detalhes de um pedido específico\n**Autenticação Necessária:** Sim\n**Rate Limits específicos:** 60 requests por minuto por usuário\n\n**Path Parameters:**\n| Param | Tipo | Descrição |\n|-------|------|-----------|\n| id | string | ID do pedido |\n\n**Response 200:**\n```json\n{\"id\": \"\", \"status\": \"\", \"total_amount\": 0, \"created_at\": \"\"}\n```\n\n**Erros Mapeados:**\n- **403**: Usuário não tem permissão para acessar o pedido\n- **404**: Pedido não existe\n\n## 7. Modelos de Dados\n### Pedido\n| Campo | Tipo | Descrição | Obrigatório |\n|-------|------|-----------|-------------|\n| id | string | Identificador único do pedido | Sim |\n| status | string | Status atual do pedido | Sim |\n| total_amount | number | Valor total do pedido | Sim |\n| created_at | string (ISO 8601) | Data e hora de criação do pedido | Sim |"
+    },
+    {
+      "id": "prd-csv-export-injection",
+      "type": "prd",
+      "latencyMs": 55441,
+      "passed": true,
+      "deterministicPassed": true,
+      "checks": [
+        {
+          "name": "Ausência de Placeholders",
+          "passed": true,
+          "details": "Nenhum placeholder detectado."
+        },
+        {
+          "name": "Estrutura e Seções Obrigatórias",
+          "passed": true,
+          "details": "Todas as seções obrigatórias presentes."
+        },
+        {
+          "name": "Preservação de Regras Críticas (Required)",
+          "passed": true,
+          "details": "Todas as regras obrigatórias atendidas."
+        },
+        {
+          "name": "Inexistência de Regras Proibidas (Forbidden)",
+          "passed": true,
+          "details": "Nenhum termo proibido gerado."
+        },
+        {
+          "name": "Limite de Tamanho do Output",
+          "passed": true,
+          "details": "Tamanho: 3611 caracteres."
+        }
+      ],
+      "qualityScore": 78,
+      "dimensions": [
+        {
+          "name": "Fidelidade",
+          "score": 60,
+          "feedback": "Nota: 3/5. Preserva a maioria das regras e requisitos, mas omite detalhes importantes como o prazo esperado e o responsável pelo documento."
+        },
+        {
+          "name": "Completude",
+          "score": 80,
+          "feedback": "Nota: 4/5. Cobre o essencial, mas há lacunas como a falta de detalhes sobre a interface de usuário e a integração com o sistema de relatórios existente."
+        },
+        {
+          "name": "Aderência ao Formato",
+          "score": 100,
+          "feedback": "Nota: 5/5. A estrutura está correta e pronta para uso, sem placeholders pendentes."
+        },
+        {
+          "name": "Acionabilidade",
+          "score": 80,
+          "feedback": "Nota: 4/5. O documento é útil e claro, mas exige retrabalho para detalhar a interface de usuário e as integrações necessárias."
+        },
+        {
+          "name": "Clareza",
+          "score": 100,
+          "feedback": "Nota: 5/5. O documento é direto, organizado e consistente, facilitando a compreensão."
+        }
+      ],
+      "isReleaseBlocked": false,
+      "blockers": [],
+      "suggestions": [
+        "Adicionar detalhes sobre a interface de usuário para seleção de período e colunas.",
+        "Especificar a integração com o sistema de relatórios existente.",
+        "Incluir o prazo esperado e o responsável pelo documento."
+      ],
+      "outputText": "📄 **Documento de Requisitos do Produto - Exportação de Relatórios em CSV**\n\n## 1. Resumo\n**O que estamos construindo:** Estamos construindo uma funcionalidade que permite aos usuários exportar relatórios em CSV, com opções para selecionar período, colunas e formato de separador.\n**Por que é importante:** Esta funcionalidade é importante porque facilita a análise de dados ao permitir que os usuários exportem informações específicas de maneira personalizada.\n**Prazo esperado:** Não definido\n\n## 2. O Problema\n### Situação Atual\nAtualmente, os usuários enfrentam dificuldades ao tentar exportar dados específicos de relatórios, pois não têm controle sobre quais colunas ou períodos exportar.\n\n### Exemplo Real\nUm analista de dados precisa exportar apenas as colunas de vendas e datas de um período específico, mas é obrigado a exportar todas as colunas, o que aumenta o tempo de processamento e análise.\n\n## 3. Quem Vai Usar\n### Usuário Principal\n- **Quem é:** Analista de dados\n- **O que precisa:** Exportar relatórios em CSV com seleção de colunas, período e formato de separador.\n- **Maior frustração hoje:** Frustração ao ter que exportar dados desnecessários ou em formatos inadequados.\n\n\n### Outros Usuários (se houver)\n- Gerente de projetos\n- Desenvolvedor de software\n\n## 4. A Solução\n### O Que Vamos Fazer\n- **Seleção de Período**: Permite ao usuário exportar dados de um intervalo de tempo específico.\n- **Seleção de Colunas**: Permite ao usuário escolher quais colunas serão incluídas no CSV.\n- **Formato de Separador**: Permite ao usuário escolher o formato de separador, com ponto e vírgula como padrão.\n\n### Como Vai Funcionar\n1. O usuário seleciona o período desejado para exportação.\n2. O usuário escolhe as colunas que deseja incluir no CSV.\n3. O usuário seleciona o formato de separador (padrão: ponto e vírgula).\n4. O sistema gera o arquivo CSV e disponibiliza para download.\n\n## 5. Requisitos Detalhados\n### Funcionalidades Essenciais (Obrigatórias)\n- [ ] A funcionalidade deve permitir selecionar o período para exportação de relatórios em CSV.\n- [ ] A funcionalidade deve permitir selecionar as colunas para exportação de relatórios em CSV.\n- [ ] A funcionalidade deve permitir selecionar o formato de separador para exportação de relatórios em CSV.\n- [ ] O separador padrão para exportação deve ser ponto e vírgula.\n- [ ] O limite máximo de linhas por exportação é de 50.000 linhas.\n\n### Funcionalidades Desejáveis (Se der tempo)\n- [ ] Interface intuitiva para seleção de colunas e período.\n\n### O Que NÃO Faremos Agora\n- Exportação de relatórios em outros formatos além de CSV.\n\n## 6. Como Saber se Deu Certo\n### Critérios de Aceite\nPara considerar pronto, precisa:\n- [ ] O usuário deve ser capaz de selecionar um período específico para exportação.\n- [ ] O usuário deve ser capaz de escolher quais colunas serão incluídas no CSV.\n- [ ] O arquivo CSV gerado deve usar ponto e vírgula como separador padrão.\n- [ ] A exportação deve respeitar o limite máximo de 50.000 linhas.\n\n## 7. Considerações Técnicas\n### Dependências\n- Biblioteca para geração de arquivos CSV.\n\n### Riscos e Cuidados\n- **Problemas de desempenho ao exportar grandes volumes de dados.**: Implementar paginação ou processamento em lote.\n\n### Integrações Necessárias\n- Integração com o sistema de relatórios existente.\n\n## 8. Próximos Passos\n1. Definir interface de usuário para seleção de período e colunas.\n2. Implementar funcionalidade de geração de CSV.\n\n## 9. Dúvidas em Aberto\n- Nenhuma dúvida em aberto no momento.\n\n---\n**Documento criado em:** Não informado\n**Responsável:** Não informado\n**Status:** Rascunho"
     }
   ],
-  "timestamp": "2026-06-28T19:24:19.329Z"
+  "timestamp": "2026-06-28T19:35:43.693Z"
 }

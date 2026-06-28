@@ -3,7 +3,7 @@
     {
       "id": "quickaction-rewrite-limit-approval",
       "routeType": "quick-action",
-      "latencyMs": 1519,
+      "latencyMs": 1977,
       "passed": true,
       "checks": [
         {
@@ -17,18 +17,18 @@
           "details": "Nenhum termo proibido gerado."
         }
       ],
-      "outputText": "Clientes com limite superior a R$ 100.000 requerem aprovação manual. Para limites de até R$ 100.000, o processo segue o fluxo automático."
+      "outputText": "Clientes com limite superior a R$ 100.000 requerem aprovação manual. Para limites iguais ou inferiores a R$ 100.000, o processo segue o fluxo automático."
     },
     {
       "id": "chat-refine-eligibility-ambiguity",
       "routeType": "chat-refinement",
-      "latencyMs": 2653,
-      "passed": false,
+      "latencyMs": 4987,
+      "passed": true,
       "checks": [
         {
           "name": "Explicação/Esclarecimento de Ambiguidade (Required)",
-          "passed": false,
-          "details": "Resposta não contém explicação de ambiguidade."
+          "passed": true,
+          "details": "Explicação/esclarecimento correto de ambiguidade presente."
         },
         {
           "name": "Prevenção de Inclusão Indevida (Forbidden)",
@@ -36,8 +36,8 @@
           "details": "Nenhum termo proibido foi incluído incorretamente."
         }
       ],
-      "outputText": "Documento atualizado conforme solicitado."
+      "outputText": "Você pediu para deixar a regra mais flexível, mas não especificou como ou em qual aspecto. Por exemplo:\n\n1. Quer incluir pessoas físicas?\n2. Quer flexibilizar o critério de cadastro completo?\n3. Quer adicionar exceções ou condições adicionais?\n\nPor favor, especifique qual aspecto você gostaria de tornar mais flexível para que eu possa ajustar o documento corretamente."
     }
   ],
-  "timestamp": "2026-06-28T19:24:27.275Z"
+  "timestamp": "2026-06-28T19:30:03.921Z"
 }
