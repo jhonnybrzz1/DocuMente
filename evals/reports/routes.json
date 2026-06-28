@@ -1,0 +1,43 @@
+{
+  "results": [
+    {
+      "id": "quickaction-rewrite-limit-approval",
+      "routeType": "quick-action",
+      "latencyMs": 1519,
+      "passed": true,
+      "checks": [
+        {
+          "name": "Preservação de Regras Críticas (Required)",
+          "passed": true,
+          "details": "Todas as regras requeridas estão presentes."
+        },
+        {
+          "name": "Ausência de Termos Proibidos (Forbidden)",
+          "passed": true,
+          "details": "Nenhum termo proibido gerado."
+        }
+      ],
+      "outputText": "Clientes com limite superior a R$ 100.000 requerem aprovação manual. Para limites de até R$ 100.000, o processo segue o fluxo automático."
+    },
+    {
+      "id": "chat-refine-eligibility-ambiguity",
+      "routeType": "chat-refinement",
+      "latencyMs": 2653,
+      "passed": false,
+      "checks": [
+        {
+          "name": "Explicação/Esclarecimento de Ambiguidade (Required)",
+          "passed": false,
+          "details": "Resposta não contém explicação de ambiguidade."
+        },
+        {
+          "name": "Prevenção de Inclusão Indevida (Forbidden)",
+          "passed": true,
+          "details": "Nenhum termo proibido foi incluído incorretamente."
+        }
+      ],
+      "outputText": "Documento atualizado conforme solicitado."
+    }
+  ],
+  "timestamp": "2026-06-28T19:24:27.275Z"
+}

@@ -2308,7 +2308,14 @@ Retorne um objeto JSON que siga exatamente este schema:
     }
 
     const generationUserContent = buildGenerationUserContent(cleanDemand, finalExtractedText);
-    const systemContent = `${jsonSystemPrompt}\n${canonicalRequirementsSection ? `\nConsidere estes fatos e regras pré-processados de alta prioridade:\n${canonicalRequirementsSection}` : ""}`;
+    
+    const structuralRules = `
+REGRAS OBRIGATÓRIAS DE FIDELIDADE E COMPLETUDE:
+- Você DEVE identificar e citar LITERAMENTE no JSON todos os nomes exatos de headers (ex: X-Signature), métodos HTTP (ex: POST /webhooks/payments), tokens de autenticação, tempos (ex: 5 minutos), limites numéricos (ex: 50.000, 60 requests), regras de negócio e thresholds informados na demanda do usuário ou nos anexos. Esses termos DEVEM constar exatamente com essas grafias nas propriedades corretas do JSON (como nos caminhos de segurança ou descrição de APIs).
+- Você DEVE detalhar e preencher de forma rica, abundante e completa todos os campos do JSON, especialmente planos de testes, testes unitários (descreva cenários reais), testes de integração e critérios de aceitação (liste de 2 a 5 critérios detalhados). Nunca retorne strings vazias, listas com um único elemento genérico ou placeholders como "...".
+- Responda APENAS com o JSON válido que segue o schema Zod.`;
+
+    const systemContent = `${jsonSystemPrompt}\n${structuralRules}\n${canonicalRequirementsSection ? `\nConsidere estes fatos e regras pré-processados de alta prioridade:\n${canonicalRequirementsSection}` : ""}`;
 
     const messages: ChatMessage[] = [
       { role: "system", content: systemContent },

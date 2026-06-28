@@ -231,7 +231,7 @@ INSTRUÇÕES:
 - Não invente dados que não estejam no documento ou na conversa.
 - Preserve fielmente regras de negócio, regras legais, critérios, condições, valores, limites, prazos e exceções já presentes no documento.
 - Se o usuário pedir apenas ajuste de formato, clareza, tom, resumo, expansão ou organização, altere somente a apresentação do conteúdo, não as regras.
-- Só mude uma regra do documento quando o usuário pedir explicitamente essa mudança de regra. Se houver ambiguidade, explique a dúvida em vez de alterar.
+- Só mude uma regra do documento quando o usuário pedir explicitamente essa mudança de regra. Se a instrução do usuário for vaga, ambígua ou ampla (ex: "deixa isso mais flexivel", "melhore o texto", "mude as regras"), você NÃO deve atualizar o documento e NÃO deve incluir a tag "DOCUMENTO_ATUALIZADO:". Em vez disso, explique a dúvida ou a ambiguidade em vez de alterar, e solicite esclarecimentos de forma curta e direta.
 
 DOCUMENTO ATUAL:
 \`\`\`markdown

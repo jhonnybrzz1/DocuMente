@@ -5,7 +5,7 @@ import * as path from "path";
 
 const OPENROUTER_API_URL =
   process.env.OPENROUTER_API_URL ?? "https://openrouter.ai/api/v1/chat/completions";
-const DEFAULT_MODEL = "deepseek/deepseek-flash"; // DeepSeek Flash para escrita rápida e barata
+const DEFAULT_MODEL = "deepseek/deepseek-chat"; // DeepSeek Chat para escrita rápida e barata
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL ?? DEFAULT_MODEL;
 const OPENROUTER_APP_URL = process.env.APP_URL ?? "http://localhost:5001";
 
@@ -56,7 +56,7 @@ export type TelemetryData = {
 
 // Custos estimados por 1M tokens para cálculo de telemetria
 const MODEL_COSTS: Record<string, { prompt: number; completion: number }> = {
-  "deepseek/deepseek-flash": { prompt: 0.14, completion: 0.28 },
+  "deepseek/deepseek-chat": { prompt: 0.14, completion: 0.28 },
   "xiaomi/mimo-v2.5-pro": { prompt: 0.14, completion: 0.28 },
   "codestral-latest": { prompt: 0.2, completion: 0.6 },
   "mistral-large-latest": { prompt: 2.0, completion: 6.0 },
@@ -128,8 +128,8 @@ export async function chatCompletion(
         let selectedModel = rawModel;
         if (rawModel === "gemini-2.5-pro" || rawModel === "mimo-2.5-pro" || rawModel === "xiaomi/mimo-2.5-pro") {
           selectedModel = "xiaomi/mimo-v2.5-pro";
-        } else if (rawModel === "deepseek-flash" || rawModel === "deepseek/deepseek-flash") {
-          selectedModel = "deepseek/deepseek-flash";
+        } else if (rawModel === "deepseek-flash" || rawModel === "deepseek/deepseek-flash" || rawModel === "deepseek/deepseek-chat") {
+          selectedModel = "deepseek/deepseek-chat";
         }
 
         const body: Record<string, unknown> = {
@@ -402,7 +402,9 @@ export async function chatCompletion(
         err.message.includes("Transient") || 
         err.name === "AbortError" || 
         err.message.includes("fetch") ||
-        err.message.includes("timeout")
+        err.message.includes("timeout") ||
+        err.message.includes("empty response") ||
+        err.message.includes("429")
       );
 
       if (isTransient && retriesCount < maxRetries) {
