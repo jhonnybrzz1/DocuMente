@@ -2710,7 +2710,7 @@ JSON apenas: {"score":0-100,"positives":["..."],"improvements":["..."]}`;
 
             const isComplex = content.length > 15000;
             const isLegalCompliance = /duimp|siscomex|bcb\s*277|pucomex/i.test(content);
-            const judgeModel = (isComplex || isLegalCompliance) ? "mimo-2.5-pro" : "deepseek/deepseek-chat";
+            const judgeModel = (isComplex || isLegalCompliance) ? "mimo-2.5-pro" : "deepseek/deepseek-flash";
 
             const qualityRaw = await chatCompletion(evaluationMessages, {
               temperature: 0.2,

@@ -289,6 +289,13 @@ MISTRAL_API_KEY=your_mistral_api_key_here
 - Usa `deepseek/deepseek-flash` com input multimodal
 - Transcreve texto, tabelas e dados visíveis
 
+### 5.6 Divergência de judgeModel em quality-score ✅ CORRIGIDO
+
+**Status:** Corrigido
+
+- O endpoint externo assíncrono `/api/external/generate` usava `deepseek-chat` para documentos simples, enquanto o principal `/api/ai/quality-score` usava `deepseek-flash`.
+- Corrigido unificando ambos para usar o modelo mais rápido e barato `deepseek/deepseek-flash` para documentos simples no [routes.ts](file:///Users/josejonathanalvesdeazevedo/documente/server/routes.ts#L2713).
+
 ---
 
 ## 6. Itens Implementados Mas Com Melhorias Possíveis
