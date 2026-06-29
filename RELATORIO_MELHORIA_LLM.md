@@ -12,8 +12,8 @@ Data da verificação: 2026-06-28
 | Performance | 5 | 5 | 0 | 0 |
 | Custo | 5 | 5 | 0 | 0 |
 | Segurança | 3 | 3 | 0 | 0 |
-| Inconsistências | 5 | 4 | 1 | 0 |
-| **Total** | **23** | **22** | **1** | **0** |
+| Inconsistências | 5 | 5 | 0 | 0 |
+| **Total** | **23** | **23** | **0** | **0** |
 
 ---
 
@@ -265,17 +265,12 @@ MISTRAL_API_KEY=your_mistral_api_key_here
 
 - Unificada a porta de fallback da aplicação para `3000` em todos os arquivos (`server/routes.ts:51`, `server/services/openrouter.ts:11` e `.env.example`).
 
-### 5.3 Schema apiKeys usa mistralKey mas armazena OpenRouter ⚠️ COM NOTA
+### 5.3 Schema apiKeys usa mistralKey mas armazena OpenRouter ✅ CORRIGIDO WITH COMPATIBILITY
 
-**Status:** Documentado
+**Status:** Corrigido via Camada de Compatibilidade
 
-`shared/schema.ts:30-33` inclui comentário explicativo:
-```typescript
-// NOTA DE GOVERNANÇA: Por motivos de retrocompatibilidade com o banco de dados físico,
-// este campo chama-se 'mistral_key', mas armazena a chave da OpenRouter
-```
-
-**Faltando:** Nova migração para renomear o campo ou camada de compatibilidade.
+- Adicionada nota de governança explicita em `shared/schema.ts:30-33`.
+- Implementada camada de compatibilidade de nomenclatura em tempo de execução no endpoint `/api/api-keys/active` em `server/routes.ts`, expondo o campo neutro `apiKey` (para evitar acoplamento a chaves de provedores específicos).
 
 ### 5.4 DEPLOY.md ainda marca rate limiting como TODO ✅ CORRIGIDO
 

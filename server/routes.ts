@@ -2800,14 +2800,16 @@ JSON apenas: {"score":0-100,"positives":["..."],"improvements":["..."]}`;
           configured: true,
           provider: "OpenRouter",
           model: OPENROUTER_MODEL,
-          mistralKey: maskedKey
+          mistralKey: maskedKey,
+          apiKey: maskedKey // Camada de compatibilidade de nomenclatura
         });
       } else {
         res.json({
           configured: false,
           provider: "OpenRouter",
           model: OPENROUTER_MODEL,
-          mistralKey: null
+          mistralKey: null,
+          apiKey: null // Camada de compatibilidade de nomenclatura
         });
       }
     } catch (error) {
