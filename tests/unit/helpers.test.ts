@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { maskPII, extractJsonObject, buildGenerationUserContent } from '../../server/utils/helpers';
+import { maskPII, extractJsonObject, buildGenerationUserContent, deterministicCleanText } from '../../server/utils/helpers';
 
 describe('Helpers & PII Utilities Unit Tests', () => {
   describe('maskPII()', () => {
@@ -128,6 +128,35 @@ describe('Helpers & PII Utilities Unit Tests', () => {
       expect(output).toContain(extracted);
       // Com anexos, o output deve terminar com </DOCUMENTOS_ANEXADOS_FONTE>
       expect(output.endsWith('</DOCUMENTOS_ANEXADOS_FONTE>')).toBe(true);
+    });
+  });
+
+  describe('deterministicCleanText()', () => {
+    it('deve limpar linhas vazias extras, divisórias e cabeçalhos redundantes', () => {
+      const input = `
+        Página 1 de 10
+        ==================
+        Regra de Negócio Importante
+        
+        
+        Regra de Negócio Importante
+        ------------------
+        Confidencial
+        Esta linha deve ser mantida.
+      `;
+      const res = deterministicCleanText(input);
+      // Deve remover duplicatas consecutivas e termos de paginação/confidencialidade
+      expect(res).toContain('Regra de Negócio Importante');
+      expect(res).toContain('Esta linha deve ser mantida.');
+      expect(res).not.toContain('Página 1 de 10');
+      expect(res).not.toContain('Confidencial');
+      expect(res).not.toContain('==================');
+      expect(res).not.toContain('------------------');
+      
+      // Checar se removeu duplicatas consecutivas
+      const lines = res.split('\n');
+      const ruleCount = lines.filter(l => l === 'Regra de Negócio Importante').length;
+      expect(ruleCount).toBe(1);
     });
   });
 });

@@ -6,6 +6,12 @@
       "sourceType": "github",
       "computedHash": "ce7dd3aedb21254b914a99c60343727d82c33b94b8c9b99801c6ee89462d9adf"
     },
+    "agentic-eval": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/agentic-eval/SKILL.md",
+      "computedHash": "40771d7d389c1542e6cb995d75e516893466f01c3b66bc040b158ceb793d4bed"
+    },
     "ai-shaped-readiness-advisor": {
       "source": "deanpeters/product-manager-skills",
       "sourceType": "github",

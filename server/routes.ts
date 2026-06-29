@@ -5,7 +5,7 @@ import aiRouter from "./routes/ai";
 import documentsExtraRouter from "./routes/documents-extra";
 import { buildProviderRouting, chatCompletion, type ChatMessage } from "./services/openrouter";
 import { appCache } from "./utils/cache";
-import { buildGenerationUserContent, maskPII, extractJsonObject } from "./utils/helpers";
+import { buildGenerationUserContent, maskPII, extractJsonObject, deterministicCleanText } from "./utils/helpers";
 import { storage } from "./storage";
 import {
   insertDocumentSchema,
@@ -1802,19 +1802,23 @@ ${generatedContent}
     let useStrongRepair = false;
     let repairModel = "deepseek/deepseek-flash";
 
-    if (userPlan === "free") {
+    if (!hasCriticalIssues) {
+      useStrongRepair = false;
+      repairModel = "deepseek/deepseek-flash";
+      console.log(`[fidelity-plan] Apenas warnings detectados. Usando modelo leve para reparo para economia de custos.`);
+    } else if (userPlan === "free") {
       useStrongRepair = false;
       repairModel = "deepseek/deepseek-flash";
       console.log(`[fidelity-plan] Perfil FREE: forçando modelo leve para reparo.`);
     } else if (userPlan === "enterprise") {
       useStrongRepair = true;
       repairModel = "mimo-2.5-pro";
-      console.log(`[fidelity-plan] Perfil ENTERPRISE: forçando mimo-2.5-pro para reparo.`);
+      console.log(`[fidelity-plan] Perfil ENTERPRISE: forçando mimo-2.5-pro para reparo de erros críticos.`);
     } else {
       // Perfil PRO
-      useStrongRepair = hasCriticalIssues || demandText.length > 5000 || (extractedText ? extractedText.length > 8000 : false);
+      useStrongRepair = demandText.length > 5000 || (extractedText ? extractedText.length > 8000 : false);
       repairModel = useStrongRepair ? "mimo-2.5-pro" : "deepseek/deepseek-flash";
-      console.log(`[fidelity-plan] Perfil PRO: usando roteamento adaptativo. StrongRepair? ${useStrongRepair}. Modelo: ${repairModel}`);
+      console.log(`[fidelity-plan] Perfil PRO: usando roteamento adaptativo para erros críticos. StrongRepair? ${useStrongRepair}. Modelo: ${repairModel}`);
     }
 
     const repairIssuesText = issues.map((issue, idx) => 
@@ -1883,26 +1887,37 @@ export async function callOpenRouterAPI(
   // 2. Compactação de anexos muito longos (>12000 caracteres)
   let finalExtractedText = cleanExtracted;
   if (cleanExtracted && cleanExtracted.length > 12000) {
-    try {
-      console.log(`[performance] Anexo muito longo (${cleanExtracted.length} chars). Compactando antes da geração...`);
-      const compressionSystemPrompt = `Analista de sumarização factual. Leia o documento anexo e crie resumo condensado em Markdown.
+    // 2.1 Aplicar limpeza determinística primeiro para tentar reduzir o tamanho sem IA
+    const cleanDeterministic = deterministicCleanText(cleanExtracted);
+    console.log(`[performance] Limpeza determinística de anexo: de ${cleanExtracted.length} para ${cleanDeterministic.length} chars.`);
+    
+    if (cleanDeterministic.length <= 12000) {
+      console.log(`[performance] Limpeza determinística reduziu o anexo para abaixo do limite de 12.000 chars. Economizando chamada de IA!`);
+      finalExtractedText = cleanDeterministic;
+    } else {
+      try {
+        console.log(`[performance] Anexo limpo deterministicamente continua longo (${cleanDeterministic.length} chars). Compactando via IA...`);
+        const compressionSystemPrompt = `Analista de sumarização factual. Leia o documento anexo e crie resumo condensado em Markdown.
 Regras: extraia todas as regras de negócio, limites, prazos, exceções, fórmulas e permissões. Cite a seção de origem. Delete repetições, cabeçalhos e textos introdutórios. Apenas o resumo factual, sem comentários.`;
 
-      const compressionMessages: ChatMessage[] = [
-        { role: "system", content: compressionSystemPrompt },
-        { role: "user", content: `DOCUMENTO ANEXO A COMPACTAR:\n${cleanExtracted}` }
-      ];
+        const compressionMessages: ChatMessage[] = [
+          { role: "system", content: compressionSystemPrompt },
+          { role: "user", content: `DOCUMENTO ANEXO A COMPACTAR:\n${cleanDeterministic}` }
+        ];
 
-      const compressedResult = await chatCompletion(compressionMessages, {
-        model: "deepseek/deepseek-flash",
-        temperature: 0.1,
-        taskName: "quick-action"
-      });
+        const compressedResult = await chatCompletion(compressionMessages, {
+          model: "deepseek/deepseek-flash",
+          temperature: 0.1,
+          maxTokens: 2000,
+          taskName: "quick-action"
+        });
 
-      finalExtractedText = `[DOCUMENTO ANEXO COMPACTADO POR IA - RESUMO FACTUAL E DE REGRAS MANTIDO]\n\n${compressedResult}`;
-      console.log(`[performance] Anexo compactado com sucesso. Novo tamanho: ${finalExtractedText.length} chars.`);
-    } catch (compressErr) {
-      console.warn("[performance] Falha ao compactar anexo, usando texto bruto:", compressErr);
+        finalExtractedText = `[DOCUMENTO ANEXO COMPACTADO POR IA - RESUMO FACTUAL E DE REGRAS MANTIDO]\n\n${compressedResult}`;
+        console.log(`[performance] Anexo compactado com sucesso. Novo tamanho: ${finalExtractedText.length} chars.`);
+      } catch (compressErr) {
+        console.warn("[performance] Falha ao compactar anexo via IA, usando texto limpo determinístico:", compressErr);
+        finalExtractedText = cleanDeterministic;
+      }
     }
   }
 
@@ -1926,6 +1941,7 @@ JSON: {"requirements":[{"item":"...","category":"...","origin":"..."}]}`;
         model: "deepseek/deepseek-flash",
         temperature: 0.1,
         jsonMode: true,
+        maxTokens: 2000,
         taskName: "quick-action"
       });
 

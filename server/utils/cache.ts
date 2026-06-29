@@ -175,8 +175,20 @@ class SimpleMemoryCache {
 
         // Calcula similaridade de cosseno entre o texto pesquisado e o do cache
         const sim = this.calculateCosineSimilarity(semanticText, entry.semanticText);
-        if (sim >= 0.85) {
-          console.log(`[semantic-cache] Cache hit aproximado (similaridade: ${(sim * 100).toFixed(1)}%) para o prefixo ${prefix}.`);
+        
+        // Threshold adaptativo por tipo de tarefa/prefixo
+        const defaultThreshold = parseFloat(process.env.SEMANTIC_CACHE_THRESHOLD || '0.85');
+        let threshold = defaultThreshold;
+        if (!process.env.SEMANTIC_CACHE_THRESHOLD) {
+          if (prefix === "suggest-title") {
+            threshold = 0.80; // Mais tolerante para títulos
+          } else if (prefix === "generate-document" || prefix === "preview-document") {
+            threshold = 0.95; // Muito estrito para evitar mistura de regras de documentos diferentes
+          }
+        }
+
+        if (sim >= threshold) {
+          console.log(`[semantic-cache] Cache hit aproximado (similaridade: ${(sim * 100).toFixed(1)}%, threshold: ${threshold}) para o prefixo ${prefix}.`);
           return entry.value;
         }
       }

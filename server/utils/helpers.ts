@@ -164,3 +164,42 @@ REGRAS DE INTERPRETACAO DO CONTEUDO RECEBIDO:
 ${demandText.trim()}
 </DEMANDA_USUARIO>${attachmentsSection}`;
 }
+
+export function deterministicCleanText(text: string): string {
+  if (!text) return "";
+  
+  const lines = text
+    .split(/\r?\n/)
+    .map(line => line.trim());
+
+  const cleanedLines: string[] = [];
+  let previousLine = "";
+  let previousNonEmptyLine = "";
+
+  const dividerRegex = /^[-=_*~]{3,}$/;
+  const pageHeaderRegex = /^(?:p[áa]gina|page)\s*\d+(?:\s*(?:de|of)\s*\d+)?$/i;
+  const confidentialRegex = /^(?:confidencial|confidential|todos os direitos reservados|all rights reserved|documento confidencial)$/i;
+
+  for (const line of lines) {
+    if (line === "" && previousLine === "") {
+      continue;
+    }
+    if (dividerRegex.test(line)) {
+      continue;
+    }
+    if (pageHeaderRegex.test(line) || confidentialRegex.test(line)) {
+      continue;
+    }
+    if (line !== "" && line === previousNonEmptyLine) {
+      continue;
+    }
+    cleanedLines.push(line);
+    previousLine = line;
+    if (line !== "") {
+      previousNonEmptyLine = line;
+    }
+  }
+
+  return cleanedLines.join("\n").trim();
+}
+

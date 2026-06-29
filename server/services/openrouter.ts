@@ -272,7 +272,7 @@ export async function chatCompletion(
         ) {
           mistralModel = "mistral-large-latest"; 
         } else if (requestedModel.includes("flash")) {
-          mistralModel = "codestral-latest"; 
+          mistralModel = "mistral-large-latest"; 
         }
 
         const body: Record<string, unknown> = {

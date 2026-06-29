@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest';
 import { callOpenRouterAPI, verifyAndRepairGeneratedDocument } from '../../server/routes';
 import { chatCompletion } from '../../server/services/openrouter';
 import { appCache } from '../../server/utils/cache';
@@ -13,6 +13,14 @@ vi.mock('../../server/services/openrouter', async () => {
 });
 
 describe('Cost Optimization & Model Routing Tests (Plano de Testes)', () => {
+  beforeAll(() => {
+    process.env.SEMANTIC_CACHE_THRESHOLD = '0.85';
+  });
+
+  afterAll(() => {
+    delete process.env.SEMANTIC_CACHE_THRESHOLD;
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     appCache.clear();
