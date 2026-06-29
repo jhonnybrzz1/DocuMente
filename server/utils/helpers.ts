@@ -87,8 +87,8 @@ export function extractJsonObject<T = unknown>(raw: string): T {
     try {
       // 1. Correção rápida de vírgulas duplicadas ou pendentes
       let fixed = cleaned
-        .replace(/,\s*([}\]])/g, "$1") // remove vírgulas antes de fechar chaves/colchetes
-        .replace(/,\s*,/g, ",");      // remove vírgulas duplicadas
+        .replace(/,\s*,/g, ",")        // primeiro remove vírgulas duplicadas
+        .replace(/,\s*([}\]])/g, "$1"); // depois remove vírgulas antes de fechar chaves/colchetes
 
       // 2. Auto-fechamento inteligente em caso de truncamento
       const openBrackets: string[] = [];

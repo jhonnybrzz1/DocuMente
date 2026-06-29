@@ -150,7 +150,7 @@ const ACTION_PROMPTS: Record<string, string> = {
   expand:
     "Expanda o texto editável adicionando clareza e exemplos apenas quando forem inferências seguras. Não invente fatos e não altere regras, valores, prazos, condições ou exceções. Mantenha o tom e estrutura originais.",
   rewrite:
-    "Reescreva o texto editável de forma mais clara, direta e profissional, mantendo o mesmo significado, regras e formatação markdown.",
+    "Reescreva o texto editável de forma mais clara, direta e profissional, mantendo o mesmo significado, regras e formatação markdown. Conserve termos literais cruciais de regras de negócio (como 'aprovação manual' e 'fluxo automático') sem alterá-los por sinônimos.",
   "fix-grammar":
     "Corrija erros de gramática, ortografia e pontuação no texto abaixo, sem alterar o conteúdo ou estilo. Mantenha a formatação markdown intacta.",
   "translate-en":
