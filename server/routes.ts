@@ -1739,7 +1739,8 @@ async function verifyAndRepairGeneratedDocument(
   demandText: string,
   extractedText: string | undefined,
   generatedContent: string,
-  documentType?: string
+  documentType?: string,
+  userPlan = "pro"
 ): Promise<string> {
   // Heurística de verificação adaptativa (Item 2)
   const isDocDocType = ["apidoc", "techspec", "testplan"].includes(documentType || "");
@@ -1796,8 +1797,24 @@ ${generatedContent}
     console.warn(`[fidelity] Encontrados ${issues.length} desvios de fidelidade. Iniciando reparo...`);
 
     const hasCriticalIssues = issues.some(issue => issue.severity === "critical");
-    const useStrongRepair = hasCriticalIssues || demandText.length > 5000 || (extractedText && extractedText.length > 8000);
-    const repairModel = useStrongRepair ? "mimo-2.5-pro" : "deepseek/deepseek-flash";
+    
+    let useStrongRepair = false;
+    let repairModel = "deepseek/deepseek-flash";
+
+    if (userPlan === "free") {
+      useStrongRepair = false;
+      repairModel = "deepseek/deepseek-flash";
+      console.log(`[fidelity-plan] Perfil FREE: forçando modelo leve para reparo.`);
+    } else if (userPlan === "enterprise") {
+      useStrongRepair = true;
+      repairModel = "mimo-2.5-pro";
+      console.log(`[fidelity-plan] Perfil ENTERPRISE: forçando mimo-2.5-pro para reparo.`);
+    } else {
+      // Perfil PRO
+      useStrongRepair = hasCriticalIssues || demandText.length > 5000 || (extractedText ? extractedText.length > 8000 : false);
+      repairModel = useStrongRepair ? "mimo-2.5-pro" : "deepseek/deepseek-flash";
+      console.log(`[fidelity-plan] Perfil PRO: usando roteamento adaptativo. StrongRepair? ${useStrongRepair}. Modelo: ${repairModel}`);
+    }
 
     const repairIssuesText = issues.map((issue, idx) => 
       `Problema #${idx + 1} [Gravidade: ${issue.severity}] [Tipo: ${issue.type}]:
@@ -1847,7 +1864,8 @@ async function callOpenRouterAPI(
   apiKey: string,
   extractedText?: string,
   documentType?: string,
-  onChunk?: (chunk: string) => void
+  onChunk?: (chunk: string) => void,
+  userPlan = "pro"
 ): Promise<string> {
   // 1. PII Redaction / Mascaramento (LGPD por design)
   const demandMaskResult = maskPII(demandText);
@@ -2245,7 +2263,7 @@ Por favor, corrija a resposta agora e retorne APENAS o JSON válido e completo q
       }
 
       const contentMarkdown = renderFn(parsedJson);
-      return verifyAndRepairGeneratedDocument(apiKey, prompt, cleanDemand, finalExtractedText, contentMarkdown, documentType);
+      return verifyAndRepairGeneratedDocument(apiKey, prompt, cleanDemand, finalExtractedText, contentMarkdown, documentType, userPlan);
 
     } catch (generationErr) {
       console.error("[ai] Falha ao processar geração JSON estruturada, executando fallback em Markdown direto:", generationErr);
@@ -2282,7 +2300,7 @@ Por favor, corrija a resposta agora e retorne APENAS o JSON válido e completo q
     onChunk
   });
 
-  return verifyAndRepairGeneratedDocument(apiKey, prompt, cleanDemand, finalExtractedText, content, documentType);
+  return verifyAndRepairGeneratedDocument(apiKey, prompt, cleanDemand, finalExtractedText, content, documentType, userPlan);
 }
 
 async function createWordDocument(title: string, content: string): Promise<Buffer> {
@@ -2629,6 +2647,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      const userPlan = (req.header("X-User-Plan") || "pro").toLowerCase();
+
       // Obtém as chaves internas para geração de IA
       const openRouterKey = process.env.OPENROUTER_API_KEY;
       const mistralKey = process.env.MISTRAL_API_KEY;
@@ -2643,7 +2663,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const template = documentTemplates[type as keyof typeof documentTemplates];
       
       // Gera o documento usando a função robusta de geração unificada
-      const content = await callOpenRouterAPI(template, demand, openRouterKey || "", extractedText, type);
+      const content = await callOpenRouterAPI(template, demand, openRouterKey || "", extractedText, type, undefined, userPlan);
 
       // Salva no banco de dados local
       const newDoc = await storage.createDocument({
@@ -2807,6 +2827,8 @@ JSON apenas: {"score":0-100,"positives":["..."],"improvements":["..."]}`;
         return res.status(400).json({ message: "Invalid document type" });
       }
 
+      const userPlan = (req.header("X-User-Plan") || "pro").toLowerCase();
+
       const isStreamRequested = req.body.stream || req.header('Accept') === 'text/event-stream';
 
       if (isStreamRequested) {
@@ -2833,7 +2855,7 @@ JSON apenas: {"score":0-100,"positives":["..."],"improvements":["..."]}`;
         } else {
           content = await callOpenRouterAPI(template, demand, apiKey, extractedText, type, (chunk) => {
             sendEvent('chunk', { text: chunk });
-          });
+          }, userPlan);
           appCache.set("generate-document", cacheKey, content);
         }
 
@@ -2863,7 +2885,7 @@ JSON apenas: {"score":0-100,"positives":["..."],"improvements":["..."]}`;
           console.log(`[cache] Cache hit para generate-document do tipo ${type}.`);
           content = cachedContent;
         } else {
-          content = await callOpenRouterAPI(template, demand, apiKey, extractedText, type);
+          content = await callOpenRouterAPI(template, demand, apiKey, extractedText, type, undefined, userPlan);
           appCache.set("generate-document", cacheKey, content);
         }
 
@@ -2914,6 +2936,8 @@ JSON apenas: {"score":0-100,"positives":["..."],"improvements":["..."]}`;
         return res.status(400).json({ message: "Invalid document type" });
       }
 
+      const userPlan = (req.header("X-User-Plan") || "pro").toLowerCase();
+
       const isStreamRequested = req.body.stream || req.header('Accept') === 'text/event-stream';
 
       if (isStreamRequested) {
@@ -2939,7 +2963,7 @@ JSON apenas: {"score":0-100,"positives":["..."],"improvements":["..."]}`;
         } else {
           content = await callOpenRouterAPI(template, demand, apiKey, undefined, type, (chunk) => {
             sendEvent('chunk', { text: chunk });
-          });
+          }, userPlan);
           appCache.set("preview-document", cacheKey, content);
         }
 
@@ -2955,7 +2979,7 @@ JSON apenas: {"score":0-100,"positives":["..."],"improvements":["..."]}`;
           console.log(`[cache] Cache hit para preview-document do tipo ${type}.`);
           content = cachedContent;
         } else {
-          content = await callOpenRouterAPI(template, demand, apiKey, undefined, type);
+          content = await callOpenRouterAPI(template, demand, apiKey, undefined, type, undefined, userPlan);
           appCache.set("preview-document", cacheKey, content);
         }
 

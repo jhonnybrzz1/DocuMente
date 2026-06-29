@@ -12,9 +12,13 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const userPlan = typeof window !== "undefined" ? (localStorage.getItem("docu_user_plan") || "pro") : "pro";
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: {
+      ...(data ? { "Content-Type": "application/json" } : {}),
+      "X-User-Plan": userPlan,
+    },
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -29,8 +33,12 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const userPlan = typeof window !== "undefined" ? (localStorage.getItem("docu_user_plan") || "pro") : "pro";
     const res = await fetch(queryKey.join("/") as string, {
       credentials: "include",
+      headers: {
+        "X-User-Plan": userPlan,
+      }
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

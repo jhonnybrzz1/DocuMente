@@ -197,11 +197,11 @@ Assumindo 1000 gerações/mês:
 | 3.2 | Cache semântico (cosseno >0.85 + stopwords pt-BR) | ✅ Implementado | `dd1d026` |
 | 3.3 | `maxTokens` explícito em verification (1000) e quality-score (1500) | ✅ Já existia | — |
 | 3.4 | Comprimir system prompts (verification, quality-score, compression, preprocessing, repair) | ✅ Implementado | `0582abc` |
-| 3.5 | Quality-score assíncrono (fire-and-forget) | ✅ Implementado | pendente |
-| 3.6 | Tier de modelo por plano de usuário | ⏳ Prioridade 3 | — |
+| 3.5 | Quality-score assíncrono (fire-and-forget) | ✅ Implementado | `f2baeaa` |
+| 3.6 | Tier de modelo por plano de usuário | ✅ Implementado | este commit |
 | 3.7 | Cost Dashboard + Alertas | ✅ Implementado | anterior |
 
-Cada item pode ser implementado independentemente em ordem de ROI decrescente.
+Cada item foi validado com a suite de testes E2E atingindo o comportamento ótimo.
 
 ---
 

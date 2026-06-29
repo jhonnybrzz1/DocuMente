@@ -305,10 +305,24 @@ JSON apenas: {"fidelidade":{"nota":N,"justificativa":""},"completude":{"nota":N,
       suggestions: z.array(z.string()),
     });
 
+    const userPlan = (req.header("X-User-Plan") || "pro").toLowerCase();
+
     const isComplex = content.length > 5000;
     const isLegalCompliance = /legal|compliance|lei|regulamentação|bcb|lgpd|regulamento|norma|portaria|resolução|câmbio|excomex|siscomex|duimp|bcb 277/i.test(content);
-    const useStrongJudge = isComplex || isLegalCompliance;
-    const judgeModel = useStrongJudge ? "mimo-2.5-pro" : "deepseek/deepseek-flash";
+    
+    let judgeModel = "deepseek/deepseek-flash";
+    if (userPlan === "free") {
+      judgeModel = "deepseek/deepseek-flash";
+      console.log(`[quality-plan] Perfil FREE: forçando deepseek-flash como Juiz.`);
+    } else if (userPlan === "enterprise") {
+      judgeModel = "mimo-2.5-pro";
+      console.log(`[quality-plan] Perfil ENTERPRISE: forçando mimo-2.5-pro como Juiz.`);
+    } else {
+      // Perfil PRO
+      const useStrongJudge = isComplex || isLegalCompliance;
+      judgeModel = useStrongJudge ? "mimo-2.5-pro" : "deepseek/deepseek-flash";
+      console.log(`[quality-plan] Perfil PRO: judgeModel = ${judgeModel}`);
+    }
 
     const parsed = await chatCompletionJsonWithRetry(messages, qualitySchema, {
       temperature: 0.1,
