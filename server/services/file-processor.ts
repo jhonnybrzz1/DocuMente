@@ -228,11 +228,16 @@ class FileProcessor {
         
         extractedText += `=== Sheet: ${sheetName} ===\n`;
         
-        jsonData.forEach((row: any) => {
+        const limit = 100;
+        const rowsToRender = jsonData.slice(0, limit);
+        rowsToRender.forEach((row: any) => {
           if (row && row.length > 0) {
             extractedText += row.join(' | ') + '\n';
           }
         });
+        if (jsonData.length > limit) {
+          extractedText += `\n... (outras ${jsonData.length - limit} linhas da planilha Excel foram omitidas para otimizar o tamanho do contexto da IA)\n`;
+        }
         
         extractedText += '\n\n';
       });
@@ -317,9 +322,14 @@ class FileProcessor {
               extractedText += '-'.repeat(headers.join(' | ').length) + '\n';
               
               // Add rows
-              results.forEach(row => {
+              const limit = 100;
+              const rowsToRender = results.slice(0, limit);
+              rowsToRender.forEach(row => {
                 extractedText += headers.map(header => row[header]).join(' | ') + '\n';
               });
+              if (results.length > limit) {
+                extractedText += `\n... (outras ${results.length - limit} linhas do arquivo CSV foram omitidas para otimizar o tamanho do contexto da IA)\n`;
+              }
             }
             
             logger.info('CSV processado com sucesso', {

@@ -59,3 +59,6 @@ Este documento apresenta a auditoria técnica e o checklist de conformidade dos 
   - Extrator de JSON tolerante a ruídos de IA: resolve comentários, vírgulas duplicadas/pendentes e chaves ou colchetes não fechados devido a truncagem de tokens.
 - [x] **4.4 Medição de Custos no Frontend**:
   - Exposição de telemetria analítica com painel de estatísticas de custos consumido diretamente pelo dashboard de gerenciamento da plataforma.
+- [x] **4.5 Compactação de Planilhas e CSV**:
+  - Limitação física de leitura para as primeiras 100 linhas de dados em arquivos CSV e Excel no [file-processor.ts](file:///Users/josejonathanalvesdeazevedo/documente/server/services/file-processor.ts#L228) para prevenir o estouro de tokens de contexto da IA.
+
