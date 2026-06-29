@@ -48,7 +48,7 @@ import {
 
 const OPENROUTER_API_URL = process.env.OPENROUTER_API_URL ?? "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL ?? "deepseek/deepseek-flash";
-const OPENROUTER_APP_URL = process.env.APP_URL ?? "http://localhost:5001";
+const OPENROUTER_APP_URL = process.env.APP_URL ?? "http://localhost:3000";
 
 const documentTemplates = {
   prd: `Você é um especialista em criar documentos de requisitos de produto claros e acessíveis. Sua função é criar um PRD (Documento de Requisitos de Produto) que qualquer pessoa da equipe consiga entender.
