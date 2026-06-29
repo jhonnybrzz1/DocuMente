@@ -40,17 +40,108 @@ export function maskPII(text: string): { maskedText: string; hasPII: boolean; de
 }
 
 export function extractJsonObject<T = unknown>(raw: string): T {
-  const cleaned = raw
+  let cleaned = raw
     .trim()
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/```\s*$/i, "")
     .trim();
+
+  // Procurar o primeiro caractere de abertura ({ ou [)
   const firstBrace = cleaned.indexOf("{");
-  const lastBrace = cleaned.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    return JSON.parse(cleaned.slice(firstBrace, lastBrace + 1)) as T;
+  const firstBracket = cleaned.indexOf("[");
+  
+  let startChar = "";
+  let endChar = "";
+  let startIndex = -1;
+  let endIndex = -1;
+
+  if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+    startChar = "{";
+    endChar = "}";
+    startIndex = firstBrace;
+    endIndex = cleaned.lastIndexOf("}");
+  } else if (firstBracket !== -1) {
+    startChar = "[";
+    endChar = "]";
+    startIndex = firstBracket;
+    endIndex = cleaned.lastIndexOf("]");
   }
-  return JSON.parse(cleaned) as T;
+
+  if (startIndex !== -1) {
+    if (endIndex > startIndex) {
+      cleaned = cleaned.slice(startIndex, endIndex + 1);
+    } else {
+      cleaned = cleaned.slice(startIndex);
+    }
+  }
+
+  // Remove comentários de linha simples // ... (ignora URLs e strings contendo //)
+  cleaned = cleaned.replace(/^(?!\s*https?:\/\/)\s*\/\/.*$/gm, "");
+  // Remove comentários de bloco /* ... */
+  cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, "");
+
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch (initialErr) {
+    console.warn("[json-resilient] Falha inicial ao processar JSON. Tentando recuperação ativa...", (initialErr as Error).message);
+    try {
+      // 1. Correção rápida de vírgulas duplicadas ou pendentes
+      let fixed = cleaned
+        .replace(/,\s*([}\]])/g, "$1") // remove vírgulas antes de fechar chaves/colchetes
+        .replace(/,\s*,/g, ",");      // remove vírgulas duplicadas
+
+      // 2. Auto-fechamento inteligente em caso de truncamento
+      const openBrackets: string[] = [];
+      let inString = false;
+      let escapeNext = false;
+
+      for (let i = 0; i < fixed.length; i++) {
+        const char = fixed[i];
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+        if (char === "\\") {
+          escapeNext = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = !inString;
+          continue;
+        }
+        if (!inString) {
+          if (char === "{" || char === "[") {
+            openBrackets.push(char);
+          } else if (char === "}") {
+            if (openBrackets[openBrackets.length - 1] === "{") {
+              openBrackets.pop();
+            }
+          } else if (char === "]") {
+            if (openBrackets[openBrackets.length - 1] === "[") {
+              openBrackets.pop();
+            }
+          }
+        }
+      }
+
+      // Se ficaram colchetes ou chaves não fechadas, fecha-os
+      if (openBrackets.length > 0) {
+        let suffix = "";
+        for (let i = openBrackets.length - 1; i >= 0; i--) {
+          const open = openBrackets[i];
+          if (open === "{") suffix += "}";
+          if (open === "[") suffix += "]";
+        }
+        fixed += suffix;
+        console.warn("[json-resilient] JSON recuperado adicionando sufixo:", suffix);
+      }
+
+      return JSON.parse(fixed) as T;
+    } catch (secondErr) {
+      console.error("[json-resilient] Recuperação de JSON falhou completamente. String candidata:", cleaned);
+      throw initialErr; // Lança o erro original para manter clareza do ponto de quebra
+    }
+  }
 }
 
 export function buildGenerationUserContent(demandText: string, extractedText?: string): string {

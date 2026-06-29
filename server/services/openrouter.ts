@@ -2,6 +2,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { extractJsonObject } from "../utils/helpers";
 
 const OPENROUTER_API_URL =
   process.env.OPENROUTER_API_URL ?? "https://openrouter.ai/api/v1/chat/completions";
@@ -436,27 +437,7 @@ export async function chatCompletion(
   throw new Error("Falha ao se conectar com os modelos de IA após múltiplas tentativas.");
 }
 
-// Tenta extrair JSON mesmo quando o modelo embrulha em ```json ... ```
+// Tenta extrair JSON de forma resiliente
 export function extractJson<T = unknown>(raw: string): T {
-  const cleaned = raw
-    .trim()
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/```\s*$/i, "")
-    .trim();
-
-  const firstBrace = cleaned.indexOf("{");
-  const lastBrace = cleaned.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    const candidate = cleaned.slice(firstBrace, lastBrace + 1);
-    return JSON.parse(candidate) as T;
-  }
-
-  const firstBracket = cleaned.indexOf("[");
-  const lastBracket = cleaned.lastIndexOf("]");
-  if (firstBracket !== -1 && lastBracket > firstBracket) {
-    const candidate = cleaned.slice(firstBracket, lastBracket + 1);
-    return JSON.parse(candidate) as T;
-  }
-
-  return JSON.parse(cleaned) as T;
+  return extractJsonObject<T>(raw);
 }

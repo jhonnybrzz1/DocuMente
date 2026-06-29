@@ -1251,13 +1251,13 @@ const apiDocJsonSchema = z.object({
       type: z.string(),
       description: z.string(),
     })).optional(),
-    requestBody: z.string().optional(),
+    requestBody: z.string().nullable().optional(),
     responseBody: z.string(),
     errors: z.array(z.object({
       code: z.number(),
       description: z.string(),
     })),
-    rateLimits: z.string().optional(),
+    rateLimits: z.string().nullable().optional(),
   })),
   dataModels: z.array(z.object({
     name: z.string(),
