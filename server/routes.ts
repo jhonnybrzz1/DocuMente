@@ -1733,7 +1733,7 @@ type FidelityCheck = {
   issues: FidelityIssue[];
 };
 
-async function verifyAndRepairGeneratedDocument(
+export async function verifyAndRepairGeneratedDocument(
   apiKey: string,
   prompt: string,
   demandText: string,
@@ -1858,7 +1858,7 @@ ${generatedContent}
   }
 }
 
-async function callOpenRouterAPI(
+export async function callOpenRouterAPI(
   prompt: string,
   demandText: string,
   apiKey: string,

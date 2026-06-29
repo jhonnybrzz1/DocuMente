@@ -71,6 +71,42 @@ describe('Helpers & PII Utilities Unit Tests', () => {
       const parsed = extractJsonObject<{ sucesso: boolean }>(raw);
       expect(parsed.sucesso).toBe(true);
     });
+
+    it('deve auto-fechar colchetes e chaves cortados/truncados', () => {
+      const raw = '{"lista": [1, 2, {"item": "incompleto"';
+      const parsed = extractJsonObject<any>(raw);
+      expect(parsed.lista).toBeDefined();
+      expect(parsed.lista[2].item).toBe('incompleto');
+    });
+
+    it('deve limpar comentários no JSON gerado', () => {
+      const raw = `
+        {
+          // Este é um comentário de teste
+          "porta": 3000,
+          /* Comentário
+             de bloco */
+          "host": "localhost"
+        }
+      `;
+      const parsed = extractJsonObject<{ porta: number; host: string }>(raw);
+      expect(parsed.porta).toBe(3000);
+      expect(parsed.host).toBe('localhost');
+    });
+
+    it('deve corrigir vírgulas duplicadas ou pendentes', () => {
+      const raw = '{"itens": ["a", "b",], "final": true,,}';
+      const parsed = extractJsonObject<{ itens: string[]; final: boolean }>(raw);
+      expect(parsed.itens).toEqual(['a', 'b']);
+      expect(parsed.final).toBe(true);
+    });
+
+    it('deve extrair arrays válidos no nível raiz', () => {
+      const raw = '[{"id": 1}, {"id": 2}]';
+      const parsed = extractJsonObject<Array<{ id: number }>>(raw);
+      expect(parsed.length).toBe(2);
+      expect(parsed[1].id).toBe(2);
+    });
   });
 
   describe('buildGenerationUserContent()', () => {
