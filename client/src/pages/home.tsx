@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppHeader from "@/components/app-header";
 import ApiKeyConfig from "@/components/api-key-config";
 import EnhancedDocumentInput from "@/components/enhanced-document-input";
@@ -14,7 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Play, Clock, CheckCircle2, AlertCircle, Loader2, ListOrdered, Paperclip } from "lucide-react";
+import { Trash2, Play, Clock, CheckCircle2, AlertCircle, Loader2, ListOrdered, Paperclip, Edit, FileEdit } from "lucide-react";
 
 export interface QueueItem {
   id: string;
@@ -47,6 +47,51 @@ export default function Home() {
   // Estados da Fila
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [isProcessingQueue, setIsProcessingQueue] = useState(false);
+
+  // Carrega demanda do AiChatFlow enviada via Query Parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const demandParam = searchParams.get("demand");
+    const titleParam = searchParams.get("title") || "Demanda Externa";
+    const typeParam = searchParams.get("type") as DocumentType | null;
+    const tagsParam = searchParams.get("tags");
+
+    if (demandParam) {
+      const type = typeParam && documentTypes.some(dt => dt.value === typeParam)
+        ? typeParam
+        : "prd"; // Fallback padrão
+
+      const parsedTags = tagsParam 
+        ? tagsParam.split(",").map(t => t.trim()).filter(Boolean)
+        : [];
+
+      const newItem: QueueItem = {
+        id: Math.random().toString(36).substring(7),
+        title: titleParam,
+        demand: demandParam,
+        type: type,
+        tags: parsedTags,
+        status: "idle",
+      };
+
+      setQueue((prevQueue) => {
+        // Evita inserções duplicadas da mesma demanda ao carregar
+        if (prevQueue.some(item => item.demand === demandParam && item.type === type)) {
+          return prevQueue;
+        }
+        return [...prevQueue, newItem];
+      });
+
+      toast({
+        title: "Demanda do AiChatFlow Importada",
+        description: `A demanda "${titleParam}" foi colocada na fila de refinamento/geração.`,
+      });
+
+      // Limpa os parâmetros de busca da URL para evitar reinserção ao atualizar a página
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [toast]);
 
   const handleUseTemplate = () => {
     setShowTemplateSelector(true);
@@ -116,6 +161,21 @@ export default function Home() {
 
   const handleRemoveFromQueue = (id: string) => {
     setQueue(queue.filter((item) => item.id !== id));
+  };
+
+  const handleEditQueueItem = (item: QueueItem) => {
+    setTitle(item.title);
+    setDemand(item.demand);
+    setSelectedTypes([item.type]);
+    setTags(item.tags);
+    if (item.extractedText) {
+      setExtractedText(item.extractedText);
+    }
+    setQueue(queue.filter((q) => q.id !== item.id));
+    toast({
+      title: "Demanda carregada no editor",
+      description: "Ajuste os detalhes e adicione de volta à fila ou gere o documento.",
+    });
   };
 
   const handleClearQueue = () => {
@@ -416,6 +476,18 @@ export default function Home() {
                               Falhou
                             </Badge>
                           )}
+
+                          {/* Botão de Editar/Refinar */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isProcessingQueue || item.status === "success" || item.status === "pending"}
+                            onClick={() => handleEditQueueItem(item)}
+                            className="h-8 w-8 text-muted-foreground hover:text-primary rounded-full hover:bg-primary/10"
+                            title="Editar e Refinar Demanda"
+                          >
+                            <Edit size={14} />
+                          </Button>
 
                           {/* Botão de Remover da Fila */}
                           <Button
