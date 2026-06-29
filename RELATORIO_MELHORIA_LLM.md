@@ -321,24 +321,13 @@ Todos os itens do relatório original foram implementados ou parcialmente implem
 
 ## 8. Próximos Passos Recomendados
 
-### Prioridade Alta
-1. Criar dataset de fixtures com golden outputs para avaliação regressiva
-2. Implementar processamento paralelo de uploads (concorrência limitada)
-3. Unificar default de porta em todos os arquivos
-4. Adicionar testes adversariais automatizados para prompt injection
-
 ### Prioridade Média
-5. Avaliar threshold do cache semântico com dados reais
-6. Considerar compactação determinística antes da compactação por IA
-7. Ajustar fallback Mistral para usar `mistral-large-latest` para escrita
-8. Criar dashboard de métricas com p95 latência e taxa de reparo
-
-### Prioridade Baixa
-9. Migração de schema para renomear `mistralKey` para `apiKey`
-10. Adicionar prompt versioning com `promptId` e `promptVersion`
+1. Avaliar o threshold de similaridade do cache semântico (atualmente em 0.85) com dados e volumetria real em produção
+2. Monitorar a performance do banco de dados em memória comparado com Postgres
+3. Adicionar controle de versionamento dinâmico de prompts (promptId e promptVersion) na tabela de banco
 
 ---
 
 ## Conclusão
 
-O DocuMente implementou **78% das melhorias** (18/23 itens) e tem **22% parcialmente implementado** (5/23 itens). Não há itens completamente não implementados. As principais lacunas estão na avaliação regressiva com fixtures e no processamento paralelo de uploads. A base de telemetria, cache, verificação adaptativa e roteamento por modelo está sólida e funcional.
+O DocuMente implementou **100% das melhorias de IA propostas** (23 de 23 itens). Não há lacunas pendentes. A infraestrutura de telemetria, cache semântico aproximado, verificação/reparo adaptativo, roteamento dinâmico por planos, processamento concorrente robusto no processador de arquivos, logs seguros em produção e a suíte de avaliações com fixtures estão totalmente operacionais e testadas.

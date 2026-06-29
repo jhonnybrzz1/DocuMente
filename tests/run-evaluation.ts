@@ -252,13 +252,7 @@ async function run() {
   let serverProcess: any = null;
 
   // 1. Detectar porta ativa automaticamente ou subir servidor na porta 5099
-  if (await checkPortOnline(5000)) {
-    console.log("[server] Servidor ativo detectado na porta 5000. Utilizando instância existente.");
-    activePort = 5000;
-  } else if (await checkPortOnline(5001)) {
-    console.log("[server] Servidor ativo detectado na porta 5001. Utilizando instância existente.");
-    activePort = 5001;
-  } else if (await checkPortOnline(3000)) {
+  if (await checkPortOnline(3000)) {
     console.log("[server] Servidor ativo detectado na porta 3000. Utilizando instância existente.");
     activePort = 3000;
   } else {

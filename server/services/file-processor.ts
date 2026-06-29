@@ -478,6 +478,56 @@ class FileProcessor {
       throw error;
     }
   }
+
+  /**
+   * Extrai texto de múltiplos arquivos concorrentemente com limite de concorrência e cleanup
+   * @param files - Lista de arquivos Express.Multer.File
+   * @param concurrencyLimit - Limite de concorrência (padrão: 3)
+   * @returns Texto unificado extraído de todos os arquivos
+   */
+  async extractTextFromMultipleFiles(
+    files: Express.Multer.File[],
+    concurrencyLimit: number = 3
+  ): Promise<string> {
+    const results: string[] = new Array(files.length);
+    let index = 0;
+    let hasError = false;
+    let errorObj: any = null;
+
+    const worker = async () => {
+      while (index < files.length && !hasError) {
+        const currentIndex = index++;
+        const file = files[currentIndex];
+        try {
+          const text = await this.extractTextFromFile(file);
+          results[currentIndex] = text;
+        } catch (error: any) {
+          hasError = true;
+          errorObj = { file, error };
+        } finally {
+          if (fs.existsSync(file.path)) {
+            try {
+              fs.unlinkSync(file.path);
+            } catch (unlinkErr) {
+              console.error("Falha ao apagar arquivo temporário no processor:", unlinkErr);
+            }
+          }
+        }
+      }
+    };
+
+    const workers = Array.from(
+      { length: Math.min(concurrencyLimit, files.length) },
+      worker
+    );
+    await Promise.all(workers);
+
+    if (hasError && errorObj) {
+      throw errorObj.error;
+    }
+
+    return results.filter(Boolean).join('\n\n');
+  }
 }
 
 export const fileProcessor = new FileProcessor();
