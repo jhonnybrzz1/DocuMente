@@ -2719,7 +2719,7 @@ JSON apenas: {"score":0-100,"positives":["..."],"improvements":["..."]}`;
               model: judgeModel
             });
 
-            const qualityData = JSON.parse(qualityRaw.trim());
+            const qualityData = extractJsonObject<any>(qualityRaw || "{}");
             await storage.updateDocument(newDoc.id, { qualityScore: qualityData });
             console.log(`[quality-async] Quality score calculado e persistido para doc ${newDoc.id}: ${qualityData.score}/100`);
           } catch (qualErr) {
