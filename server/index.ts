@@ -9,8 +9,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // CORS Middleware para integração local com AiChatFlow1 e agentes externos
+const CORS_ALLOWED_ORIGINS = (process.env.CORS_ALLOWED_ORIGINS || "")
+  .split(",")
+  .map(o => o.trim())
+  .filter(Boolean);
+
+// Origens sempre permitidas em desenvolvimento local
+const DEFAULT_ALLOWED = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5173",
+];
+
+const allowedOrigins = new Set([...DEFAULT_ALLOWED, ...CORS_ALLOWED_ORIGINS]);
+
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.has(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key");
   if (req.method === "OPTIONS") {

@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
+import { ErrorBoundary } from "@/components/error-boundary";
 import Home from "@/pages/home";
 import TemplatesPage from "@/pages/templates";
 import StatsPage from "@/pages/stats";
@@ -13,10 +14,26 @@ import NotFound from "@/pages/not-found";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/templates" component={TemplatesPage} />
-      <Route path="/stats" component={StatsPage} />
-      <Route path="/share/:token" component={SharePage} />
+      <Route path="/" component={() => (
+        <ErrorBoundary message="Erro ao carregar a página principal.">
+          <Home />
+        </ErrorBoundary>
+      )} />
+      <Route path="/templates" component={() => (
+        <ErrorBoundary message="Erro ao carregar os templates.">
+          <TemplatesPage />
+        </ErrorBoundary>
+      )} />
+      <Route path="/stats" component={() => (
+        <ErrorBoundary message="Erro ao carregar as estatísticas.">
+          <StatsPage />
+        </ErrorBoundary>
+      )} />
+      <Route path="/share/:token" component={() => (
+        <ErrorBoundary message="Erro ao carregar o documento compartilhado.">
+          <SharePage />
+        </ErrorBoundary>
+      )} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -28,7 +45,9 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <ErrorBoundary message="Erro crítico na aplicação. Recarregue a página.">
+            <Router />
+          </ErrorBoundary>
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>

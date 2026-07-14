@@ -320,6 +320,24 @@ export default function Home() {
     return documentTypes.find((dt) => dt.value === type)?.label || type;
   };
 
+  const handleChainDocument = (result: {
+    demand: string;
+    suggestedTitle: string;
+    targetType: string;
+    parentDocumentId: number;
+  }) => {
+    setDemand(result.demand);
+    setTitle(result.suggestedTitle);
+    setSelectedTypes([result.targetType as DocumentType]);
+    setTags([]);
+    // scroll suave ao topo para o editor ficar visível
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast({
+      title: "Editor pré-populado",
+      description: `Demanda para "${result.suggestedTitle}" carregada. Revise e gere o documento.`,
+    });
+  };
+
   const activeType = selectedTypes[selectedTypes.length - 1] || "";
 
   return (
@@ -510,7 +528,7 @@ export default function Home() {
           </div>
           
           <div className="lg:col-span-1">
-            <HistorySidebar />
+            <HistorySidebar onChainDocument={handleChainDocument} />
           </div>
         </div>
       </main>

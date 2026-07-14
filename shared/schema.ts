@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, foreignKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -14,7 +14,15 @@ export const documents = pgTable("documents", {
   qualityScore: jsonb("quality_score"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  // Self-referential FK: documento filho aponta para documento pai.
+  // ON DELETE SET NULL garante que filhos não ficam órfãos com FK quebrada.
+  foreignKey({
+    columns: [table.parentDocumentId],
+    foreignColumns: [table.id],
+    name: "documents_parent_id_fk",
+  }).onDelete("set null"),
+]);
 
 export const documentVersions = pgTable("document_versions", {
   id: serial("id").primaryKey(),

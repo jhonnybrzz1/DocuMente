@@ -3,12 +3,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { X, Save, Loader2, MessageSquare, ListChecks } from "lucide-react";
+import { X, Save, Loader2, MessageSquare, ListChecks, Code2, Eye } from "lucide-react";
 import type { DocumentType } from "@shared/schema";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import QualityScorePanel from "./quality-score-panel";
 import RefineChat from "./refine-chat";
 
@@ -35,6 +37,7 @@ export default function PreviewModal({
   const queryClient = useQueryClient();
   const [currentContent, setCurrentContent] = useState(content);
   const [sideTab, setSideTab] = useState<"chat" | "score">("chat");
+  const [editorMode, setEditorMode] = useState<"preview" | "source">("preview");
 
   // Sincroniza quando uma nova prévia é gerada
   useEffect(() => {
@@ -107,12 +110,56 @@ export default function PreviewModal({
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-1 overflow-hidden px-6 py-4 min-h-0">
-          {/* Preview do conteúdo */}
-          <div className="lg:col-span-3 overflow-y-auto border rounded-lg bg-muted/20 p-6 min-h-0">
-            <div
-              className="prose prose-sm dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: renderedHtml }}
-            />
+          {/* Preview / Editor do conteúdo */}
+          <div className="lg:col-span-3 flex flex-col min-h-0 border rounded-lg overflow-hidden">
+            {/* Toggle preview ↔ markdown source */}
+            <div className="flex items-center gap-1 px-3 py-2 border-b bg-muted/30 shrink-0">
+              <Button
+                variant={editorMode === "preview" ? "secondary" : "ghost"}
+                size="sm"
+                className="h-7 px-3 text-xs gap-1.5"
+                onClick={() => setEditorMode("preview")}
+              >
+                <Eye size={12} /> Preview
+              </Button>
+              <Button
+                variant={editorMode === "source" ? "secondary" : "ghost"}
+                size="sm"
+                className="h-7 px-3 text-xs gap-1.5"
+                onClick={() => setEditorMode("source")}
+              >
+                <Code2 size={12} /> Markdown
+              </Button>
+            </div>
+
+            {editorMode === "preview" ? (
+              <div className="overflow-y-auto bg-muted/20 p-6 flex-1">
+                <div
+                  className="prose prose-sm dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: renderedHtml }}
+                />
+              </div>
+            ) : (
+              <ResizablePanelGroup direction="vertical" className="flex-1 min-h-0">
+                <ResizablePanel defaultSize={50} minSize={20}>
+                  <Textarea
+                    value={currentContent}
+                    onChange={(e) => setCurrentContent(e.target.value)}
+                    className="h-full w-full resize-none rounded-none border-0 font-mono text-xs bg-background focus-visible:ring-0 focus-visible:ring-offset-0 p-4"
+                    aria-label="Conteúdo markdown editável"
+                  />
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={50} minSize={20}>
+                  <div className="overflow-y-auto p-4 h-full bg-muted/20">
+                    <div
+                      className="prose prose-sm dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: renderedHtml }}
+                    />
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            )}
           </div>
 
           {/* Side panel: Chat + Score em tabs */}

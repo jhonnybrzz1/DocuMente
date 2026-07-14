@@ -149,6 +149,10 @@ router.get("/documents/:id/versions", async (req, res) => {
 // =============================================================================
 // POST /api/documents/:id/push/github - Criar Issue no GitHub
 // =============================================================================
+
+/** Valida formato owner/repo para evitar SSRF via path traversal */
+const GITHUB_REPO_RE = /^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/;
+
 router.post("/documents/:id/push/github", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -164,6 +168,10 @@ router.post("/documents/:id/push/github", async (req, res) => {
     }
 
     const cleanedRepo = repo.replace(/^(https:\/\/github\.com\/)/, "").replace(/\/$/, "");
+
+    if (!GITHUB_REPO_RE.test(cleanedRepo)) {
+      return res.status(400).json({ message: "Formato de repositório inválido. Use 'owner/repo'." });
+    }
 
     const response = await fetch(`https://api.github.com/repos/${cleanedRepo}/issues`, {
       method: "POST",
@@ -197,6 +205,10 @@ router.post("/documents/:id/push/github", async (req, res) => {
 // =============================================================================
 // POST /api/documents/:id/push/jira - Criar Issue/Epic no Jira
 // =============================================================================
+
+/** Valida domínio Jira: apenas subdomínios atlassian.net ou domínios on-premise sem path injection */
+const JIRA_DOMAIN_RE = /^[a-zA-Z0-9][a-zA-Z0-9._-]*\.[a-zA-Z]{2,}$/;
+
 router.post("/documents/:id/push/jira", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -212,6 +224,10 @@ router.post("/documents/:id/push/jira", async (req, res) => {
     }
 
     const cleanedDomain = domain.replace(/^(https?:\/\/)/, "").replace(/\/$/, "");
+
+    if (!JIRA_DOMAIN_RE.test(cleanedDomain)) {
+      return res.status(400).json({ message: "Formato de domínio Jira inválido." });
+    }
     const authString = Buffer.from(`${email}:${apiToken}`).toString("base64");
 
     // Converte a especificação do produto em markdown para sintaxe nativa do Jira Wiki

@@ -18,6 +18,8 @@ interface LogEntry {
 
 class Logger {
   private logFilePath: string;
+  private writeQueue: string[] = [];
+  private flushTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     const logsDir = path.join(process.cwd(), 'logs');
@@ -58,46 +60,40 @@ class Logger {
     return data;
   }
 
+  /** Enfileira a linha e agenda um flush assíncrono com debounce de 200ms. */
   private writeLog(entry: LogEntry): void {
     const sanitizedEntry = this.sanitizeMetadata(entry);
-    const logEntry = JSON.stringify(sanitizedEntry) + '\n';
-    fs.appendFileSync(this.logFilePath, logEntry);
+    this.writeQueue.push(JSON.stringify(sanitizedEntry) + '\n');
+
+    if (!this.flushTimer) {
+      this.flushTimer = setTimeout(() => this.flush(), 200);
+    }
+  }
+
+  private flush(): void {
+    this.flushTimer = null;
+    if (this.writeQueue.length === 0) return;
+    const batch = this.writeQueue.splice(0);
+    fs.promises.appendFile(this.logFilePath, batch.join(''), 'utf-8').catch(err => {
+      // Fallback silencioso — nunca lançar exceção do logger
+      console.warn('[logger] Falha ao escrever batch no disco:', err);
+    });
   }
 
   info(message: string, metadata?: Omit<LogEntry, 'level' | 'message' | 'timestamp'>): void {
-    this.writeLog({
-      timestamp: new Date().toISOString(),
-      level: 'info',
-      message,
-      ...metadata
-    });
+    this.writeLog({ timestamp: new Date().toISOString(), level: 'info', message, ...metadata });
   }
 
   warn(message: string, metadata?: Omit<LogEntry, 'level' | 'message' | 'timestamp'>): void {
-    this.writeLog({
-      timestamp: new Date().toISOString(),
-      level: 'warn',
-      message,
-      ...metadata
-    });
+    this.writeLog({ timestamp: new Date().toISOString(), level: 'warn', message, ...metadata });
   }
 
   error(message: string, metadata?: Omit<LogEntry, 'level' | 'message' | 'timestamp'>): void {
-    this.writeLog({
-      timestamp: new Date().toISOString(),
-      level: 'error',
-      message,
-      ...metadata
-    });
+    this.writeLog({ timestamp: new Date().toISOString(), level: 'error', message, ...metadata });
   }
 
   debug(message: string, metadata?: Omit<LogEntry, 'level' | 'message' | 'timestamp'>): void {
-    this.writeLog({
-      timestamp: new Date().toISOString(),
-      level: 'debug',
-      message,
-      ...metadata
-    });
+    this.writeLog({ timestamp: new Date().toISOString(), level: 'debug', message, ...metadata });
   }
 }
 

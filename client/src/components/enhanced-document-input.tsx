@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Edit, LayoutTemplate, Sparkles, Loader2, Tag, Mic, MicOff, Github } from "lucide-react";
+import { Badge } from "./ui/badge";
+import { Edit, LayoutTemplate, Sparkles, Loader2, Tag, Mic, MicOff, Github, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { DocumentType } from "@shared/schema";
@@ -131,6 +132,34 @@ export default function EnhancedDocumentInput({
       setIsListening(false);
     }
   };
+
+  const suggestTagsMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedType) throw new Error("Selecione um tipo de documento antes de sugerir tags.");
+      if (demand.trim().length < 10) throw new Error("Descreva a demanda primeiro (mínimo 10 caracteres).");
+      const res = await apiRequest("POST", "/api/ai/suggest-tags", {
+        type: selectedType,
+        content: demand,
+      });
+      return (await res.json()) as { tags: string[] };
+    },
+    onSuccess: (data) => {
+      if (!setTags) return;
+      const newTags = data.tags.filter((t) => !tags.includes(t));
+      if (newTags.length === 0) {
+        toast({ title: "Tags já aplicadas", description: "Todas as sugestões já estão na lista." });
+        return;
+      }
+      setTags([...tags, ...newTags]);
+      toast({
+        title: `${newTags.length} tag(s) sugerida(s)`,
+        description: newTags.map((t) => `#${t}`).join("  "),
+      });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Erro ao sugerir tags", description: err.message, variant: "destructive" });
+    },
+  });
 
   const suggestTitleMutation = useMutation({
     mutationFn: async () => {
@@ -314,10 +343,35 @@ export default function EnhancedDocumentInput({
 
         {setTags && (
           <div>
-            <label htmlFor="document-tags" className="block text-sm font-medium text-foreground mb-2">
-              <Tag className="inline mr-1" size={14} />
-              Tags (opcional)
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label htmlFor="document-tags" className="block text-sm font-medium text-foreground">
+                <Tag className="inline mr-1" size={14} />
+                Tags (opcional)
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs gap-1"
+                onClick={() => suggestTagsMutation.mutate()}
+                disabled={suggestTagsMutation.isPending || demand.trim().length < 10}
+                title="Sugerir tags com IA baseado na demanda"
+              >
+                {suggestTagsMutation.isPending ? (
+                  <Loader2 className="animate-spin" size={11} />
+                ) : (
+                  <Wand2 size={11} />
+                )}
+                Sugerir Tags
+              </Button>
+            </div>
+            {suggestTagsMutation.isPending && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {[1, 2, 3].map((i) => (
+                  <Badge key={i} variant="outline" className="animate-pulse text-[10px] h-5 w-16 bg-muted" />
+                ))}
+              </div>
+            )}
             <TagInput
               id="document-tags"
               tags={tags}

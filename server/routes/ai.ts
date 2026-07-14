@@ -74,6 +74,172 @@ Por favor, corrija a resposta imediatamente e retorne APENAS um JSON válido e c
 }
 
 // =============================================================================
+// POST /api/ai/suggest-tags
+// Sugere 3-5 tags baseadas no tipo e conteúdo do documento gerado.
+// =============================================================================
+router.post("/suggest-tags", async (req, res) => {
+  try {
+    const schema = z.object({
+      type: z.string().min(1),
+      content: z.string().min(10).max(20000),
+    });
+    const { type, content } = schema.parse(req.body);
+
+    const cacheKey = { type, content: content.slice(0, 500) };
+    const cached = appCache.get("suggest-tags", cacheKey);
+    if (cached) return res.json(cached);
+
+    const messages: ChatMessage[] = [
+      {
+        role: "system",
+        content: `Você é um especialista em Product Management. Analise o documento abaixo e sugira entre 3 e 5 tags curtas em português brasileiro para categorizar e facilitar a busca deste documento.
+
+REGRAS:
+- Cada tag: 1-3 palavras, sem acentos, letras minúsculas, palavras separadas por hífen (ex: login-social, checkout, q1-2026)
+- Prefira tags temáticas: squad, feature, produto, sprint, trimestre, domínio técnico
+- Evite tags genéricas como "documento", "prd", "feature" isolada
+- Responda APENAS com JSON válido, sem texto adicional
+
+FORMATO:
+{"tags": ["tag-1", "tag-2", "tag-3"]}`,
+      },
+      {
+        role: "user",
+        content: `Tipo: ${type}\n\nConteúdo:\n${content.slice(0, 3000)}`,
+      },
+    ];
+
+    const tagsSchema = z.object({ tags: z.array(z.string()) });
+    const parsed = await chatCompletionJsonWithRetry(messages, tagsSchema, {
+      temperature: 0.4,
+      maxTokens: 150,
+      taskName: "suggest-tags",
+    });
+
+    const tags = (parsed.tags ?? [])
+      .filter((t) => typeof t === "string" && t.trim().length > 0)
+      .map((t) =>
+        t.trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9-]/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "")
+          .slice(0, 40)
+      )
+      .filter((t) => t.length > 0)
+      .slice(0, 5);
+
+    const result = { tags };
+    appCache.set("suggest-tags", cacheKey, result, 1800);
+    res.json(result);
+  } catch (err) {
+    handleError(err, res, "Failed to suggest tags");
+  }
+});
+
+// =============================================================================
+// POST /api/ai/chain-document
+// Gera a demanda pré-populada para criar um documento filho a partir de um pai.
+// =============================================================================
+const CHAIN_MAP: Record<string, { targetType: string; targetLabel: string }[]> = {
+  prd:        [{ targetType: "epic",       targetLabel: "Épicos"        },
+               { targetType: "userstories",targetLabel: "User Stories"  }],
+  epic:       [{ targetType: "userstories",targetLabel: "User Stories"  },
+               { targetType: "techspec",   targetLabel: "Spec Técnica"  }],
+  userstories:[{ targetType: "testplan",   targetLabel: "Plano de Testes"}],
+  techspec:   [{ targetType: "testplan",   targetLabel: "Plano de Testes"},
+               { targetType: "apidoc",     targetLabel: "Doc de API"    }],
+  roadmap:    [{ targetType: "epic",       targetLabel: "Épicos"        }],
+  pitch:      [{ targetType: "prd",        targetLabel: "PRD"           }],
+  releasenote:[],
+  testplan:   [],
+  apidoc:     [],
+};
+
+router.post("/chain-document", async (req, res) => {
+  try {
+    const schema = z.object({
+      sourceDocumentId: z.number().int().positive(),
+      targetType: z.string().min(1),
+    });
+    const { sourceDocumentId, targetType } = schema.parse(req.body);
+
+    const sourceDoc = await storage.getDocument(sourceDocumentId);
+    if (!sourceDoc) {
+      return res.status(404).json({ message: "Documento fonte não encontrado." });
+    }
+
+    const validTarget = (CHAIN_MAP[sourceDoc.type] ?? []).find(
+      (c) => c.targetType === targetType
+    );
+    if (!validTarget) {
+      return res.status(400).json({
+        message: `Encadeamento de '${sourceDoc.type}' para '${targetType}' não é suportado.`,
+      });
+    }
+
+    const targetLabel = typeLabel(targetType as DocumentType);
+
+    const messages: ChatMessage[] = [
+      {
+        role: "system",
+        content: `Você é um especialista em Product Management. 
+Com base no documento abaixo, crie uma DEMANDA detalhada (não o documento final) para que a IA gere um(a) "${targetLabel}" derivado(a) deste contexto.
+
+A demanda deve:
+- Resumir os pontos essenciais do documento fonte relevantes para o(a) "${targetLabel}"
+- Indicar claramente o escopo, objetivos e critérios de sucesso esperados
+- Ser escrita em português brasileiro
+- Ter entre 150 e 400 palavras
+- NÃO ser o documento final — apenas a demanda/briefing para gerá-lo
+
+Responda APENAS com a demanda em texto puro, sem prefixos, sem markdown.`,
+      },
+      {
+        role: "user",
+        content: `Documento fonte (${typeLabel(sourceDoc.type as DocumentType)}):\n\nTítulo: ${sourceDoc.title}\n\n${sourceDoc.content.slice(0, 6000)}`,
+      },
+    ];
+
+    const demand = await chatCompletion(messages, {
+      temperature: 0.5,
+      maxTokens: 800,
+      taskName: "chain-document",
+    });
+
+    res.json({
+      demand: demand.trim(),
+      suggestedTitle: `${sourceDoc.title} — ${targetLabel}`,
+      targetType,
+      parentDocumentId: sourceDocumentId,
+      availableChains: CHAIN_MAP[sourceDoc.type] ?? [],
+    });
+  } catch (err) {
+    handleError(err, res, "Failed to chain document");
+  }
+});
+
+// =============================================================================
+// GET /api/ai/chain-options/:documentId
+// Retorna os tipos de documento que podem ser gerados a partir de um dado documento.
+// =============================================================================
+router.get("/chain-options/:documentId", async (req, res) => {
+  try {
+    const id = parseInt(req.params.documentId);
+    if (isNaN(id)) return res.status(400).json({ message: "ID inválido." });
+
+    const doc = await storage.getDocument(id);
+    if (!doc) return res.status(404).json({ message: "Documento não encontrado." });
+
+    res.json({ availableChains: CHAIN_MAP[doc.type] ?? [] });
+  } catch (err) {
+    handleError(err, res, "Failed to get chain options");
+  }
+});
+
+// =============================================================================
 // POST /api/ai/suggest-title
 // Sugere até 5 títulos curtos baseados na demanda + tipo de documento.
 // =============================================================================

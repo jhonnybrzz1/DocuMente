@@ -2646,7 +2646,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // 1. Autenticação Simples por API Key
       const apiKeyHeader = req.header("X-API-Key") || req.header("Authorization")?.replace(/^Bearer\s+/i, "");
-      const serverApiKey = process.env.EXTERNAL_API_KEY || "documente_dev_key";
+      const serverApiKey = process.env.EXTERNAL_API_KEY;
+      if (!serverApiKey) {
+        console.error("EXTERNAL_API_KEY não está definida nas variáveis de ambiente.");
+        return res.status(500).json({ message: "Configuração de servidor incompleta: EXTERNAL_API_KEY ausente." });
+      }
 
       if (!apiKeyHeader || apiKeyHeader !== serverApiKey) {
         return res.status(401).json({ 
@@ -2662,8 +2666,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Valida o tipo do documento
-      const validTypes = ["prd", "epic", "userstories", "roadmap", "releasenote", "pitch", "techspec", "testplan", "apidoc"];
+      // Valida o tipo do documento usando a lista canônica de shared/schema.ts
+      const validTypes = documentTypes.map(dt => dt.value);
       if (!validTypes.includes(type)) {
         return res.status(400).json({ 
           message: `Tipo de documento inválido. Tipos aceitos: ${validTypes.join(", ")}` 
@@ -3269,6 +3273,32 @@ ${document.content}
     }
   });
 
+  // Delete document
+  app.delete("/api/documents/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid document ID" });
+      }
+
+      const existing = await storage.getDocument(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      const deleted = await storage.deleteDocument(id);
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete document" });
+      }
+
+      res.status(204).send();
+    } catch (error) {
+      console.error("Delete document error:", error);
+      res.status(500).json({ message: "Failed to delete document" });
+    }
+  });
+
   // Download document as Markdown
   app.get("/api/documents/:id/download/markdown", async (req, res) => {
     try {
@@ -3364,27 +3394,30 @@ ${document.content}
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
       });
-      const page = await browser.newPage();
+      let pdfBuffer: Buffer;
+      try {
+        const page = await browser.newPage();
 
-      // Configurar viewport para A4
-      await page.setViewport({ width: 794, height: 1123 });
+        // Configurar viewport para A4
+        await page.setViewport({ width: 794, height: 1123 });
 
-      await page.setContent(htmlContent, {
-        waitUntil: 'domcontentloaded',
-        timeout: 30000
-      });
+        await page.setContent(htmlContent, {
+          waitUntil: 'domcontentloaded',
+          timeout: 30000
+        });
 
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        margin: { top: '15mm', right: '15mm', bottom: '18mm', left: '15mm' },
-        printBackground: true,
-        preferCSSPageSize: true,
-        displayHeaderFooter: true,
-        headerTemplate: '<div></div>',
-        footerTemplate: '<div style="width:100%;font-size:8px;color:#6b7280;padding:0 15mm;display:flex;justify-content:space-between;"><span>DocuMente</span><span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span></div>'
-      });
-
-      await browser.close();
+        pdfBuffer = await page.pdf({
+          format: 'A4',
+          margin: { top: '15mm', right: '15mm', bottom: '18mm', left: '15mm' },
+          printBackground: true,
+          preferCSSPageSize: true,
+          displayHeaderFooter: true,
+          headerTemplate: '<div></div>',
+          footerTemplate: '<div style="width:100%;font-size:8px;color:#6b7280;padding:0 15mm;display:flex;justify-content:space-between;"><span>DocuMente</span><span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span></div>'
+        });
+      } finally {
+        await browser.close();
+      }
 
       console.log("PDF Generation - PDF size:", pdfBuffer.length, "bytes");
 

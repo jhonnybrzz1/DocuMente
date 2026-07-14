@@ -214,13 +214,11 @@ class SimpleMemoryCache {
 
   clear() {
     this.cache.clear();
-    try {
-      if (fs.existsSync(this.cacheFilePath)) {
-        fs.unlinkSync(this.cacheFilePath);
+    fs.promises.unlink(this.cacheFilePath).catch(err => {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+        console.warn('[cache] Falha ao limpar cache do disco:', err);
       }
-    } catch (err) {
-      console.warn('[cache] Falha ao limpar cache do disco:', err);
-    }
+    });
   }
 }
 

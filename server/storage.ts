@@ -178,8 +178,77 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDocumentStats(): Promise<DocumentStats> {
-    const allDocs = await this.getDocuments();
-    return computeStats(allDocs);
+    // Contagem total
+    const [{ total }] = await this.db
+      .select({ total: sql<number>`cast(count(*) as integer)` })
+      .from(documents);
+
+    // Contagem por tipo
+    const byTypeRows = await this.db
+      .select({
+        type: documents.type,
+        count: sql<number>`cast(count(*) as integer)`,
+      })
+      .from(documents)
+      .groupBy(documents.type);
+    const byType: Record<string, number> = {};
+    for (const row of byTypeRows) byType[row.type] = row.count;
+
+    // Contagem por mês (últimos 12 meses)
+    const byMonthRows = await this.db
+      .select({
+        month: sql<string>`to_char(created_at, 'YYYY-MM')`,
+        count: sql<number>`cast(count(*) as integer)`,
+      })
+      .from(documents)
+      .groupBy(sql`to_char(created_at, 'YYYY-MM')`)
+      .orderBy(sql`to_char(created_at, 'YYYY-MM')`);
+    const byMonth = byMonthRows.slice(-12).map(r => ({ month: r.month, count: r.count }));
+
+    // Esta semana / este mês
+    const [{ thisWeek }] = await this.db
+      .select({ thisWeek: sql<number>`cast(count(*) as integer)` })
+      .from(documents)
+      .where(sql`created_at >= now() - interval '7 days'`);
+
+    const [{ thisMonth }] = await this.db
+      .select({ thisMonth: sql<number>`cast(count(*) as integer)` })
+      .from(documents)
+      .where(sql`created_at >= now() - interval '1 month'`);
+
+    // Documentos compartilhados
+    const [{ shared }] = await this.db
+      .select({ shared: sql<number>`cast(count(*) as integer)` })
+      .from(documents)
+      .where(sql`share_token is not null`);
+
+    // Comprimento médio do conteúdo
+    const [{ avg }] = await this.db
+      .select({ avg: sql<number>`cast(coalesce(avg(length(content)), 0) as integer)` })
+      .from(documents);
+
+    // Top tags — unnest do array de tags e agrupamento
+    const topTagRows = await this.db
+      .select({
+        tag: sql<string>`unnest(tags)`,
+        count: sql<number>`cast(count(*) as integer)`,
+      })
+      .from(documents)
+      .groupBy(sql`unnest(tags)`)
+      .orderBy(sql`count(*) desc`)
+      .limit(10);
+    const topTags = topTagRows.map(r => ({ tag: r.tag, count: r.count }));
+
+    return {
+      total,
+      byType,
+      byMonth,
+      thisWeek,
+      thisMonth,
+      shared,
+      averageContentLength: avg,
+      topTags,
+    };
   }
 
   async getActiveApiKey(): Promise<ApiKey | undefined> {

@@ -7,7 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { Search, MoreVertical, Sparkles, Edit2, Clock, Star, Link2, Filter, X } from "lucide-react";
+import { Search, MoreVertical, Sparkles, Edit2, Clock, Star, Link2, Filter, X, GitBranch, Loader2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Hook de debounce para otimizar performance da busca
 function useDebounce<T>(value: T, delay: number): T {
@@ -36,6 +44,34 @@ import FavoritesManager from "./favorites-manager";
 import ShareDialog from "./share-dialog";
 import { apiRequest } from "@/lib/queryClient";
 
+interface ChainOption {
+  targetType: string;
+  targetLabel: string;
+}
+
+interface ChainResult {
+  demand: string;
+  suggestedTitle: string;
+  targetType: string;
+  parentDocumentId: number;
+}
+
+interface HistorySidebarProps {
+  onChainDocument?: (result: ChainResult) => void;
+}
+
+const CHAIN_OPTIONS: Record<string, ChainOption[]> = {
+  prd:        [{ targetType: "epic",        targetLabel: "Épicos"         },
+               { targetType: "userstories", targetLabel: "User Stories"   }],
+  epic:       [{ targetType: "userstories", targetLabel: "User Stories"   },
+               { targetType: "techspec",    targetLabel: "Spec Técnica"   }],
+  userstories:[{ targetType: "testplan",    targetLabel: "Plano de Testes"}],
+  techspec:   [{ targetType: "testplan",    targetLabel: "Plano de Testes"},
+               { targetType: "apidoc",      targetLabel: "Doc de API"     }],
+  roadmap:    [{ targetType: "epic",        targetLabel: "Épicos"         }],
+  pitch:      [{ targetType: "prd",         targetLabel: "PRD"            }],
+};
+
 const getTypeColor = (type: string) => {
   const docType = documentTypes.find(dt => dt.value === type);
   const colorMap = {
@@ -57,7 +93,7 @@ const getTypeLabel = (type: string) => {
   return docType?.label || type;
 };
 
-export default function HistorySidebar() {
+export default function HistorySidebar({ onChainDocument }: HistorySidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [filterType, setFilterType] = useState<string>("");
@@ -75,8 +111,30 @@ export default function HistorySidebar() {
     const saved = localStorage.getItem("documente-favorites");
     return saved ? JSON.parse(saved) : [];
   });
+  const [chainingDocId, setChainingDocId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const chainMutation = useMutation({
+    mutationFn: async ({ sourceDocumentId, targetType }: { sourceDocumentId: number; targetType: string }) => {
+      const res = await apiRequest("POST", "/api/ai/chain-document", { sourceDocumentId, targetType });
+      return (await res.json()) as ChainResult;
+    },
+    onSuccess: (result) => {
+      setChainingDocId(null);
+      if (onChainDocument) {
+        onChainDocument(result);
+      }
+      toast({
+        title: "Documento encadeado",
+        description: `Demanda para "${result.suggestedTitle}" pré-populada no editor.`,
+      });
+    },
+    onError: (err: Error) => {
+      setChainingDocId(null);
+      toast({ title: "Erro ao encadear", description: err.message, variant: "destructive" });
+    },
+  });
 
   const updateDocumentMutation = useMutation({
     mutationFn: async ({ id, content, changeDescription }: { id: number; content: string; changeDescription?: string }) => {
@@ -444,6 +502,51 @@ export default function HistorySidebar() {
                       });
                     }}
                   />
+                  {/* Botão de Document Chaining — só aparece para tipos com derivações disponíveis */}
+                  {(CHAIN_OPTIONS[document.type] ?? []).length > 0 && (
+                    <DropdownMenu>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={chainingDocId === document.id && chainMutation.isPending}
+                              className="h-8 w-8 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
+                              aria-label="Derivar documento"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {chainingDocId === document.id && chainMutation.isPending ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <GitBranch size={14} />
+                              )}
+                            </Button>
+                          </DropdownMenuTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>Derivar documento</TooltipContent>
+                      </Tooltip>
+                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuLabel className="text-xs">Gerar a partir deste</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {(CHAIN_OPTIONS[document.type] ?? []).map((opt) => (
+                          <DropdownMenuItem
+                            key={opt.targetType}
+                            onClick={() => {
+                              setChainingDocId(document.id);
+                              chainMutation.mutate({
+                                sourceDocumentId: document.id,
+                                targetType: opt.targetType,
+                              });
+                            }}
+                          >
+                            <GitBranch size={12} className="mr-2 text-emerald-500" />
+                            {opt.targetLabel}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </article>
             ))
