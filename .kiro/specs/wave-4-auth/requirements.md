@@ -1,63 +1,75 @@
-# Wave 4 — Autenticação nas Rotas CRUD
+# Requirements: Auth Middleware
 
-## Contexto
+## Introduction
 
-Todas as rotas `/api/documents`, `/api/api-keys` e `/api/generate-document` estão atualmente públicas. Qualquer pessoa com acesso à rede pode criar, ler, modificar e deletar todos os documentos e consumir créditos de IA. O projeto roda no Replit free tier, que expõe uma URL pública.
-
-A decisão tomada é usar **API Key por header** (`X-App-Key`), consistente com o modelo já existente em `/api/external/generate`. Não será usada session/cookie nem JWT — o projeto é de uso pessoal, sem multi-usuário.
-
-As dependências `passport`, `passport-local`, `express-session`, `connect-pg-simple` e `memorystore` nunca foram configuradas e serão removidas como parte desta wave (Issue 6 + Issue 13 parcial).
-
----
+O DocuMente roda no Replit free tier com URL pública exposta. Todas as rotas `/api/documents`, `/api/api-keys` e `/api/generate-document` estão atualmente sem autenticação — qualquer pessoa com acesso à URL pode ler documentos, consumir créditos de IA e deletar dados. Esta feature adiciona um middleware de API Key simples, consistente com o modelo já existente em `/api/external/generate`, e remove 5 dependências de session que nunca foram configuradas (`passport`, `express-session`, `connect-pg-simple`, `memorystore`, `passport-local`).
 
 ## Requirements
 
-### REQ-1: Middleware de autenticação por API Key
-**User story**: Como dono da aplicação, quero que todas as rotas protegidas exijam um header `X-App-Key` válido, para que nenhum acesso externo não autorizado consiga ler ou modificar meus documentos.
+### Requirement 1 — Validação na inicialização
 
-**Critérios de aceite**:
-- [ ] Existe um middleware `requireAppKey` em `server/middlewares/auth.ts`
-- [ ] O middleware lê a chave da variável de ambiente `APP_SECRET_KEY`
-- [ ] Se `APP_SECRET_KEY` não estiver definida no ambiente, o servidor **recusa iniciar** com erro claro no log (não silencia nem usa fallback)
-- [ ] Requests sem o header `X-App-Key` recebem `401 Unauthorized` com body `{ "message": "Autenticação necessária." }`
-- [ ] Requests com chave inválida recebem `401` com body `{ "message": "Chave de API inválida." }`
-- [ ] O middleware **nunca loga** o valor da chave recebida
+**User Story:** As a operador, I want the server to refuse to start if `APP_SECRET_KEY` is not configured, so that there is no accidental passwordless mode in production.
 
-### REQ-2: Rotas protegidas
-**User story**: Como dono da aplicação, quero que todas as rotas de dados fiquem por trás do middleware, sem precisar decorar cada handler individualmente.
+#### Acceptance Criteria
 
-**Critérios de aceite**:
-- [ ] O middleware é aplicado via `app.use("/api/", requireAppKey)` **antes** do registro das rotas
-- [ ] As seguintes rotas ficam **isentas** (sem auth):
-  - `GET /api/share/:token` — link público de documento compartilhado
-  - `POST /api/external/generate` — já tem sua própria autenticação por `EXTERNAL_API_KEY`
-  - `OPTIONS *` — preflight CORS não deve ser bloqueado
+1. WHEN `APP_SECRET_KEY` is absent or empty in the environment THEN the system SHALL log a clear error message and exit with code 1 before accepting any requests.
+2. WHEN `APP_SECRET_KEY` is present and non-empty THEN the system SHALL start normally.
 
-### REQ-3: Frontend envia a chave automaticamente
-**User story**: Como usuário do app, não quero ter que digitar a chave em cada ação — o app deve enviá-la automaticamente depois que eu configurar uma vez.
+---
 
-**Critérios de aceite**:
-- [ ] O frontend armazena `APP_SECRET_KEY` em `localStorage` com chave `docu_app_key`
-- [ ] `apiRequest()` em `client/src/lib/queryClient.ts` inclui o header `X-App-Key` em todos os requests
-- [ ] O `getQueryFn` também inclui o header `X-App-Key`
-- [ ] Existe um componente/tela de configuração onde o usuário insere a chave uma única vez
-- [ ] Respostas `401` do servidor disparam um toast "Sessão expirada — configure sua chave de acesso" e redirecionam para a tela de configuração
+### Requirement 2 — Middleware de autenticação por API Key
 
-### REQ-4: Remoção das dependências de session nunca usadas
-**User story**: Como mantenedor, quero remover pacotes mortos do `package.json` para reduzir surface de ataque e tamanho da instalação.
+**User Story:** As a dono da aplicação, I want all protected routes to require a valid `X-App-Key` header, so that no unauthorized external access can read or modify my documents.
 
-**Critérios de aceite**:
-- [ ] Removidos do `package.json` (e confirmados como não importados em nenhum arquivo):
-  - `passport`
-  - `passport-local`
-  - `express-session`
-  - `connect-pg-simple`
-  - `memorystore`
-- [ ] Removidos também os `@types` correspondentes em `devDependencies`
-- [ ] `npm install` após remoção não produz erros
-- [ ] Build (`vite build && esbuild ...`) passa sem erros após remoção
+#### Acceptance Criteria
 
-### REQ-5: Documentação da variável de ambiente
-**Critérios de aceite**:
-- [ ] `.env.example` inclui `APP_SECRET_KEY=` com comentário explicando como gerar (ex: `openssl rand -hex 32`)
-- [ ] `AUDITORIA_PENDENTES.md` marca Issue 6 como resolvida
+1. WHEN a request arrives at any `/api/` route without the `X-App-Key` header THEN the system SHALL return `401` with body `{ "message": "Autenticação necessária." }`.
+2. WHEN a request arrives with an incorrect `X-App-Key` value THEN the system SHALL return `401` with body `{ "message": "Chave de API inválida." }`.
+3. WHEN a request arrives with the correct `X-App-Key` value THEN the system SHALL pass the request to the route handler.
+4. IF `APP_SECRET_KEY` is defined as an empty string THEN the system SHALL treat it as absent and return 500 on startup.
+5. WHEN the middleware compares the key THEN the system SHALL never log the received key value at any log level.
+
+---
+
+### Requirement 3 — Rotas isentas de autenticação
+
+**User Story:** As a external user who received a share link, I want to access `GET /api/share/:token` without a key, so that publicly shared documents continue to work.
+
+#### Acceptance Criteria
+
+1. WHEN a request arrives at `GET /api/share/:token` without a header THEN the system SHALL pass it through without authentication.
+2. WHEN a request arrives at `POST /api/external/generate` THEN the system SHALL skip the `requireAppKey` middleware (this route has its own `EXTERNAL_API_KEY` authentication).
+3. WHEN an `OPTIONS` preflight request arrives THEN the system SHALL respond without triggering authentication (CORS must not break).
+
+---
+
+### Requirement 4 — Frontend transparente
+
+**User Story:** As a usuário do app, I want all frontend actions to work automatically after configuring the key once, so that I never have to re-enter it per action.
+
+#### Acceptance Criteria
+
+1. WHEN the frontend makes any API request THEN the system SHALL include the `X-App-Key` header read from `localStorage` key `docu_app_key` in both `apiRequest()` and `getQueryFn`.
+2. WHEN the server returns `401` THEN the system SHALL display a toast "Sessão expirada — configure sua chave de acesso" and redirect to the key configuration screen.
+
+---
+
+### Requirement 5 — Remoção de dependências mortas
+
+**User Story:** As a mantenedor, I want unused session packages removed from `package.json`, so that the install surface and attack surface are reduced.
+
+#### Acceptance Criteria
+
+1. WHEN `npm install` runs after removal THEN the system SHALL complete without errors.
+2. WHEN `vite build && esbuild` runs after removal THEN the system SHALL complete without errors.
+3. IF any import of `passport`, `passport-local`, `express-session`, `connect-pg-simple`, or `memorystore` exists in any `.ts` or `.tsx` file THEN the build SHALL fail (grep confirms zero results before removal).
+
+---
+
+### Requirement 6 — Documentação da variável de ambiente
+
+**User Story:** As a operador, I want `.env.example` to document `APP_SECRET_KEY` with generation instructions, so that any new deployment knows how to configure the secret.
+
+#### Acceptance Criteria
+
+1. WHEN `.env.example` is read THEN it SHALL contain `APP_SECRET_KEY=` with an inline comment instructing generation via `openssl rand -hex 32`.
